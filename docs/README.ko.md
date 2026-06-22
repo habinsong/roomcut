@@ -12,6 +12,10 @@
 
 ![System-wide](https://img.shields.io/badge/System--wide-EQ%20%2B%20DSP-0A84FF?style=for-the-badge) ![EQ](https://img.shields.io/badge/EQ-10--band%20%2B%20Parametric-5E5CE6?style=for-the-badge) ![Spatial](https://img.shields.io/badge/Spatial-narrow%20%C2%B7%20widen-1F6FEB?style=for-the-badge) ![Room Tune](https://img.shields.io/badge/Room%20Tune-iPhone%20mic-2EA043?style=for-the-badge) ![Now Playing](https://img.shields.io/badge/Now%20Playing-Lyrics-C2185B?style=for-the-badge) ![UI languages](https://img.shields.io/badge/UI-5%20languages-FB8500?style=for-the-badge)
 
+![Native tests](https://img.shields.io/badge/ctest-passing-2EA043?style=for-the-badge) ![Swift tests](https://img.shields.io/badge/swift%20test-passing-2EA043?style=for-the-badge) ![Driver](https://img.shields.io/badge/HAL%20driver-loads-0A84FF?style=for-the-badge)
+
+Roomcut 1.0은 현재 시스템 전역 라우팅, EQ, 리미터, 공간 제어, 분석기, 프리셋, Now Playing, Room Tune을 제공합니다.<br>Apple Silicon Mac(macOS 26 이상)에서 테스트했습니다.
+
 </div>
 
 > **공식 저장소 안내**
@@ -207,6 +211,10 @@ Roomcut은 사용자가 듣는 모든 소리를 처리하므로 경계가 중요
 swift test                          # 앱 / Swift 단위 테스트
 ctest --test-dir build --output-on-failure   # 네이티브(DSP / 엔진) 테스트
 ```
+
+두 테스트 모음은 푸시와 풀 리퀘스트마다 macOS 26 runner에서 CI로 실행됩니다:
+
+[![CI](https://github.com/habinsong/roomcut/actions/workflows/ci.yml/badge.svg)](https://github.com/habinsong/roomcut/actions/workflows/ci.yml)
 
 ## 기여
 
