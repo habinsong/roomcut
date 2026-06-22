@@ -12,6 +12,10 @@
 
 ![System-wide](https://img.shields.io/badge/System--wide-EQ%20%2B%20DSP-0A84FF?style=for-the-badge) ![EQ](https://img.shields.io/badge/EQ-10--band%20%2B%20Parametric-5E5CE6?style=for-the-badge) ![Spatial](https://img.shields.io/badge/Spatial-narrow%20%C2%B7%20widen-1F6FEB?style=for-the-badge) ![Room Tune](https://img.shields.io/badge/Room%20Tune-iPhone%20mic-2EA043?style=for-the-badge) ![Now Playing](https://img.shields.io/badge/Now%20Playing-Lyrics-C2185B?style=for-the-badge) ![UI languages](https://img.shields.io/badge/UI-5%20languages-FB8500?style=for-the-badge)
 
+![Native tests](https://img.shields.io/badge/ctest-passing-2EA043?style=for-the-badge) ![Swift tests](https://img.shields.io/badge/swift%20test-passing-2EA043?style=for-the-badge) ![Driver](https://img.shields.io/badge/HAL%20driver-loads-0A84FF?style=for-the-badge)
+
+Roomcut 1.0 currently ships: system-wide routing, EQ, limiter, spatial controls, analyzer, presets, Now Playing, and Room Tune.<br>Tested on Apple Silicon Macs running macOS 26+.
+
 </div>
 
 > **Official repository notice**
@@ -269,6 +273,10 @@ measurement is running.
 swift test                          # app / Swift unit tests
 ctest --test-dir build --output-on-failure   # native (DSP / engine) tests
 ```
+
+Both suites run in CI on every push and pull request, on a macOS 26 runner:
+
+[![CI](https://github.com/habinsong/roomcut/actions/workflows/ci.yml/badge.svg)](https://github.com/habinsong/roomcut/actions/workflows/ci.yml)
 
 ## Contributing
 
