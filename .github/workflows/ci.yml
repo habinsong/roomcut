@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    name: Build & test (macOS 26)
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Toolchain versions
+        run: |
+          swift --version
+          cmake --version
+          xcodebuild -version
+
+      # Native driver + engine + DSP core, with the unit tests enabled.
+      - name: Configure (CMake)
+        run: cmake -S . -B build -DROOMCUT_BUILD_TESTS=ON
+
+      - name: Build (CMake)
+        run: cmake --build build
+
+      - name: Native tests (ctest)
+        run: ctest --test-dir build --output-on-failure
+
+      # Menu-bar app (SwiftPM). The Liquid Glass APIs need the macOS 26 SDK,
+      # which the macos-26 image's default Xcode provides.
+      - name: Build (SwiftPM)
+        run: swift build
+
+      - name: App tests (swift test)
+        run: swift test
