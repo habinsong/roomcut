@@ -49,7 +49,14 @@ final class RoomcutViewModelTests: XCTestCase {
         model.preampDb = 2
         model.schedulePushParams()
 
-        try await Task.sleep(nanoseconds: 80_000_000)
+        // The debounce fires on a real timer, so a busy CI runner can land the
+        // coalesced write well after the nominal 20ms. Poll until it arrives
+        // (~2s ceiling), then wait one more debounce window to confirm the two
+        // edits collapsed into a single write rather than two.
+        for _ in 0..<200 where client.setParamsValues.isEmpty {
+            try await Task.sleep(nanoseconds: 10_000_000)
+        }
+        try await Task.sleep(nanoseconds: 60_000_000)
 
         XCTAssertEqual(client.setParamsValues.count, 1)
         XCTAssertEqual(client.setParamsValues.first?.preampDb, 2)
