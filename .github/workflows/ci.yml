@@ -18,7 +18,7 @@ jobs:
     name: Build & test (macOS 26)
     runs-on: macos-26
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Toolchain versions
         run: |
