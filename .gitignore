@@ -1,0 +1,40 @@
+# Roomcut workspace ignores
+.DS_Store
+*.log
+
+# Swift Package Manager (native app)
+.build/
+.build-xc/
+.swiftpm/
+
+# CMake / native build
+build/
+build-dbg/
+build-*/
+*.o
+*.dylib
+*.driver
+DerivedData/
+
+# Release packaging output (scripts/package-release.sh)
+dist/
+
+# Misc caches / stray tooling output
+.cache/
+node_modules/
+.vite/
+# Stray JS lockfiles (no JS/Node toolchain in this repo)
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Secrets / local config
+.env
+.env.local
+*.p12
+*.cer
+roomcut.local.json
+
+# Claude Code local (personal) settings — shared settings.json may be committed,
+# settings.local.json must not be.
+.claude/settings.local.json

@@ -1,0 +1,79 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://roomcut.app/schemas/preset.schema.json",
+  "title": "RoomcutPreset",
+  "description": "A complete DSP preset. Validated by PresetValidator before it is ever applied to the audio engine.",
+  "type": "object",
+  "required": ["id", "name", "chain"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "name": { "type": "string", "minLength": 1, "maxLength": 64 },
+    "description": { "type": "string", "maxLength": 256 },
+    "builtin": { "type": "boolean", "default": false },
+    "chain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["preampDb"],
+      "properties": {
+        "preampDb": { "type": "number", "minimum": -24, "maximum": 12 },
+        "eq": {
+          "type": "array",
+          "maxItems": 24,
+          "items": { "$ref": "#/$defs/eqBand" }
+        },
+        "spatial": { "$ref": "#/$defs/spatial" },
+        "compressor": { "$ref": "#/$defs/compressor" },
+        "limiter": { "$ref": "#/$defs/limiter" },
+        "outputGainDb": { "type": "number", "minimum": -24, "maximum": 12 }
+      }
+    }
+  },
+  "$defs": {
+    "eqBand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "frequency", "gainDb", "q"],
+      "properties": {
+        "enabled": { "type": "boolean", "default": true },
+        "type": {
+          "type": "string",
+          "enum": ["bell", "low_shelf", "high_shelf", "high_pass", "low_pass", "notch"]
+        },
+        "frequency": { "type": "number", "minimum": 20, "maximum": 20000 },
+        "gainDb": { "type": "number", "minimum": -24, "maximum": 24 },
+        "q": { "type": "number", "minimum": 0.1, "maximum": 18 }
+      }
+    },
+    "spatial": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "width": { "type": "number", "minimum": -100, "maximum": 100, "default": 0 },
+        "centerFocus": { "type": "number", "minimum": 0, "maximum": 100, "default": 0 },
+        "crossfeed": { "type": "number", "minimum": 0, "maximum": 100, "default": 0 },
+        "roomReduce": { "type": "number", "minimum": 0, "maximum": 100, "default": 0 }
+      }
+    },
+    "compressor": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean", "default": false },
+        "thresholdDb": { "type": "number", "minimum": -60, "maximum": 0 },
+        "ratio": { "type": "number", "minimum": 1, "maximum": 20 },
+        "attackMs": { "type": "number", "minimum": 0.1, "maximum": 200 },
+        "releaseMs": { "type": "number", "minimum": 5, "maximum": 1000 },
+        "makeupDb": { "type": "number", "minimum": 0, "maximum": 12 }
+      }
+    },
+    "limiter": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean", "default": true },
+        "releaseMs": { "type": "number", "minimum": 5, "maximum": 500 }
+      }
+    }
+  }
+}

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleExecutable</key>
+	<string>Roomcut</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.roomcut.driver</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>Roomcut</string>
+	<key>CFBundlePackageType</key>
+	<string>BNDL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0.0</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>Copyright © Roomcut</string>
+
+	<!-- CFPlugIn: maps the AudioServerPlugIn type to our factory UUID, and the
+	     factory UUID to the C factory function (Roomcut_Create). -->
+	<key>CFPlugInFactories</key>
+	<dict>
+		<key>1AFBB765-BBFC-45C2-B410-D42459677AAC</key>
+		<string>Roomcut_Create</string>
+	</dict>
+	<key>CFPlugInTypes</key>
+	<dict>
+		<!-- kAudioServerPlugInTypeUUID -->
+		<key>443ABAB8-E7B3-491A-B985-BEB9187030DB</key>
+		<array>
+			<string>1AFBB765-BBFC-45C2-B410-D42459677AAC</string>
+		</array>
+	</dict>
+
+	<!-- The only sanctioned IPC channel out of the coreaudiod sandbox. The
+	     engine (RoomcutAudioEngine) publishes this Mach service; the driver
+	     connects to it for the shared-memory handoff in Phase 3. -->
+	<key>AudioServerPlugIn_MachServices</key>
+	<array>
+		<string>com.roomcut.engine</string>
+	</array>
+</dict>
+</plist>

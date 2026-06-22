@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://roomcut.app/schemas/analysis.schema.json",
+  "title": "RoomcutAnalysis",
+  "description": "Local feature-extraction output produced by RoomcutAudioEngine. This is the ONLY audio-derived data ever sent to an LLM. Raw audio never leaves the machine.",
+  "type": "object",
+  "required": ["analysis"],
+  "additionalProperties": false,
+  "properties": {
+    "app": { "type": "string", "description": "Foreground/source app hint, may be empty." },
+    "contentHint": {
+      "type": "string",
+      "enum": ["unknown", "music", "live_music", "speech", "dialogue", "podcast", "game", "movie"]
+    },
+    "analysis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "valid",
+        "sampleRate",
+        "channels",
+        "framesAnalyzed",
+        "peakDb",
+        "rmsDb",
+        "crestFactor",
+        "lowEnergy",
+        "lowMidEnergy",
+        "midEnergy",
+        "highEnergy",
+        "spectralCentroid",
+        "stereoWidth",
+        "midSideRatio",
+        "muddiness",
+        "harshness",
+        "sibilance",
+        "voicePresence",
+        "reverbEstimate",
+        "dynamicRange",
+        "spectrum"
+      ],
+      "properties": {
+        "valid": { "type": "boolean" },
+        "sampleRate": { "type": "integer", "minimum": 1 },
+        "channels": { "type": "integer", "minimum": 1 },
+        "framesAnalyzed": { "type": "integer", "minimum": 0 },
+        "peakDb": { "type": "number" },
+        "rmsDb": { "type": "number" },
+        "crestFactor": { "type": "number" },
+        "lowEnergy": { "type": "number", "minimum": 0, "maximum": 1 },
+        "lowMidEnergy": { "type": "number", "minimum": 0, "maximum": 1 },
+        "midEnergy": { "type": "number", "minimum": 0, "maximum": 1 },
+        "highEnergy": { "type": "number", "minimum": 0, "maximum": 1 },
+        "spectralCentroid": { "type": "number" },
+        "stereoWidth": { "type": "number", "minimum": 0, "maximum": 1 },
+        "midSideRatio": { "type": "number", "minimum": 0, "maximum": 1 },
+        "muddiness": { "type": "number", "minimum": 0, "maximum": 1 },
+        "harshness": { "type": "number", "minimum": 0, "maximum": 1 },
+        "sibilance": { "type": "number", "minimum": 0, "maximum": 1 },
+        "voicePresence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "reverbEstimate": { "type": "number", "minimum": 0, "maximum": 1 },
+        "dynamicRange": { "type": "number" },
+        "spectrum": {
+          "type": "array",
+          "minItems": 24,
+          "maxItems": 24,
+          "items": { "type": "number", "minimum": 0, "maximum": 1 }
+        }
+      }
+    }
+  }
+}
