@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.24)
 
 project(Roomcut
-  VERSION 1.0.0
+  VERSION 1.0.1
   DESCRIPTION "System-wide audio controller for macOS"
   LANGUAGES C CXX)
 

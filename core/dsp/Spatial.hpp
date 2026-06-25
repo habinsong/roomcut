@@ -11,8 +11,6 @@ class Spatial {
 public:
     void prepare(double fs) {
         fs_ = fs > 0.0 ? fs : 48000.0;
-        const double cutoffHz = 700.0;
-        lowpassAlpha_ = 1.0 - std::exp(-2.0 * kPi * cutoffHz / fs_);
         // Bass/side crossover for frequency-dependent width: below this the side
         // is kept centred (mono bass = a tight, phase-stable low end on speakers).
         const double bassHz = 250.0;
@@ -52,11 +50,7 @@ public:
     }
 
     void reset() {
-        leftLow_ = 0.0;
-        rightLow_ = 0.0;
         sideLow_ = 0.0;
-        apX1_ = 0.0;
-        apY1_ = 0.0;
         for (std::size_t i = 0; i < kMaxDelay; ++i) {
             raceL_[i] = raceR_[i] = cfL_[i] = cfR_[i] = pinnaL_[i] = pinnaR_[i] = 0.0;
         }
@@ -83,47 +77,60 @@ public:
         const double room = roomReduce_ * 0.01;
         const double crossfeed = crossfeed_ * 0.01;
 
-        // Stronger, clearly audible ranges (the ±60% version read as "no effect"):
-        //   width  +100 → treble side ×1.9, −100 → ×0.1 (near-mono)
+        // Stronger, clearly audible ranges. Widen now uses about twice the previous
+        // slope so the Space control reaches a much wider stage: the old +100 width
+        // reads at roughly +50 now. Narrowing is left as before (it can only go down
+        // to near-mono).
+        //   width  +100 → treble side ×2.8 (was ×1.9), −100 → ×0.1 (near-mono)
         //   room   +100 → side ×0.25,  center +100 → side ×0.5 + mid +0.25
         const double commonGain = (1.0 - 0.75 * room) * (1.0 - 0.5 * center);
         const double midGain = 1.0 + 0.25 * center + 0.15 * room;
 
         // Frequency-dependent M/S ("shuffler"): split the side into a bass part
-        // (≤250 Hz) that only gets 30% of the width change — so the low end stays
-        // centred — and a treble part that takes the full width.
+        // (≤250 Hz) kept tight (lows stay centred for phase/mono stability) and a
+        // treble part that takes the full, widened width.
         sideLow_ += bassAlpha_ * (side - sideLow_);
         const double sideHigh = side - sideLow_;
-        const double sideLowGain = (1.0 + 0.27 * width) * commonGain;   // 0.9 × 0.3
-        const double sideHighGain = (1.0 + 0.9 * width) * commonGain;
+        // Widen (width ≥ 0) uses the stronger slope; narrow (width < 0) keeps the old
+        // mapping so the side bottoms out at near-mono (×0.1) instead of phase-
+        // inverting — a negative side gain would flip L/R polarity, not narrow.
+        double sideLowGain, sideHighGain;
+        if (width >= 0.0) {
+            sideLowGain  = (1.0 + 0.45 * width) * commonGain;   // bass stays tight
+            sideHighGain = (1.0 + 1.8  * width) * commonGain;   // treble ×2.8 at +100
+        } else {
+            sideLowGain  = (1.0 + 0.27 * width) * commonGain;
+            sideHighGain = (1.0 + 0.9  * width) * commonGain;   // −100 → ×0.1
+        }
         const double outSide = sideLow_ * sideLowGain + sideHigh * sideHighGain;
 
         double outLeft = mid * midGain + outSide;
         double outRight = mid * midGain - outSide;
 
-        // All-pass decorrelation: synthesise width for near-mono / narrow material
-        // (a bare side-gain does nothing when side ≈ 0). The phase-rotated mid is
-        // added anti-symmetrically (L +, R −) so it is mono-safe: L+R cancels it,
-        // leaving no colouration when summed to mono. Only on widen (width > 0).
-        if (width > 0.0) {
-            const double ap = processAllpass(mid);
-            const double decorr = 0.16 * width * ap;
-            outLeft += decorr;
-            outRight -= decorr;
-        }
-
-        leftLow_ += lowpassAlpha_ * (outLeft - leftLow_);
-        rightLow_ += lowpassAlpha_ * (outRight - rightLow_);
+        // Width is applied to the SIDE only (mid is untouched), so a centred vocal —
+        // which has no side — stays exactly centred at 12 o'clock no matter how far the
+        // Space control is pushed. There is deliberately NO all-pass "synthesise width
+        // from the centre" stage: a first-order all-pass added anti-symmetrically is
+        // mono-safe but NOT image-safe — at each frequency it adds vs subtracts a
+        // phase-rotated copy of the mid, which gave the centre a frequency-dependent
+        // lateral tilt (the vocal drifted left as width rose, worst on the speaker/RACE
+        // path). All the requested extra width now comes from the side gain above,
+        // which only acts on genuine stereo content.
+        //
+        // The virtual surround field is built from this genuine programme side only, so
+        // a pure-centre vocal (programmeSide == 0) drives zero ambience and the surround
+        // stage adds nothing — decorrelate the surround, not the centre.
+        const double programmeSide = outSide;
 
         // The "crossfeed" control means opposite things on the two playback systems
-        // (per the spatial methodology). leftLow_/rightLow_ are the head-shadow
-        // (700 Hz LPF) versions of each output — the part that physically leaks.
+        // (per the spatial methodology): a binaural reshape on headphones, RACE
+        // crosstalk cancellation on speakers.
         if (headphone_) {
             // Parametric binaural: render L/R as virtual speakers at ±30°. Each
             // channel reaches the OPPOSITE ear delayed (ITD), head-shadowed (LPF),
             // pinna-notched and ILD-attenuated → pulls the in-head image toward an
             // out-of-head stage. crossfeed = effect amount.
-            const double ambPre = (outLeft - outRight) * 0.5;   // ambience BEFORE binaural collapses it
+            const double ambPre = programmeSide;   // genuine side only (no centre-derived decorrelation)
             if (crossfeed > 0.0) {
                 cfL_[cfWrite_] = outLeft;
                 cfR_[cfWrite_] = outRight;
@@ -182,9 +189,10 @@ public:
                 // spreads the image beyond the speakers; layer a light, left/right-
                 // symmetric decorrelated ambience on top for envelopment. Gentler than
                 // headphones because the room itself already supplies reflections.
-                const double side = (outLeft - outRight) * 0.5;
+                // Built from the genuine programme side (not the decorrelated/RACE
+                // output) so a centred vocal stays centred — see programmeSide above.
                 double ambL, ambR;
-                surroundAmbience(side, ambL, ambR);
+                surroundAmbience(programmeSide, ambL, ambR);
                 const double g = 0.6 * crossfeed;
                 outLeft  += g * ambL;
                 outRight += g * ambR;
@@ -198,15 +206,6 @@ public:
 private:
     static double clamp(double v, double lo, double hi) {
         return std::max(lo, std::min(hi, v));
-    }
-
-    // 1st-order all-pass: flat magnitude, frequency-dependent phase. Rotating the
-    // mid's phase before the anti-symmetric add is what decorrelates L/R.
-    inline double processAllpass(double x) {
-        const double y = -kApCoeff * x + apX1_ + kApCoeff * apY1_;
-        apX1_ = x;
-        apY1_ = y;
-        return y;
     }
 
     // Build a left/right-symmetric surround ambience from two short, unequal delay
@@ -235,7 +234,6 @@ private:
     }
 
     static constexpr double kPi = 3.14159265358979323846;
-    static constexpr double kApCoeff = 0.7;
 
     double fs_ = 48000.0;
     double width_ = 0.0;
@@ -243,13 +241,8 @@ private:
     double crossfeed_ = 0.0;
     double roomReduce_ = 0.0;
     bool headphone_ = false;   // false = speaker (XTC), true = headphone (crossfeed)
-    double lowpassAlpha_ = 0.087593;
     double bassAlpha_ = 0.031980;
-    double leftLow_ = 0.0;
-    double rightLow_ = 0.0;
     double sideLow_ = 0.0;
-    double apX1_ = 0.0;
-    double apY1_ = 0.0;
 
     // --- RACE crosstalk canceller (speaker mode) ----------------------------
     // Cross-coupled recursive delay+attenuation: each output subtracts a delayed,
