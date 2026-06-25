@@ -250,10 +250,15 @@ final class LRCLIBClientTests: XCTestCase {
         let started = Date()
 
         await LRCLIBClient.forEachConcurrently(requests) { _ in
-            try? await Task.sleep(nanoseconds: 100_000_000)
+            try? await Task.sleep(nanoseconds: 300_000_000)
         }
 
-        XCTAssertLessThan(Date().timeIntervalSince(started), 0.18)
+        // Two 300 ms tasks running concurrently take ~0.3 s, not the ~0.6 s a
+        // sequential run would. The 0.5 s threshold keeps generous head-room so a
+        // slow/loaded CI runner's scheduling jitter can't flake it, while still
+        // catching a regression to sequential execution (~0.6 s). The old
+        // 100 ms / 0.18 s pair had only ~0.08 s of slack and flaked on CI.
+        XCTAssertLessThan(Date().timeIntervalSince(started), 0.5)
     }
 
     func testPersistentCacheEvictsOldestEntryAfterOneThousandTracks() async throws {
