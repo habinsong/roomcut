@@ -29,7 +29,7 @@
 #include "Handshake.hpp"
 #include "Heartbeat.hpp"
 #include "Lifecycle.hpp"
-#include "LinearResampler.hpp"
+#include "CubicResampler.hpp"
 #include "OutputDevice.hpp"
 #include "RingRegion.hpp"
 
@@ -96,7 +96,7 @@ struct EngineContext {
     std::atomic<RoomcutEngineLifecycle> lifecycle{ROOMCUT_ENGINE_STARTING};
 
     DSPChain               dsp;                 // render-thread only after prepare()
-    LinearResampler        resampler;           // ring SR -> device SR (render-thread)
+    CubicResampler         resampler;           // ring SR -> device SR (render-thread)
     std::atomic<uint32_t>  renderPeakBits{0};   // float bits of the last block's peak
     std::atomic<uint64_t>  framesRendered{0};
     std::atomic<uint64_t>  renderUnderruns{0};  // output pulled more than the ring had
@@ -128,6 +128,37 @@ struct EngineContext {
     std::atomic<uint32_t>  paramsEpoch{0};
     uint32_t               paramsApplied = 0;      // render-thread only
     std::atomic<uint32_t>  limiterGRBits{0};       // float bits, render → control
+
+    // Volume ramp state (render-thread only). Per-sample linear interpolation
+    // eliminates zipper noise when systemVolume changes between blocks. The
+    // ramp time (~10ms) is perceptually instant but smooths out the step
+    // discontinuity at block boundaries (ENGINE_AUDIT.md #6).
+    float                  volCurrent = 1.0f;    // render-thread only
+    float                  volTarget  = 1.0f;    // render-thread only
+
+    // Underrun concealment state (render-thread only, ENGINE_AUDIT.md #7).
+    // When the ring runs dry mid-block, zero-fill creates a hard discontinuity
+    // (pop). Instead we apply a short fade-out on the tail of the last good
+    // block, and a fade-in when data returns. The fade length (~3ms) is
+    // imperceptible but eliminates the click.
+    bool                   fadeOutActive = false;  // currently fading/faded to silence
+    float                  fadeGain = 1.0f;        // current concealment gain (0..1)
+    uint32_t               lastRingGot = 0;        // frames actually read by ringInput (render-thread only)
+    // Last good frame, held into any ring shortfall instead of zeros so an
+    // underrun never produces a hard 0-jump (the pop). ringInput updates it from
+    // the freshest frame actually read; the render-thread fade then ramps the
+    // held value to silence if the gap persists. (render-thread only)
+    float                  holdFrame[ROOMCUT_MVP_CHANNELS] = {0.0f, 0.0f};
+
+    // Pre-allocated render scratch buffers (moved from thread_local in
+    // pullRender to eliminate lazy TLS page-fault / malloc on new IOProc
+    // threads — RT-safety fix, see ENGINE_AUDIT.md #4). Allocated in
+    // openOutputOn() before output.start(); the render thread only reads
+    // the .data() pointer (stable after resize, never reallocated while
+    // the callback is live).
+    static constexpr uint32_t kMaxOut = 8192;
+    std::vector<float>     scratchBuf;           // resampler input staging
+    std::vector<float>     dryBuf;               // NaN-detection fallback copy
 
     // --dump diagnostic: the control thread allocates before output.start();
     // the render thread is the only writer of the contents + frame count.
@@ -199,13 +230,30 @@ uint32_t ringInput(void* vctx, float* dst, uint32_t inFrames, uint32_t channels)
     if (got > 0 && got < inFrames && ctx->ringPrimed.load(std::memory_order_relaxed)) {
         ctx->renderUnderruns.fetch_add(inFrames - got, std::memory_order_relaxed);
     }
-    return got;
+
+    // Last-value hold (ENGINE_AUDIT.md #7): fill any shortfall with the last good
+    // frame instead of leaving zeros. A hard 0-jump on underrun is the pop; holding
+    // the last sample keeps the waveform continuous, and the render-thread fade
+    // (pullRender) then ramps the held value to silence if the gap persists. We
+    // return inFrames so the resampler treats the buffer as full and does NOT
+    // overwrite the held tail with zeros — this makes the fade-out effective even
+    // on the bit-exact passthrough path, and conceals partial underruns too.
+    if (got > 0) {
+        const uint32_t last = (got - 1) * channels;
+        for (uint32_t c = 0; c < channels; ++c) ctx->holdFrame[c] = dst[last + c];
+    }
+    for (uint32_t f = got; f < inFrames; ++f) {
+        for (uint32_t c = 0; c < channels; ++c) dst[f * channels + c] = ctx->holdFrame[c];
+    }
+    ctx->lastRingGot = got;
+    return inFrames;
 }
 
 // The output device's render callback — the SINGLE consumer of the ring.
 // RT-safe: no alloc/lock/log. Resamples ring (input SR) -> device SR into the
 // output buffer, runs the DSP chain in place, and records a peak for the
-// control thread to print. Scratch lives on the stack (bounded by frames*ratio).
+// control thread to print. Scratch buffers live in EngineContext (pre-allocated
+// in openOutputOn before start).
 void pullRender(void* vctx, float* dst, uint32_t frames, uint32_t channels) {
     // Set flush-to-zero once on this render thread so denormal filter state never
     // tanks the CPU (the engine's idle/quiet-passage spike).
@@ -214,22 +262,58 @@ void pullRender(void* vctx, float* dst, uint32_t frames, uint32_t channels) {
 
     auto* ctx = static_cast<EngineContext*>(vctx);
 
-    // Worst case ratio in MVP is 44.1k->192k etc.; cap scratch generously. A
-    // device buffer is typically <= 4096 frames and ratio <= ~1.0 for upsample
-    // to 96k from 48k (ratio 0.5) — input frames are FEWER than output. Size for
-    // the downsample case (ratio up to ~4: 192k ring -> 48k device) to be safe.
-    constexpr uint32_t kMaxOut = 8192;
-    constexpr uint32_t kScratch = kMaxOut; // inFrames <= outFrames*ratio; ratio<=~1 here
-    static thread_local float scratch[kScratch * ROOMCUT_MVP_CHANNELS];
+    // Scratch buffers live in EngineContext (pre-allocated in openOutputOn,
+    // RT-safe: no lazy TLS fault). kMaxOut matches EngineContext::kMaxOut.
+    constexpr uint32_t kMaxOut = EngineContext::kMaxOut;
 
     uint32_t out = frames > kMaxOut ? kMaxOut : frames;
-    ctx->resampler.produce(dst, out, &ringInput, ctx, scratch, kScratch);
+    ctx->resampler.produce(dst, out, &ringInput, ctx, ctx->scratchBuf.data(), kMaxOut);
     if (out < frames) {
         std::memset(dst + (size_t)out * channels, 0,
                     (size_t)(frames - out) * channels * sizeof(float));
     }
 
     const uint32_t n = frames * channels;
+
+    // Underrun concealment (ENGINE_AUDIT.md #7): when the ring runs dry
+    // (lastRingGot == 0 after priming), ringInput has already held the last good
+    // sample into the buffer (no 0-jump), so here we ramp that held, continuous
+    // waveform down to silence over ~3ms instead of freezing on a DC value. On
+    // data return, fade back in. Normal playback (fadeGain == 1.0, no underrun)
+    // costs one branch.
+    {
+        constexpr float kFadeMs = 3.0f;
+        // Approximate fade step assuming ~48kHz; exact SR doesn't matter much
+        // for a 3ms cosmetic fade. Step per sample = 1/(SR*fadeMs/1000).
+        // At 48k: 1/(48000*0.003) = ~0.00694. At 96k it's half that (gentler).
+        const float fadeStep = 1.0f / (48.0f * kFadeMs); // ~0.00694
+
+        const bool ringDry = (ctx->lastRingGot == 0 &&
+                              ctx->ringPrimed.load(std::memory_order_relaxed));
+
+        if (ringDry && !ctx->fadeOutActive) {
+            ctx->fadeOutActive = true;  // start fading out
+        } else if (!ringDry && ctx->fadeOutActive) {
+            ctx->fadeOutActive = false; // data returned, start fading in
+        }
+
+        if (ctx->fadeOutActive && ctx->fadeGain > 0.0f) {
+            // Fade out: ramp gain from current toward 0.
+            for (uint32_t i = 0; i < n; ++i) {
+                dst[i] *= ctx->fadeGain;
+                ctx->fadeGain -= fadeStep;
+                if (ctx->fadeGain < 0.0f) ctx->fadeGain = 0.0f;
+            }
+        } else if (!ctx->fadeOutActive && ctx->fadeGain < 1.0f) {
+            // Fade in: ramp gain from current toward 1.
+            for (uint32_t i = 0; i < n; ++i) {
+                ctx->fadeGain += fadeStep;
+                if (ctx->fadeGain > 1.0f) ctx->fadeGain = 1.0f;
+                dst[i] *= ctx->fadeGain;
+            }
+        }
+        // else: fadeGain == 1.0 and no underrun → normal path, no multiply.
+    }
 
     // Live params (Phase 6): pick up a newly published parameter set. The
     // chain crossfades to it, so preset switches are click-free.
@@ -248,8 +332,7 @@ void pullRender(void* vctx, float* dst, uint32_t frames, uint32_t channels) {
     }
 
     if (!ctx->safeBypass.load(std::memory_order_relaxed)) {
-        static thread_local float dry[kMaxOut * ROOMCUT_MVP_CHANNELS];
-        std::memcpy(dry, dst, (size_t)n * sizeof(float));
+        std::memcpy(ctx->dryBuf.data(), dst, (size_t)n * sizeof(float));
 
         ctx->dsp.processInterleaved(dst, frames);
 
@@ -259,7 +342,7 @@ void pullRender(void* vctx, float* dst, uint32_t frames, uint32_t channels) {
         double sumsq = 0.0;
         for (uint32_t i = 0; i < n; ++i) sumsq += (double)dst[i] * dst[i];
         if (!std::isfinite(sumsq)) {
-            std::memcpy(dst, dry, (size_t)n * sizeof(float));
+            std::memcpy(dst, ctx->dryBuf.data(), (size_t)n * sizeof(float));
             ctx->safeBypass.store(true, std::memory_order_relaxed);
         }
 
@@ -274,9 +357,38 @@ void pullRender(void* vctx, float* dst, uint32_t frames, uint32_t channels) {
     // mirroring the macOS volume slider on the Roomcut Output device. Applied
     // even under bypass (volume must always work) and after the limiter so it
     // never defeats clip protection.
-    const float vol = ctx->systemVolume.load(std::memory_order_relaxed);
-    if (vol != 1.0f) {
-        for (uint32_t i = 0; i < n; ++i) dst[i] *= vol;
+    //
+    // Per-sample linear ramp (ENGINE_AUDIT.md #6): eliminates zipper noise by
+    // smoothly interpolating from the current gain to the new target over ~10ms.
+    // Pattern mirrors DSPChain::mix_ ramp (mixStep_/mixTarget_).
+    const float targetVol = ctx->systemVolume.load(std::memory_order_relaxed);
+    if (targetVol != ctx->volTarget) {
+        ctx->volTarget = targetVol;
+    }
+
+    if (ctx->volCurrent == ctx->volTarget) {
+        // Steady state: apply constant gain (skip ramp math).
+        if (ctx->volCurrent != 1.0f) {
+            const float v = ctx->volCurrent;
+            for (uint32_t i = 0; i < n; ++i) dst[i] *= v;
+        }
+    } else {
+        // Ramp toward target over ~10ms worth of samples (480 @ 48kHz).
+        // Use frames as a conservative approximation of available samples/channel;
+        // the step is recomputed each block so any SR is handled correctly.
+        const float rampSamples = (float)frames > 480.0f ? (float)frames : 480.0f;
+        const float step = (ctx->volTarget - ctx->volCurrent) / rampSamples;
+        const uint32_t ch = channels;
+        float vol = ctx->volCurrent;
+        for (uint32_t f = 0; f < frames; ++f) {
+            // Advance toward target; clamp to exact arrival.
+            if (step > 0.0f)      vol = std::min(ctx->volTarget, vol + step);
+            else if (step < 0.0f) vol = std::max(ctx->volTarget, vol + step);
+            for (uint32_t c = 0; c < ch; ++c) {
+                dst[f * ch + c] *= vol;
+            }
+        }
+        ctx->volCurrent = vol;
     }
 
     float peak = 0.0f;
@@ -378,6 +490,13 @@ OSStatus openOutputOn(EngineContext& ctx, OutputDevice& output,
     // low-resolution sound vs. listening to the device directly.
     OSStatus err = output.open(&pullRender, &ctx, ROOMCUT_MVP_CHANNELS, device, (double)ringSR);
     if (err != noErr) return err;
+
+    // Pre-allocate render scratch buffers BEFORE the callback fires (RT-safety:
+    // eliminates thread_local lazy page-fault on new IOProc threads). The assign()
+    // zero-fills, which also pre-faults every page into the resident set.
+    ctx.scratchBuf.assign((size_t)EngineContext::kMaxOut * ROOMCUT_MVP_CHANNELS, 0.0f);
+    ctx.dryBuf.assign((size_t)EngineContext::kMaxOut * ROOMCUT_MVP_CHANNELS, 0.0f);
+
     ctx.dsp.prepare(output.sampleRate(), ROOMCUT_MVP_CHANNELS);
     ctx.dsp.setParams(params);
     ctx.resampler.prepare((double)ringSR, output.sampleRate(), ROOMCUT_MVP_CHANNELS);

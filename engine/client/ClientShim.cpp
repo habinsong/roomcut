@@ -25,9 +25,24 @@ namespace {
 
 constexpr uint32_t kTimeoutMs = 500;
 
-// Per-call connect: cheap (one bootstrap lookup), stateless, and immune to a
-// restarted engine holding a new service port.
-mach_port_t lookupEngine() {
+// Cached send right to the engine's Mach service port. Instead of
+// bootstrap_look_up on every call (ENGINE_AUDIT.md #5), we cache the port and
+// only re-lookup on send failure (engine restarted → stale port). This removes
+// tens of µs of launchd round-trip from every control-plane call — meaningful
+// at 60 Hz analyzer polling or rapid slider drags.
+//
+// Thread safety: the app's non-realtime threads (main + SwiftUI async) can race
+// here. A simple atomic + deallocate-on-invalidate is sufficient — the worst
+// case is two threads both lookup simultaneously on first call (harmless
+// duplication; one port leaks one ref until process exit).
+static mach_port_t g_cachedPort = MACH_PORT_NULL;
+
+mach_port_t acquireEngine() {
+    mach_port_t cached = __atomic_load_n(&g_cachedPort, __ATOMIC_ACQUIRE);
+    if (cached != MACH_PORT_NULL) {
+        return cached;
+    }
+    // Cold path: bootstrap lookup.
     mach_port_t bp = MACH_PORT_NULL;
     if (task_get_bootstrap_port(mach_task_self(), &bp) != KERN_SUCCESS) {
         return MACH_PORT_NULL;
@@ -37,23 +52,40 @@ mach_port_t lookupEngine() {
     if (kr != KERN_SUCCESS) {
         return MACH_PORT_NULL;
     }
+    // Store; if another thread raced and stored first, we leak one send ref
+    // (acceptable for a process-lifetime singleton; no correctness issue).
+    __atomic_store_n(&g_cachedPort, service, __ATOMIC_RELEASE);
     return service;
 }
 
+// Invalidate the cached port (engine died / send failed). The next call will
+// re-lookup. We deallocate the stale ref so the kernel can clean up.
+void invalidateEngine() {
+    mach_port_t old = __atomic_exchange_n(&g_cachedPort, MACH_PORT_NULL, __ATOMIC_ACQ_REL);
+    if (old != MACH_PORT_NULL) {
+        mach_port_deallocate(mach_task_self(), old);
+    }
+}
+
 // Shared wrapper: run `fn(service, &status)`, map to the C return convention.
+// On send/recv failure, invalidates the cached port and retries once (handles
+// the engine-restart case transparently).
 template <typename Fn>
 int withEngine(Fn&& fn) {
-    mach_port_t service = lookupEngine();
-    if (service == MACH_PORT_NULL) {
-        return -1;
+    for (int attempt = 0; attempt < 2; ++attempt) {
+        mach_port_t service = acquireEngine();
+        if (service == MACH_PORT_NULL) {
+            return -1;
+        }
+        uint32_t status = 0;
+        kern_return_t kr = fn(service, &status);
+        if (kr == KERN_SUCCESS) {
+            return (int)status;
+        }
+        // Send/recv failed — port is likely stale (engine restarted).
+        invalidateEngine();
     }
-    uint32_t status = 0;
-    kern_return_t kr = fn(service, &status);
-    mach_port_deallocate(mach_task_self(), service);
-    if (kr != KERN_SUCCESS) {
-        return -2;
-    }
-    return (int)status;
+    return -2;
 }
 
 // ---- CoreAudio (in-process): device enumeration + Roomcut volume ----

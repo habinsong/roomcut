@@ -159,3 +159,11 @@ target_link_libraries(test_device_policy PRIVATE
 target_compile_options(test_device_policy PRIVATE -Wall -Wextra)
 
 add_test(NAME device_policy COMMAND test_device_policy)
+
+# Volume ramp: per-sample linear interpolation eliminates zipper noise
+# (ENGINE_AUDIT.md #6). Pure math — no CoreAudio/IPC.
+add_executable(test_volume_ramp
+  ${CMAKE_SOURCE_DIR}/engine/tests/test_volume_ramp.cpp)
+target_compile_options(test_volume_ramp PRIVATE -Wall -Wextra)
+
+add_test(NAME volume_ramp COMMAND test_volume_ramp)

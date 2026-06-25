@@ -10,13 +10,14 @@
  *   - upsampling 48k→96k of a ramp produces a monotonically increasing,
  *     in-range output (linear interpolation, no overshoot).
  */
-#include "LinearResampler.hpp"
+#include "CubicResampler.hpp"
 
 #include <cmath>
 #include <cstdio>
 #include <vector>
 
 using namespace roomcut;
+using Resampler = CubicResampler;
 
 static int g_failures = 0;
 #define CHECK(cond, msg) do { \
@@ -53,7 +54,7 @@ struct ConstSource {
 };
 
 void testPassthrough() {
-    LinearResampler rs;
+    Resampler rs;
     rs.prepare(48000.0, 48000.0, 2);
     CHECK(rs.passthrough(), "48k->48k is passthrough");
 
@@ -68,7 +69,7 @@ void testPassthrough() {
 }
 
 void testConsumedMatchesPredicted() {
-    LinearResampler rs;
+    Resampler rs;
     rs.prepare(48000.0, 96000.0, 2);     // ratio 0.5 (upsample)
     CHECK(std::fabs(rs.ratio() - 0.5) < 1e-12, "ratio 0.5");
 
@@ -88,7 +89,7 @@ void testConsumedMatchesPredicted() {
 }
 
 void testUpsampleRampMonotonic() {
-    LinearResampler rs;
+    Resampler rs;
     rs.prepare(48000.0, 96000.0, 1);     // mono ramp, clean to reason about
     RampSource src; src.channels = 1;
     std::vector<float> out(2048), scratch(2048);
@@ -109,7 +110,7 @@ void testUpsampleRampMonotonic() {
 }
 
 void testConstantPreserved() {
-    LinearResampler rs;
+    Resampler rs;
     rs.prepare(44100.0, 48000.0, 2);     // arbitrary downsample-ish ratio
     ConstSource src; src.v = 0.25f;
     std::vector<float> out(1024 * 2), scratch(1024 * 2);
@@ -124,7 +125,7 @@ void testConstantPreserved() {
 }
 
 void testDrySourceNoCrash() {
-    LinearResampler rs;
+    Resampler rs;
     rs.prepare(48000.0, 96000.0, 2);
     RampSource src; src.channels = 2; src.dry = true;
     std::vector<float> out(512 * 2), scratch(512 * 2);

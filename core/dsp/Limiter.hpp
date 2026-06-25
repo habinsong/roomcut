@@ -41,7 +41,11 @@ public:
 
         // Attack must cover the look-ahead window: gain has to reach its target
         // within `lookahead_` samples so the peak is fully tamed on arrival.
-        attackCoeff_ = std::exp(-1.0 / (double)lookahead_);
+        // Original: exp(-1/lookahead) = one time-constant = 63% arrival.
+        // Corrected (ENGINE_AUDIT.md #9): exp(-5/lookahead) = five time-constants
+        // within the window → ~99.3% arrival. This virtually eliminates residual
+        // overshoot that triggers the hard clamp (and its odd-harmonic distortion).
+        attackCoeff_ = std::exp(-5.0 / (double)lookahead_);
         releaseCoeff_ = std::exp(-1.0 / std::max(1.0, releaseMs * 0.001 * fs));
 
         bufLen_ = lookahead_ + 1;

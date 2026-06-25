@@ -116,11 +116,20 @@ struct NowPlayingView: View {
     }
 
     private var inkPrimary: Color { darkBackdrop ? .white : RoomcutTokens.textPrimary(scheme) }
-    private var inkSecondary: Color { darkBackdrop ? Color.white.opacity(0.72) : RoomcutTokens.textSecondary(scheme) }
+    // Artist/album over a LIGHT backdrop: darker than the stock secondary grey
+    // (0x6E6E73) but still below the title's near-black (0x1D1D1F), so the
+    // metadata reads stronger without competing with the title. Dark mode keeps
+    // the adaptive token; a dark backdrop keeps white.
+    private var inkSecondary: Color {
+        darkBackdrop ? Color.white.opacity(0.72)
+                     : (scheme == .light ? Color(hex: 0x3A3A3C) : RoomcutTokens.textSecondary(scheme))
+    }
     private var fullInk: Color { darkBackdrop ? .white : menuInk }
 
     private var fullMetadataColor: Color {
-        (darkBackdrop || scheme == .dark) ? Color.white.opacity(0.78) : RoomcutTokens.textSecondary(scheme)
+        // else == light mode over a light backdrop → use the same stronger grey
+        // (0x3A3A3C) as inkSecondary instead of the lighter 0x6E6E73.
+        (darkBackdrop || scheme == .dark) ? Color.white.opacity(0.78) : Color(hex: 0x3A3A3C)
     }
 
     private var menuTitle: String { live?.title ?? "재생 정보 없음" }
@@ -644,7 +653,9 @@ struct NowPlayingView: View {
                 sampleRate: audioFormat.sampleRate,
                 latencyMs: audioFormat.latencyMs))
                 .font(.system(size: 10, weight: .medium, design: .monospaced))
-                .foregroundStyle(inkPrimary.opacity(0.5))
+                // Bit / kHz / ms: bumped from 0.5 → 0.72 so the format line reads
+                // clearly instead of fading into the backdrop.
+                .foregroundStyle(inkPrimary.opacity(0.72))
                 .lineLimit(1)
                 .frame(maxWidth: .infinity, alignment: alignment)
         }
@@ -792,7 +803,10 @@ struct NowPlayingView: View {
         Button(action: action) {
             Image(systemName: symbol)
                 .font(.system(size: size, weight: .medium))
-                .foregroundStyle(inkSecondary)
+                // Prev/Next: full ink (solid black over a light backdrop, white over
+                // a dark one) so they're as strong as the play glyph, not the faded
+                // secondary grey they used to be.
+                .foregroundStyle(fullInk)
         }
         .buttonStyle(.plain)
     }
