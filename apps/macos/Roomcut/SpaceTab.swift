@@ -36,7 +36,15 @@ struct SpaceTab: View {
                                     L("Headphone", "Headphone", "ヘッドフォン", "Casque", "Kopfhörer")],
                                    selected: model.spatialOutputIsHeadphone ? 1 : 0,
                                    group: "output") { idx in
+                        // Re-apply the active preset under the NEW output so its
+                        // crossfeed follows the mode (speaker XTC ↔ headphone crossfeed)
+                        // instead of leaving a value that's wrong for the other system.
+                        let active = inferredMode
                         model.setSpatialOutput(headphone: idx == 1)
+                        if active != .custom, let v = presetValues(active) {
+                            model.setSpatialValues(width: v.width, centerFocus: v.center,
+                                                   crossfeed: v.crossfeed, roomReduce: v.room)
+                        }
                     }
 
                     glassSegmented([L("Surround Off", "Surround Off", "サラウンド オフ", "Surround désactivé", "Surround aus"),
@@ -78,6 +86,13 @@ struct SpaceTab: View {
                        model.crossfeed, 0...100, tint: accentColor) { model.setCrossfeed($0) }
             }
             .disabled(!model.spatialAvailable)
+
+            // Balance — the device's L/R output position, shared live with Audio MIDI
+            // Setup / System Settings (per-channel volume). Not a spatial DSP param, so
+            // it sits in its own section and stays usable even without Spatial.
+            RoomcutSection("") {
+                balanceSlider
+            }
 
             if model.status.reachable && !model.spatialAvailable {
                 Text(L("현재 실행 중인 엔진이 Spatial을 지원하지 않습니다.",
@@ -139,6 +154,36 @@ struct SpaceTab: View {
         .padding(.horizontal, 16).padding(.vertical, 10)
     }
 
+    // Balance / pan: centre-anchored L↔R, backed by the device's per-channel volume.
+    // Begin/endEdit gate the poll so an external (Audio MIDI Setup) change is mirrored
+    // when idle but doesn't snap the thumb back mid-drag — same contract as volume.
+    private var balanceSlider: some View {
+        let pan = model.balance                       // -1 … 0 … +1
+        let amount = min(1.0, abs(pan))
+        let activeTint = accentColor.opacity(0.28 + amount * 0.72)
+        let v = Int((pan * 100).rounded())
+        let valueText = v == 0 ? "C" : (v < 0 ? "L\(-v)" : "R\(v)")
+        return VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 10) {
+                Image(systemName: "circle.lefthalf.filled").font(.system(size: 13, weight: .medium))
+                    .frame(width: 22).foregroundStyle(activeTint)
+                Text(L("Balance", "Balance", "バランス", "Balance", "Balance"))
+                    .font(.system(size: 13)).foregroundStyle(RoomcutTokens.textPrimary(scheme))
+                Spacer()
+                Text(valueText)
+                    .font(.system(size: 12, weight: .semibold).monospacedDigit()).foregroundStyle(activeTint)
+            }
+            Slider(value: Binding(get: { model.balance }, set: { model.setBalance($0) }),
+                   in: -1...1,
+                   onEditingChanged: { $0 ? model.beginBalanceEdit() : model.endBalanceEdit() })
+                .tint(activeTint)
+                .padding(.leading, 32)
+        }
+        .padding(.horizontal, 16).padding(.vertical, 10)
+        .disabled(!model.hasBalanceControl)
+        .opacity(model.hasBalanceControl ? 1 : 0.4)
+    }
+
     // Liquid-Glass segmented control (same recipe as the Settings theme picker): a glass
     // capsule with a subtle monochrome pill that SLIDES between options (matchedGeometry).
     // `group` keeps each control's pill independent; `.clipShape` trims the glass drop
@@ -188,23 +233,42 @@ struct SpaceTab: View {
         inferredMode == .custom ? SpatialMode.allCases : [.off, .focus, .widen]
     }
 
+    // Preset targets, re-tuned for the doubled-strength / 3-band-shuffler DSP and made
+    // OUTPUT-AWARE: crossfeed means opposite things on the two systems, so each preset
+    // sets it per mode (speaker XTC widens; headphone crossfeed narrows/naturalises).
+    //   • Widen  → speakers add XTC for an out-of-speaker stage; headphones keep full
+    //              separation (crossfeed 0), widening via the M/S side only.
+    //   • Focus  → tight, centred, dry image; speakers keep XTC off (it would widen),
+    //              headphones add crossfeed to naturalise the hard separation.
+    private func presetValues(_ mode: SpatialMode)
+        -> (width: Double, center: Double, crossfeed: Double, room: Double)? {
+        let headphone = model.spatialOutputIsHeadphone
+        switch mode {
+        case .off:    return (0, 0, 0, 0)
+        case .focus:  return (-40, 40, headphone ? 25 : 0, 50)
+        case .widen:  return (50, 0, headphone ? 0 : 35, 0)
+        case .custom: return nil
+        }
+    }
+
     private var modeSelection: Binding<SpatialMode> {
         Binding(get: { inferredMode }, set: { mode in
-            guard model.spatialAvailable else { return }
-            switch mode {
-            case .off:    model.setSpatialValues(width: 0, centerFocus: 0, crossfeed: 0, roomReduce: 0)
-            case .focus:  model.setSpatialValues(width: -35, centerFocus: 28, crossfeed: 12, roomReduce: 55)
-            case .widen:  model.setSpatialValues(width: 35, centerFocus: 0, crossfeed: 4, roomReduce: 0)
-            case .custom: break
-            }
+            guard model.spatialAvailable, let v = presetValues(mode) else { return }
+            model.setSpatialValues(width: v.width, centerFocus: v.center,
+                                   crossfeed: v.crossfeed, roomReduce: v.room)
         })
     }
 
     private var inferredMode: SpatialMode {
         func near(_ a: Double, _ b: Double) -> Bool { abs(a - b) < 0.5 }
-        if near(model.spatialWidth, 0), near(model.centerFocus, 0), near(model.crossfeed, 0), near(model.roomReduce, 0) { return .off }
-        if near(model.spatialWidth, -35), near(model.centerFocus, 28), near(model.crossfeed, 12), near(model.roomReduce, 55) { return .focus }
-        if near(model.spatialWidth, 35), near(model.centerFocus, 0), near(model.crossfeed, 4), near(model.roomReduce, 0) { return .widen }
+        func matches(_ mode: SpatialMode) -> Bool {
+            guard let v = presetValues(mode) else { return false }
+            return near(model.spatialWidth, v.width) && near(model.centerFocus, v.center)
+                && near(model.crossfeed, v.crossfeed) && near(model.roomReduce, v.room)
+        }
+        if matches(.off) { return .off }
+        if matches(.focus) { return .focus }
+        if matches(.widen) { return .widen }
         return .custom
     }
 }
@@ -289,7 +353,7 @@ private struct SpatialFieldView: View {
             .animation(.spring(response: 0.4, dampingFraction: 0.82), value: room)
             .animation(.easeInOut(duration: 0.3), value: headphone)
         }
-        .frame(height: 232)
+        .frame(height: 186)   // ~20% shorter than the original 232
     }
 
     // MARK: Room — perspective floor + far-wall reflection (Canvas, value-driven)

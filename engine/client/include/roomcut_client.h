@@ -162,6 +162,17 @@ int roomcutClientSetDeviceFormat(const char* uid, double sampleRate, unsigned bi
 int roomcutClientVolumeGet(double* outScalar);
 int roomcutClientVolumeSet(double scalar);
 
+/* Output left/right balance (pan), shared with Audio MIDI Setup / System
+ * Settings: implemented as the device's per-channel output volume scalars
+ * (element 1 = front-left, element 2 = front-right), so reads/writes stay in
+ * sync with the macOS sliders. pan is -1 (full left) .. 0 (centre) .. +1 (full
+ * right): the "near" channel stays at unity and the opposite channel is
+ * attenuated by |pan|. get returns 0 and writes *outPan; 1 if the device has no
+ * per-channel volume control; < 0 on error. set returns 0 on success, 1 if not
+ * settable, < 0 on error. Resolved in-process via CoreAudio. */
+int roomcutClientBalanceGet(double* outPan);
+int roomcutClientBalanceSet(double pan);
+
 /* Make the Roomcut virtual device the system default output so app audio is
  * routed through the engine (where EQ / limiter are applied). The app calls
  * this on launch so processing is live without the user changing the macOS

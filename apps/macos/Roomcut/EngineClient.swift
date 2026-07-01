@@ -238,6 +238,11 @@ public protocol EngineClientProtocol: AnyObject {
     func setDeviceFormat(uid: String, sampleRate: Double, bitDepth: Int) async throws
     func volumeGet() -> Double?
     func volumeSet(_ scalar: Double)
+    // Output L/R balance (pan), -1 (left) … 0 (centre) … +1 (right), shared with
+    // Audio MIDI Setup. balanceGet returns nil when the device has no per-channel
+    // volume control.
+    func balanceGet() -> Double?
+    func balanceSet(_ pan: Double)
 
     // Make the Roomcut virtual device the macOS default output, so app audio is
     // routed through the engine (where EQ is applied) without the user changing
@@ -488,6 +493,15 @@ public final class LiveEngineClient: EngineClientProtocol {
 
     public func volumeSet(_ scalar: Double) {
         _ = roomcutClientVolumeSet(scalar)
+    }
+
+    public func balanceGet() -> Double? {
+        var p: Double = 0
+        return roomcutClientBalanceGet(&p) == 0 ? p : nil
+    }
+
+    public func balanceSet(_ pan: Double) {
+        _ = roomcutClientBalanceSet(pan)
     }
 
     public func makeRoomcutDefaultOutput() {

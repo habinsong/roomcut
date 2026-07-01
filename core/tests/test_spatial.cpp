@@ -137,30 +137,109 @@ static void test_width_is_frequency_dependent() {
     // Pure side in, no processing → side RMS unchanged (frequency-independent).
     CHECK_NEAR(sideRmsAntiPhase(0.0, 0.0, 0.0, 0.0), 0.25 / std::sqrt(2.0), 1e-3,
                "flat preserves side RMS");
-    // Frequency-dependent M/S: treble side takes the full (now much wider) width
-    // (×2.8), bass side stays tight → widen affects highs much more than lows.
-    const double trebleRatio = sideRmsAntiPhase(100.0, 0.0, 0.0, 0.0, 4000.0)
-                             / sideRmsAntiPhase(0.0, 0.0, 0.0, 0.0, 4000.0);
-    const double bassRatio = sideRmsAntiPhase(100.0, 0.0, 0.0, 0.0, 60.0)
-                           / sideRmsAntiPhase(0.0, 0.0, 0.0, 0.0, 60.0);
-    CHECK_NEAR(trebleRatio, 2.8, 0.1, "width +100 widens treble side ~x2.8");
-    CHECK(bassRatio < 1.7, "width +100 keeps bass side tighter than treble");
-    CHECK(trebleRatio > bassRatio + 0.5, "width widens treble much more than bass");
-    // The new +50 should land near the OLD +100 spread (~×1.9): the spread roughly
-    // doubled at the same slider reading.
-    const double halfRatio = sideRmsAntiPhase(50.0, 0.0, 0.0, 0.0, 4000.0)
-                           / sideRmsAntiPhase(0.0, 0.0, 0.0, 0.0, 4000.0);
-    CHECK_NEAR(halfRatio, 1.9, 0.1, "width +50 now reaches the old +100 spread");
-    // Narrowing is broadband on the treble path: -100 → x0.1.
+    // Four-band shuffler: width rises GRADUALLY up the spectrum so instrument ranges
+    // separate cleanly. bass (≤250 Hz) stays tight; low-mid (250 Hz–1.2 kHz), presence
+    // (1.2–9 kHz) and air (>9 kHz) open progressively more. Probe one frequency per band
+    // and require the spread to increase monotonically with frequency.
+    const double bassRatio   = sideRmsAntiPhase(100.0, 0.0, 0.0, 0.0, 60.0)
+                             / sideRmsAntiPhase(0.0, 0.0, 0.0, 0.0, 60.0);
+    const double lowMidRatio = sideRmsAntiPhase(100.0, 0.0, 0.0, 0.0, 600.0)
+                             / sideRmsAntiPhase(0.0, 0.0, 0.0, 0.0, 600.0);
+    const double midRatio    = sideRmsAntiPhase(100.0, 0.0, 0.0, 0.0, 3000.0)
+                             / sideRmsAntiPhase(0.0, 0.0, 0.0, 0.0, 3000.0);
+    const double airRatio    = sideRmsAntiPhase(100.0, 0.0, 0.0, 0.0, 14000.0)
+                             / sideRmsAntiPhase(0.0, 0.0, 0.0, 0.0, 14000.0);
+    CHECK(bassRatio < 1.8, "width +100 keeps bass side tight (mono-ish low end)");
+    CHECK(lowMidRatio > bassRatio + 0.2, "low-mid opens more than bass");
+    CHECK(midRatio > lowMidRatio + 0.2, "presence opens more than low-mid");
+    CHECK(airRatio > midRatio + 0.15, "air opens most (top-down expansion)");
+    CHECK(midRatio > 1.8, "presence band reaches a clearly wide spread at +100");
+    // Moderate, non-clipping widen: +50 in the presence band sits between unity and +100.
+    const double halfMid = sideRmsAntiPhase(50.0, 0.0, 0.0, 0.0, 3000.0)
+                         / sideRmsAntiPhase(0.0, 0.0, 0.0, 0.0, 3000.0);
+    CHECK(halfMid > 1.3 && halfMid < midRatio, "+50 presence spread sits between unity and +100");
+    // Narrowing decays exponentially toward mono; doubled strength drives -100 well
+    // past the old ×0.1 (to ~×0.04 treble) while staying strictly positive — the side
+    // approaches mono without ever inverting.
     const double narrow = sideRmsAntiPhase(-100.0, 0.0, 0.0, 0.0, 4000.0)
                         / sideRmsAntiPhase(0.0, 0.0, 0.0, 0.0, 4000.0);
-    CHECK_NEAR(narrow, 0.1, 0.03, "width -100 narrows treble side x0.1");
+    CHECK(narrow < 0.06, "width -100 narrows treble side well past the old x0.1");
+    CHECK(narrow > 0.0, "narrowing never inverts the side (stays positive)");
+}
+
+// Correlation-adaptive width: narrow-but-genuine stereo (highly correlated channels)
+// must be lifted MORE than already-wide (decorrelated/anti-phase) material at the same
+// Space setting — and a TRUE mono source must stay mono (no fabricated width).
+static void test_adaptive_width_lifts_correlated_stereo() {
+    // side-out / side-in ratio for a 2 kHz tone after the correlation envelope settles.
+    auto settledSideGain = [](double rScale) {
+        Spatial s;
+        s.prepare(48000.0);
+        s.setParams(50.0, 0.0, 0.0, 0.0);   // widen +50, speaker
+        double inSq = 0.0, outSq = 0.0;
+        const int n = 144000;   // ~3 s so the slow (anti-pump) adaptive smoother settles
+        for (int i = 0; i < n; ++i) {
+            const double m = 0.3 * std::sin(2.0 * M_PI * 2000.0 * i / 48000.0);
+            float frame[2] = {(float)m, (float)(rScale * m)};
+            const double inSide = (frame[0] - frame[1]) * 0.5;
+            s.processFrame(frame, 2);
+            const double outSide = (frame[0] - frame[1]) * 0.5;
+            if (i >= 120000) { inSq += inSide * inSide; outSq += outSide * outSide; }
+        }
+        return inSq > 1e-12 ? std::sqrt(outSq / inSq) : 0.0;
+    };
+    const double correlated = settledSideGain(0.6);    // R = 0.6L → corr +1, narrow stereo
+    const double antiphase  = settledSideGain(-1.0);   // R = −L  → corr −1, already wide
+    CHECK(correlated > antiphase + 0.1,
+          "adaptive width lifts correlated/narrow stereo more than decorrelated");
+
+    // True mono (L == R): side is zero, so the adaptive lift cannot invent any width.
+    Spatial mono;
+    mono.prepare(48000.0);
+    mono.setParams(100.0, 0.0, 0.0, 0.0);
+    double sideSq = 0.0;
+    const int n = 8000;
+    for (int i = 0; i < n; ++i) {
+        const float m = (float)(0.3 * std::sin(2.0 * M_PI * 1000.0 * i / 48000.0));
+        float frame[2] = {m, m};
+        mono.processFrame(frame, 2);
+        sideSq += (double)(frame[0] - frame[1]) * (frame[0] - frame[1]);
+    }
+    CHECK(sideSq < 1e-9, "adaptive width invents no side from a mono source");
+}
+
+// Widening the side recesses the centred vocal, so the mid gets a makeup boost tied to
+// the Space amount: a centred (mono) source must come out LOUDER at full widen than at
+// width 0 — that's the "keep the vocal solid" compensation. (It stays centred: L == R.)
+static void test_widen_lifts_centre_to_keep_vocal_present() {
+    auto centreRms = [](double width) {
+        Spatial s;
+        s.prepare(48000.0);
+        s.setParams(width, 0.0, 0.0, 0.0);
+        double sq = 0.0;
+        const int n = 8000;
+        for (int i = 0; i < n; ++i) {
+            const float m = (float)(0.3 * std::sin(2.0 * M_PI * 1000.0 * i / 48000.0));
+            float frame[2] = {m, m};   // pure centre (vocal)
+            s.processFrame(frame, 2);
+            // Centred → L == R; measure the mono level.
+            sq += (double)frame[0] * frame[0];
+        }
+        return std::sqrt(sq / n);
+    };
+    const double flat = centreRms(0.0);
+    const double wide = centreRms(100.0);
+    CHECK(wide > flat * 1.15, "widening lifts the centre (vocal makeup) so it isn't buried");
+    CHECK(wide < flat * 1.6, "centre makeup stays moderate (no over-boost)");
 }
 
 static void test_room_attenuates_side_block() {
     const double flat = sideRmsAntiPhase(0.0, 0.0, 0.0, 0.0);
-    // roomReduce only cuts side (1 - 0.75*room); +100 → x0.25.
-    CHECK_NEAR(sideRmsAntiPhase(0.0, 0.0, 0.0, 100.0) / flat, 0.25, 0.02, "room 100 cuts side to x0.25");
+    // roomReduce cuts the side exponentially (e^(-ln16 * room01)) at twice the previous
+    // strength: +100 → ×0.0625 (~-24 dB), with the old +100 cut (×0.25) now at +50. The
+    // curve keeps dropping the whole way — no hard floor / dead zone.
+    CHECK_NEAR(sideRmsAntiPhase(0.0, 0.0, 0.0, 100.0) / flat, 0.0625, 0.01, "room 100 cuts side to ~x0.06");
+    CHECK_NEAR(sideRmsAntiPhase(0.0, 0.0, 0.0, 50.0) / flat, 0.25, 0.02, "room 50 cuts side to x0.25");
 }
 
 // A centred (mono) source must stay a centred POINT image at any width: width acts on
@@ -299,6 +378,8 @@ int main() {
     test_headphone_crossfeed_preserves_centre();
     test_speaker_xtc_drives_opposite_antiphase();
     test_width_is_frequency_dependent();
+    test_adaptive_width_lifts_correlated_stereo();
+    test_widen_lifts_centre_to_keep_vocal_present();
     test_room_attenuates_side_block();
     test_mono_source_stays_centred();
     test_surround_keeps_lr_balanced(2.0, "headphone surround keeps L/R balanced");

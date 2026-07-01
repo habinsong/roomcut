@@ -344,6 +344,53 @@ int setEngineVolumeBoost(double boost) {
     });
 }
 
+// --- Per-channel output volume (balance / pan) ---------------------------
+// Balance is the device's per-channel output volume scalars, the same controls
+// Audio MIDI Setup exposes as "Front Left" / "Front Right" (element 1 / 2).
+// Reading/writing these keeps the app slider in lock-step with the macOS UI.
+
+// Read one output channel's volume scalar (channel: 1 = left, 2 = right).
+bool readChannelVolumeScalar(AudioDeviceID device, UInt32 channel, double* out) {
+    if (device == kAudioObjectUnknown || out == nullptr) return false;
+    AudioObjectPropertyAddress addr{kAudioDevicePropertyVolumeScalar,
+                                    kAudioObjectPropertyScopeOutput, channel};
+    if (!AudioObjectHasProperty(device, &addr)) return false;
+    Float32 v = 0.0f;
+    UInt32 size = sizeof(v);
+    if (AudioObjectGetPropertyData(device, &addr, 0, nullptr, &size, &v) != noErr) return false;
+    if (v < 0.0f) v = 0.0f;
+    if (v > 1.0f) v = 1.0f;
+    *out = (double)v;
+    return true;
+}
+
+// Write one output channel's volume scalar. 0 ok, 1 not settable, <0 error.
+int writeChannelVolumeScalar(AudioDeviceID device, UInt32 channel, double scalar) {
+    if (device == kAudioObjectUnknown) return -1;
+    AudioObjectPropertyAddress addr{kAudioDevicePropertyVolumeScalar,
+                                    kAudioObjectPropertyScopeOutput, channel};
+    Boolean settable = false;
+    if (AudioObjectIsPropertySettable(device, &addr, &settable) != noErr || !settable) return 1;
+    if (scalar < 0.0) scalar = 0.0;
+    if (scalar > 1.0) scalar = 1.0;
+    Float32 v = (Float32)scalar;
+    if (AudioObjectSetPropertyData(device, &addr, 0, nullptr, sizeof(v), &v) != noErr) return -2;
+    return 0;
+}
+
+// Pick the device whose per-channel balance the user hears: the real output
+// device (what Audio MIDI Setup shows for e.g. "iFi USB Audio SE") when one is
+// selected, else the Roomcut virtual device. Mirrors the volume device choice.
+AudioDeviceID findBalanceDevice() {
+    RoomcutClientState state;
+    std::memset(&state, 0, sizeof(state));
+    if (roomcutClientGetState(&state) == 0 && state.outputDeviceUID[0] != '\0') {
+        AudioDeviceID real = findRealOutputDevice(state.outputDeviceUID);
+        if (real != kAudioObjectUnknown) return real;
+    }
+    return findRoomcutDeviceID();
+}
+
 } // namespace
 
 extern "C" {
@@ -674,6 +721,53 @@ int roomcutClientVolumeSet(double scalar) {
     const int rcRoomcut = writeDeviceVolumeScalar(rc, hardwareScalar);
     if (rcRoomcut == 0) return 0;
     return best;
+}
+
+int roomcutClientBalanceGet(double* outPan) {
+    if (outPan == nullptr) return -3;
+    AudioDeviceID dev = findBalanceDevice();
+    if (dev == kAudioObjectUnknown) return -1;
+    double l = 0.0, r = 0.0;
+    if (!readChannelVolumeScalar(dev, 1, &l) || !readChannelVolumeScalar(dev, 2, &r)) {
+        return 1;   // device has no independent per-channel volume control
+    }
+    // Ratio-based so it's independent of the master level: whichever channel is
+    // louder is the "near" side at unity; the other's attenuation is the pan.
+    double pan;
+    if (l < r)      pan =  (1.0 - (r > 0.0 ? l / r : 1.0));   // right louder → panned right (+)
+    else if (r < l) pan = -(1.0 - (l > 0.0 ? r / l : 1.0));   // left louder  → panned left (−)
+    else            pan = 0.0;
+    if (pan < -1.0) pan = -1.0;
+    if (pan > 1.0) pan = 1.0;
+    *outPan = pan;
+    return 0;
+}
+
+int roomcutClientBalanceSet(double pan) {
+    if (!std::isfinite(pan)) pan = 0.0;
+    if (pan < -1.0) pan = -1.0;
+    if (pan > 1.0) pan = 1.0;
+    AudioDeviceID dev = findBalanceDevice();
+    if (dev == kAudioObjectUnknown) return -1;
+    // Level-preserving balance: keep the "near" channel at its CURRENT level (the
+    // reference the volume slider set) and attenuate the opposite channel by |pan|.
+    // Using the current max as the reference — rather than forcing unity — means
+    // touching balance never jumps the overall loudness, even on devices that couple
+    // the master and per-channel volumes. Centre → both back to the reference.
+    double l = 0.0, r = 0.0;
+    double ref = 1.0;
+    if (readChannelVolumeScalar(dev, 1, &l) && readChannelVolumeScalar(dev, 2, &r)) {
+        ref = std::max(l, r);
+        if (ref <= 0.0) ref = 1.0;   // both muted — restore to unity as we pan
+    }
+    const double leftGain  = pan > 0.0 ? ref * (1.0 - pan) : ref;
+    const double rightGain = pan < 0.0 ? ref * (1.0 + pan) : ref;
+    const int rl = writeChannelVolumeScalar(dev, 1, leftGain);
+    const int rr = writeChannelVolumeScalar(dev, 2, rightGain);
+    if (rl == 0 && rr == 0) return 0;
+    if (rl < 0) return rl;
+    if (rr < 0) return rr;
+    return 1;   // not settable
 }
 
 int roomcutClientMakeDefaultOutput(void) {

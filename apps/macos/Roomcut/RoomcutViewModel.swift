@@ -86,17 +86,17 @@ public struct SavedPreset: Codable, Identifiable, Equatable {
 }
 
 public enum RoomcutNowPlayingTheme: String, CaseIterable, Identifiable, Codable {
-    case halo
     case cover
     case meshGradient
+    case halo
 
     public var id: String { rawValue }
 
     public var title: String {
         switch self {
-        case .halo: return "Halo"
         case .cover: return "Cover"
         case .meshGradient: return "Mesh Gradient"
+        case .halo: return "Halo"
         }
     }
 }
@@ -104,15 +104,15 @@ public enum RoomcutNowPlayingTheme: String, CaseIterable, Identifiable, Codable 
 // The Now Playing layout variant, a second axis alongside the theme: A is the
 // current single-card layout, B shows it split into two.
 public enum RoomcutNowPlayingLayout: String, CaseIterable, Identifiable, Codable {
-    case a
     case b
+    case a
 
     public var id: String { rawValue }
 
     public var title: String {
         switch self {
-        case .a: return "A"
         case .b: return "B"
+        case .a: return "A"
         }
     }
 }
@@ -353,9 +353,15 @@ public final class RoomcutViewModel: ObservableObject {
     @Published public var deviceFormatOptions: [DeviceFormatOption] = []
     @Published public var volume = 1.0
     @Published public var hasVolumeControl = true
-    @Published public private(set) var nowPlayingTheme: RoomcutNowPlayingTheme = .halo
+    // Output L/R balance: -1 (left) … 0 (centre) … +1 (right). Backed by the
+    // device's per-channel volume (Audio MIDI Setup "Front Left/Right"), so it
+    // stays in sync with the macOS sliders. hasBalanceControl is false when the
+    // device exposes no independent per-channel volume.
+    @Published public var balance = 0.0
+    @Published public var hasBalanceControl = true
+    @Published public private(set) var nowPlayingTheme: RoomcutNowPlayingTheme = .cover
     // Now Playing layout variant (A current / B split), picked in Settings → Appearance.
-    @Published public private(set) var nowPlayingLayout: RoomcutNowPlayingLayout = .a
+    @Published public private(set) var nowPlayingLayout: RoomcutNowPlayingLayout = .b
     // App light/dark/auto override, picked in Settings → Appearance.
     @Published public private(set) var appearance: RoomcutAppearance = .system
     // When on, the compact/Sound-Controls background uses the Now Playing theme wash
@@ -385,6 +391,7 @@ public final class RoomcutViewModel: ObservableObject {
     private var pendingPushTask: Task<Void, Never>?
     private var isEditingParams = false
     private var isEditingVolume = false
+    private var isEditingBalance = false
     private var lastSeenPresetId: String?
     private var lastSeenRevision: UInt32?
     private var lastUnderruns: UInt64?
@@ -786,6 +793,17 @@ public final class RoomcutViewModel: ObservableObject {
         client.volumeSet(volume)
     }
 
+    // Balance edits apply instantly (in-process CoreAudio on the device's
+    // per-channel volume); the edit guard keeps the poll from snapping the
+    // slider back mid-drag, exactly like volume.
+    public func beginBalanceEdit() { isEditingBalance = true }
+    public func endBalanceEdit() { isEditingBalance = false }
+
+    public func setBalance(_ pan: Double) {
+        balance = min(1.0, max(-1.0, pan))
+        client.balanceSet(balance)
+    }
+
     private func refreshOutputDevices() {
         let devices = client.outputDevices()
         if outputDevices != devices { outputDevices = devices }
@@ -812,6 +830,16 @@ public final class RoomcutViewModel: ObservableObject {
             if !boostedAtFull && abs(volume - v) > Self.volumeEpsilon { volume = v }
         } else if hasVolumeControl {
             hasVolumeControl = false
+        }
+
+        // Balance mirrors the device's per-channel volume — poll it back so an
+        // external change (Audio MIDI Setup / System Settings) is reflected.
+        guard !isEditingBalance else { return }
+        if let p = client.balanceGet() {
+            if !hasBalanceControl { hasBalanceControl = true }
+            if abs(balance - p) > Self.volumeEpsilon { balance = p }
+        } else if hasBalanceControl {
+            hasBalanceControl = false
         }
     }
 

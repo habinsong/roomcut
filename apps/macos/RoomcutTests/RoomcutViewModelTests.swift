@@ -251,6 +251,24 @@ final class RoomcutViewModelTests: XCTestCase {
         XCTAssertEqual(model.volume, 2.0, accuracy: 1e-9)
     }
 
+    func testSetBalanceForwardsToClientAndClamps() {
+        let client = FakeEngineClient()
+        let model = RoomcutViewModel(client: client, debounceNanoseconds: 1_000_000)
+
+        model.setBalance(0.4)   // pan right
+        XCTAssertEqual(client.balance ?? -2, 0.4, accuracy: 1e-9)
+        XCTAssertEqual(model.balance, 0.4, accuracy: 1e-9)
+
+        model.setBalance(-0.7)  // pan left
+        XCTAssertEqual(client.balance ?? -2, -0.7, accuracy: 1e-9)
+        XCTAssertEqual(model.balance, -0.7, accuracy: 1e-9)
+
+        model.setBalance(2.5)   // clamps to +1 (full right)
+        XCTAssertEqual(model.balance, 1.0, accuracy: 1e-9)
+        model.setBalance(-2.5)  // clamps to -1 (full left)
+        XCTAssertEqual(model.balance, -1.0, accuracy: 1e-9)
+    }
+
     func testSpatialEditPreservesLastBuiltinPresetName() async throws {
         defer { UserDefaults.standard.removeObject(forKey: "com.roomcut.activeBuiltinPreset") }
         let client = FakeEngineClient()
@@ -579,10 +597,13 @@ final class FakeEngineClient: EngineClientProtocol {
     var devices: [OutputDeviceChoice] = []
     var setDeviceUIDs: [String] = []
     var volume: Double? = 0.5
+    var balance: Double? = 0.0
     func outputDevices() -> [OutputDeviceChoice] { devices }
     func setOutputDevice(_ uid: String) async throws { setDeviceUIDs.append(uid) }
     func volumeGet() -> Double? { volume }
     func volumeSet(_ scalar: Double) { volume = scalar }
+    func balanceGet() -> Double? { balance }
+    func balanceSet(_ pan: Double) { balance = pan }
 }
 
 private extension EngineStatus {

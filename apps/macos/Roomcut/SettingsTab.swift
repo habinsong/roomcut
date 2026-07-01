@@ -161,8 +161,8 @@ struct SettingsTab: View {
     // words; ja/fr/de are translated.
     private func layoutTitle(_ l: RoomcutNowPlayingLayout) -> String {
         switch l {
-        case .a: return L("Card", "Card", "カード", "Carte", "Karte")
         case .b: return L("Poster", "Poster", "ポスター", "Affiche", "Poster")
+        case .a: return L("Card", "Card", "カード", "Carte", "Karte")
         }
     }
 

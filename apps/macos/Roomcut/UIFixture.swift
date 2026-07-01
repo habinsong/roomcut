@@ -192,6 +192,7 @@ public final class FixtureEngineClient: EngineClientProtocol, @unchecked Sendabl
     public func setParams(_ params: EngineParameters) async throws {}
 
     private var liveVolume = 0.6
+    private var liveBalance = 0.0
     public func outputDevices() -> [OutputDeviceChoice] {
         [OutputDeviceChoice(uid: "BuiltInSpeakerDevice", name: "Mac mini 스피커"),
          OutputDeviceChoice(uid: "iFiUSB", name: "iFi USB Audio SE")]
@@ -202,4 +203,6 @@ public final class FixtureEngineClient: EngineClientProtocol, @unchecked Sendabl
     }
     public func volumeGet() -> Double? { kind == .offline ? nil : liveVolume }
     public func volumeSet(_ scalar: Double) { liveVolume = scalar }
+    public func balanceGet() -> Double? { kind == .offline ? nil : liveBalance }
+    public func balanceSet(_ pan: Double) { liveBalance = pan }
 }
