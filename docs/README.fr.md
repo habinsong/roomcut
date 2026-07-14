@@ -49,10 +49,10 @@ La plupart des « amplificateurs audio » ne font qu'élargir le son vers l'ext�
 - **EQ global.** Un égaliseur graphique 10 bandes et un égaliseur paramétrique 6 bandes (cloche, shelf, passe-haut/bas, notch) empilés, avec une courbe de réponse en direct.
 - **Macros.** Les boutons Bass, Warmth, Vocal, Clarity et Air déplacent les bonnes bandes à votre place, pour ne pas avoir à raisonner en fréquences.
 - **Spatial, dans les deux sens.** Resserrez ou élargissez l'image, librement : Space (largeur), Center (focalisation du centre fantôme), Damping (réduction de la pièce) et crossfeed / diaphonie. Choisissez le mode enceinte ou casque, activez le surround, et une vue du champ stéréo réagit en direct quand vous ajustez ; Focus et Widen sont des préréglages en un geste.
-- **Limiteur et gain.** Préampli, ajustement de sortie et limiteur de crête, pour qu'une courbe d'EQ marquée n'écrête pas la sortie.
+- **Limiteur et gain.** Préampli, ajustement de sortie et limiteur de crête, pour qu'une courbe d'EQ marquée n'écrête pas la sortie. Un réglage optionnel de nivellement du volume atténue les écarts entre passages forts et faibles pour l'écoute nocturne.
 - **Compatible haute résolution.** Traitement interne en 32 bits flottant, avec choix de la fréquence d'échantillonnage et de la profondeur de bits du périphérique de sortie ; la carte Now Playing affiche le format et la latence en direct.
 - **Analyseur.** Crête, RMS, largeur stéréo, centroïde spectral en direct, un affichage de spectre et un libellé en langage clair pour ce qui est en cours de lecture.
-- **Préréglages.** Une bibliothèque intégrée classée par Signature, matériel Apple, Speakers et Headphones, plus vos propres préréglages enregistrés.
+- **Préréglages.** Une bibliothèque intégrée classée par Signature, matériel Apple, Speakers et Headphones, plus vos propres préréglages enregistrés. Exportez-les et importez-les en fichiers JSON, et laissez Roomcut mémoriser un préréglage par périphérique de sortie et changer automatiquement.
 - **Room Tune.** Mesurez votre pièce avec un iPhone via le micro de continuité et obtenez des corrections d'EQ prudentes pour ses pires résonances. Il atténue uniquement, ne renforce jamais, et enregistre le résultat comme préréglage.
 - **Now Playing.** Thèmes pilotés par la pochette, paroles synchronisées via [LRCLIB](https://lrclib.net) et commandes de lecture dans la fenêtre de la barre de menus.
 - **Interface localisée.** Anglais, coréen, japonais, français et allemand, selon la langue du système ou un choix manuel.
@@ -128,7 +128,7 @@ La fenêtre comporte cinq onglets :
 - **Space.** resserrez ou élargissez l'image stéréo, réglez la focalisation du centre, l'amortissement de la pièce et le crossfeed, avec des préréglages Focus / Widen pour enceintes ou casque.
 - **Tune.** mesurez votre pièce avec un iPhone (micro de continuité) et appliquez des corrections d'EQ prudentes.
 - **Inspect.** indicateurs en lecture seule : crête, limiteur, coupures, corrélation, largeur, fréquence d'échantillonnage, latence et état du moteur.
-- **Settings.** périphérique et format de sortie, volume, lancement à l'ouverture de session, apparence (thème, disposition, langue) et cache des paroles.
+- **Settings.** périphérique et format de sortie, volume, préréglages par appareil, lancement à l'ouverture de session, apparence (thème, disposition, langue), export / import des préréglages et cache des paroles.
 
 <div align="center">
 <img src="https://raw.githubusercontent.com/habinsong/roomcut/master/icon/app/main_space.png" alt="Space" width="150"> <img src="https://raw.githubusercontent.com/habinsong/roomcut/master/icon/app/main_tune_start.png" alt="Tune" width="150"> <img src="https://raw.githubusercontent.com/habinsong/roomcut/master/icon/app/main_tune_measuring.png" alt="Tune, mesure" width="150"> <img src="https://raw.githubusercontent.com/habinsong/roomcut/master/icon/app/main_tune_result.png" alt="Tune, résultat" width="150"> <img src="https://raw.githubusercontent.com/habinsong/roomcut/master/icon/app/main_inspect.png" alt="Inspect" width="150">
@@ -147,7 +147,7 @@ La feuille de contrôles audio de **Home** a deux modes :
   - **graph.** La réponse d'EQ combinée en une seule courbe en lecture seule.
   - **10-Band.** L'égaliseur graphique classique ; tirez chaque bande à la main.
   - **Parametric.** Six bandes biquad (cloche, shelf, passe-haut/bas, notch) avec fréquence, gain et Q.
-  - **Limiter.** Le limiteur de crête plus le préampli et le gain de sortie.
+  - **Limiter.** Le limiteur de crête, le préampli et le gain de sortie, plus le nivellement du volume pour l'écoute nocturne.
   - **Analyzer.** Spectre en direct avec crête, RMS, largeur stéréo et centroïde spectral.
 
 <div align="center">

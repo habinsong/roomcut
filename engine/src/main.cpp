@@ -641,8 +641,10 @@ double clampVolumeBoost(double boost) {
     return boost;
 }
 
-// "<preamp> <g0..g9> <releaseMs> <outDb> [spatial...]" — same order and
-// meaning as `roomcutctl params`, human-readable in the state file.
+// "<preamp> <g0..g9> <releaseMs> <outDb> [spatial...] [dynamics...]" — same
+// order and meaning as `roomcutctl params`, human-readable in the state file.
+// Extras past the base 13 values are optional (older files simply stop early
+// and the missing fields stay 0), so the format only ever appends.
 std::string serializeParamsLine(const ChainParams& p) {
     char buf[512];
     int n = std::snprintf(buf, sizeof(buf), "%.4f", p.preampDb);
@@ -650,16 +652,17 @@ std::string serializeParamsLine(const ChainParams& p) {
         n += std::snprintf(buf + n, sizeof(buf) - (std::size_t)n, " %.4f", g);
     }
     std::snprintf(buf + n, sizeof(buf) - (std::size_t)n,
-                  " %.4f %.4f %.4f %.4f %.4f %.4f %.4f",
+                  " %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f",
                   p.limiterReleaseMs, p.outputGainDb,
-                  p.spatialWidth, p.centerFocus, p.crossfeed, p.roomReduce, p.spatialMode);
+                  p.spatialWidth, p.centerFocus, p.crossfeed, p.roomReduce, p.spatialMode,
+                  p.highpassHz, p.compAmount);
     return buf;
 }
 
 bool parseParamsLine(const std::string& s, ChainParams* out) {
     const char* p = s.c_str();
     constexpr std::size_t kBaseValues = GraphicEQ::kNumBands + 3;
-    constexpr std::size_t kTotalValues = kBaseValues + 5;
+    constexpr std::size_t kTotalValues = kBaseValues + 7;
     double v[kTotalValues]{};
     for (std::size_t i = 0; i < kBaseValues; ++i) {
         char* end = nullptr;
@@ -685,6 +688,8 @@ bool parseParamsLine(const std::string& s, ChainParams* out) {
     out->crossfeed        = v[GraphicEQ::kNumBands + 5];
     out->roomReduce       = v[GraphicEQ::kNumBands + 6];
     out->spatialMode      = v[GraphicEQ::kNumBands + 7];
+    out->highpassHz       = v[GraphicEQ::kNumBands + 8];
+    out->compAmount       = v[GraphicEQ::kNumBands + 9];
     return true;
 }
 
@@ -1616,6 +1621,17 @@ int main(int argc, char** argv) {
                     setSavedReal(deviceUID(output.deviceID()));
                     ctx.realOutputDevice.store(output.deviceID(), std::memory_order_relaxed);
                     mirrorVolumeToReal(&ctx, roomcutDev); // apply current volume to the new device
+                }
+                if (outputStarted) {
+                    // Promote on EVERY successful handoff, not only on startedNow:
+                    // when the driver's first HELLO reply loses its timeout race
+                    // and it retries, the output is already open, and skipping the
+                    // promotions parked the lifecycle at BUFFER_MAPPED — a state
+                    // with no OutputLost/OutputReopened exits, so the engine
+                    // streamed audio forever while the wire reported STOPPED
+                    // (menu-bar icon off, the app's default-output claim gated on
+                    // RUNNING never fired). Both events are no-ops when already
+                    // STREAMING.
                     ctx.lifecycle.store(engineNext(ctx.lifecycle.load(), EngineEvent::OutputOpened),
                                         std::memory_order_relaxed);
                     // OUTPUT_READY → STREAMING (both region + output live).
@@ -1772,6 +1788,8 @@ int main(int argc, char** argv) {
                 cp.crossfeed        = qreq.crossfeed;
                 cp.roomReduce       = qreq.roomReduce;
                 cp.spatialMode      = qreq.spatialMode;
+                cp.highpassHz       = qreq.highpassHz;
+                cp.compAmount       = qreq.compAmount;
                 for (std::size_t b = 0; b < cp.parametric.size(); ++b) {
                     cp.parametric[b].enabled = qreq.parametric[b].enabled != 0;
                     cp.parametric[b].type    = (int)qreq.parametric[b].type;
@@ -1821,7 +1839,8 @@ int main(int argc, char** argv) {
                 rep.capabilities = ROOMCUT_CAP_SPATIAL_PARAMS
                     | ROOMCUT_CAP_PARAMETRIC
                     | ROOMCUT_CAP_ANALYZER
-                    | ROOMCUT_CAP_VOLUME_BOOST;
+                    | ROOMCUT_CAP_VOLUME_BOOST
+                    | ROOMCUT_CAP_DYNAMICS;
                 rep.volumeBoost = ctx.volumeBoost.load(std::memory_order_relaxed);
 
                 kr = controlReplyState(sreq, rep);
@@ -1894,6 +1913,8 @@ int main(int argc, char** argv) {
                 rep.crossfeed = currentParams.crossfeed;
                 rep.roomReduce = currentParams.roomReduce;
                 rep.spatialMode = currentParams.spatialMode;
+                rep.highpassHz = currentParams.highpassHz;
+                rep.compAmount = currentParams.compAmount;
                 for (std::size_t b = 0; b < currentParams.parametric.size(); ++b) {
                     rep.parametric[b].enabled = currentParams.parametric[b].enabled ? 1u : 0u;
                     rep.parametric[b].type    = (uint32_t)currentParams.parametric[b].type;

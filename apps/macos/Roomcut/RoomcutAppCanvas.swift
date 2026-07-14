@@ -58,6 +58,14 @@ struct RoomcutAppCanvas: View {
                                             artworkColor: monitor.artworkColor, artworkPalette: monitor.artworkPalette)
     }
 
+    // Dark mode + near-white Cover wash → the chrome flips to BLACK ink (same
+    // judgement NowPlayingView uses, so the whole Home surface stays in sync).
+    private var tabBarBrightBackdrop: Bool {
+        guard monitor.available, let s = monitor.snapshot, !s.title.isEmpty else { return false }
+        return NowPlayingInk.isBrightBackdrop(theme: model.nowPlayingTheme, scheme: scheme,
+                                              artworkColor: monitor.artworkColor, artworkPalette: monitor.artworkPalette)
+    }
+
     // B layout on Home: the cover bleeds full-width, so push the mesh crest down and
     // tint the band above the cover with its top-edge colour.
     private var bLayoutActive: Bool { tab == .home && model.nowPlayingLayout == .b }
@@ -159,7 +167,8 @@ struct RoomcutAppCanvas: View {
                         onDoubleClick: collapseToNowPlaying
                     )
 
-                    TopBar(model: model, darkBackdrop: tabBarDarkBackdrop)
+                    TopBar(model: model, darkBackdrop: tabBarDarkBackdrop,
+                           brightBackdrop: tabBarBrightBackdrop)
                         .padding(.horizontal, 16)
                         .padding(.bottom, 6)
                 }
@@ -173,6 +182,7 @@ struct RoomcutAppCanvas: View {
                 BottomTabBar(
                     selection: $tab,
                     darkBackdrop: tabBarDarkBackdrop,
+                    brightBackdrop: tabBarBrightBackdrop,
                     blendsWithOpenSheet: tab == .home && sheetModel.level != .minimized,
                     onReselect: { t in
                         // Re-tapping Home while the Sound Controls sheet is open closes it.
@@ -208,7 +218,9 @@ struct RoomcutAppCanvas: View {
         // Pure visual affordance — hit testing OFF so the bar's drag + the tab
         // buttons receive every touch.
         Capsule()
-            .fill(tabBarDarkBackdrop ? Color.white.opacity(0.7) : Color.secondary.opacity(0.5))
+            .fill(tabBarDarkBackdrop ? Color.white.opacity(0.7)
+                  : tabBarBrightBackdrop ? Color.black.opacity(0.5)
+                  : Color.secondary.opacity(0.5))
             .frame(width: 36, height: 3)
             .frame(maxWidth: .infinity)
             .frame(height: 11, alignment: .center)
@@ -485,12 +497,18 @@ private struct CompactPresetBadge: View {
 
 private struct TopBar: View {
     @ObservedObject var model: RoomcutViewModel
-    // White over a dark wash, normal tokens otherwise — synced with the tab bar.
+    // White over a dark wash, black over a bright dark-mode wash, normal tokens
+    // otherwise — synced with the tab bar.
     var darkBackdrop: Bool = false
+    var brightBackdrop: Bool = false
     @Environment(\.colorScheme) private var scheme
     private let chromeControlLift: CGFloat = 10
 
-    private var ink: Color { darkBackdrop ? .white : RoomcutTokens.textPrimary(scheme) }
+    private var ink: Color {
+        if darkBackdrop { return .white }
+        if brightBackdrop { return .black }
+        return RoomcutTokens.textPrimary(scheme)
+    }
     private var isOn: Bool { RoomcutMainPresentation.roomcutEnabled(manualBypass: model.status.manualBypass) }
     private var deviceName: String {
         model.outputDevices.first { $0.uid == model.selectedDeviceUID }?.name ?? "출력 장치"
@@ -581,28 +599,38 @@ struct PressGlassButtonStyle: ButtonStyle {
 private struct BottomTabBar: View {
     @Binding var selection: RoomcutTab
     // When the Home Cover/Mesh wash is dark (light mode), the bar + its text go white
-    // to match the Now Playing chrome (item 4) — linked to NowPlayingInk.
+    // to match the Now Playing chrome (item 4) — linked to NowPlayingInk. A BRIGHT
+    // dark-mode wash flips them to black instead (same judgement, other direction).
     var darkBackdrop: Bool = false
+    var brightBackdrop: Bool = false
     var blendsWithOpenSheet: Bool = false
     var onReselect: ((RoomcutTab) -> Void)? = nil
     @Environment(\.colorScheme) private var scheme
     @Namespace private var pillNS
 
     // Brighter fill + white ink over a dark wash; otherwise the normal tokens.
+    // Dark mode uses plain white for the unselected tabs (the tertiary grey token
+    // read as washed-out) — selection still stands out via the pill + fill glyph.
     private var unselectedInk: Color {
-        darkBackdrop ? Color.white.opacity(0.66) : RoomcutTokens.textTertiary(scheme)
+        if darkBackdrop { return Color.white.opacity(0.66) }
+        if brightBackdrop { return Color.black.opacity(0.66) }
+        return scheme == .dark ? .white : RoomcutTokens.textTertiary(scheme)
     }
     private var fillColor: Color {
         if darkBackdrop { return Color.white.opacity(0.30) }
+        if brightBackdrop { return Color.white.opacity(0.28) }
         return (scheme == .dark ? Color.black : Color.white).opacity(scheme == .dark ? 0.24 : 0.28)
     }
     // Selection is monochrome (HIG: no accent on a glass tab bar over rich content) —
     // a bright/dark glass-highlight capsule reads as Liquid Glass, not a blue button.
     private var selectedInk: Color {
-        darkBackdrop ? .white : RoomcutTokens.textPrimary(scheme)
+        if darkBackdrop { return .white }
+        if brightBackdrop { return .black }
+        return RoomcutTokens.textPrimary(scheme)
     }
     private var pillFill: Color {
         if darkBackdrop { return Color.white.opacity(0.24) }
+        if brightBackdrop { return Color.black.opacity(0.08) }
         return (scheme == .dark ? Color.white : Color.black).opacity(scheme == .dark ? 0.16 : 0.08)
     }
 

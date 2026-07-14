@@ -42,6 +42,8 @@ RoomcutGetParamsReply makeParamsReply(const mach_msg_header_t& requestHeader) {
     reply.centerFocus = 28.0;
     reply.crossfeed = 12.0;
     reply.roomReduce = 55.0;
+    reply.highpassHz = 90.0;
+    reply.compAmount = 60.0;
     reply.parametric[2].enabled = 1;
     reply.parametric[2].type = 2; // HighShelf
     reply.parametric[2].freqHz = 8000.0;
@@ -113,6 +115,8 @@ void* serverThread(void* arg) {
                 CHECK(std::fabs(buf.setParams.centerFocus - 30.0) < 0.001, "server received center");
                 CHECK(std::fabs(buf.setParams.crossfeed - 10.0) < 0.001, "server received crossfeed");
                 CHECK(std::fabs(buf.setParams.roomReduce - 45.0) < 0.001, "server received room");
+                CHECK(std::fabs(buf.setParams.highpassHz - 90.0) < 0.001, "server received highpass");
+                CHECK(std::fabs(buf.setParams.compAmount - 60.0) < 0.001, "server received comp amount");
                 CHECK(buf.setParams.parametric[1].enabled == 1, "server received parametric enabled");
                 CHECK(buf.setParams.parametric[1].type == 0, "server received parametric type");
                 CHECK(std::fabs(buf.setParams.parametric[1].freqHz - 1200.0) < 0.001, "server received parametric freq");
@@ -181,6 +185,8 @@ int main() {
     CHECK(std::fabs(params.centerFocus - 28.0) < 0.001, "center readback");
     CHECK(std::fabs(params.crossfeed - 12.0) < 0.001, "crossfeed readback");
     CHECK(std::fabs(params.roomReduce - 55.0) < 0.001, "room readback");
+    CHECK(std::fabs(params.highpassHz - 90.0) < 0.001, "highpass readback");
+    CHECK(std::fabs(params.compAmount - 60.0) < 0.001, "comp amount readback");
     CHECK(params.parametric[2].enabled == 1, "parametric enabled readback");
     CHECK(params.parametric[2].type == 2, "parametric type readback");
     CHECK(std::fabs(params.parametric[2].freqHz - 8000.0) < 0.001, "parametric freq readback");
@@ -207,7 +213,8 @@ int main() {
     sendBands[1].gainDb = 5.0;
     sendBands[1].q = 1.4;
     kr = roomcut::controlSetParams(service, -6.0, gains, 75.0, 1.0,
-                                   -25.0, 30.0, 10.0, 45.0, 1.0 /* mode */, sendBands, 2000, &status);
+                                   -25.0, 30.0, 10.0, 45.0, 1.0 /* mode */,
+                                   90.0, 60.0 /* dynamics */, sendBands, 2000, &status);
     CHECK(kr == KERN_SUCCESS, "client set params");
     CHECK(status == 0, "set params status");
 

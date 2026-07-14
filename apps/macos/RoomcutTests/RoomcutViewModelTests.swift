@@ -510,6 +510,219 @@ final class RoomcutViewModelTests: XCTestCase {
         XCTAssertEqual(model.errorBanner, "현재 엔진이 Parametric EQ를 지원하지 않습니다")
     }
 
+    // MARK: Preset file export / import
+
+    func testPresetExportImportRoundTripAndOverwrite() throws {
+        defer { UserDefaults.standard.removeObject(forKey: "com.roomcut.savedPresets") }
+        let model = RoomcutViewModel(client: FakeEngineClient(), debounceNanoseconds: 1_000_000)
+        model.savedPresets = [
+            SavedPreset(name: "Mine", preampDb: -2,
+                        eqGainsDb: Array(repeating: 1, count: EngineParameters.bandCount),
+                        outputGainDb: 0, compAmount: 40),
+            SavedPreset(name: "Other", preampDb: 0,
+                        eqGainsDb: Array(repeating: 0, count: EngineParameters.bandCount),
+                        outputGainDb: 0),
+        ]
+        let data = try XCTUnwrap(model.exportPresetsData())
+
+        // Import into a fresh model: both come back, values intact.
+        let fresh = RoomcutViewModel(client: FakeEngineClient(), debounceNanoseconds: 1_000_000)
+        fresh.savedPresets = [
+            SavedPreset(name: "mine", preampDb: 9,
+                        eqGainsDb: Array(repeating: 9, count: EngineParameters.bandCount),
+                        outputGainDb: 9),
+        ]
+        XCTAssertEqual(fresh.importPresets(from: data), 2)
+        XCTAssertEqual(fresh.savedPresets.count, 2, "same name (case-insensitive) overwrites")
+        let mine = fresh.savedPresets.first { $0.name == "Mine" }!
+        XCTAssertEqual(mine.preampDb, -2)
+        XCTAssertEqual(mine.compAmount, 40)
+        XCTAssertFalse(mine.builtin)
+    }
+
+    func testPresetImportStripsBuiltinAndRejectsGarbage() {
+        defer { UserDefaults.standard.removeObject(forKey: "com.roomcut.savedPresets") }
+        let model = RoomcutViewModel(client: FakeEngineClient(), debounceNanoseconds: 1_000_000)
+        model.savedPresets = []
+
+        // A file claiming builtin must import as a user preset.
+        let claimed = #"{"version":1,"presets":[{"name":"Sneaky","preampDb":0,"eqGainsDb":[0,0,0,0,0,0,0,0,0,0],"outputGainDb":0,"builtin":true}]}"#
+        XCTAssertEqual(model.importPresets(from: Data(claimed.utf8)), 1)
+        XCTAssertEqual(model.savedPresets.first?.builtin, false)
+
+        // Garbage is rejected without touching the list.
+        XCTAssertNil(model.importPresets(from: Data("not json".utf8)))
+        XCTAssertEqual(model.savedPresets.count, 1)
+
+        // Nothing saved → nothing to export.
+        model.savedPresets = []
+        XCTAssertNil(model.exportPresetsData())
+    }
+
+    // MARK: Dynamics (볼륨 평준화 — the light compressor's single knob)
+
+    func testCompAmountPushesClampsAndRoundTripsInSavedPreset() async throws {
+        defer {
+            UserDefaults.standard.removeObject(forKey: "com.roomcut.savedPresets")
+            UserDefaults.standard.removeObject(forKey: "com.roomcut.activeSavedPreset")
+        }
+        let client = FakeEngineClient()
+        client.states = [.running(presetId: "flat", revision: 0)]
+        let model = RoomcutViewModel(client: client, debounceNanoseconds: 1_000_000)
+
+        await model.refreshNow()
+        model.setCompAmount(150)   // out of range → clamps to 100
+        try await Task.sleep(nanoseconds: 40_000_000)
+
+        XCTAssertTrue(model.dynamicsAvailable)
+        XCTAssertEqual(model.compAmount, 100)
+        XCTAssertEqual(client.setParamsValues.count, 1)
+        XCTAssertEqual(client.setParamsValues.first?.compAmount, 100)
+
+        // Save + re-apply round-trips the leveling amount.
+        model.savedPresets = []
+        model.setCompAmount(60)
+        XCTAssertTrue(model.saveCurrentAsPreset(name: "Leveled"))
+        let saved = model.savedPresets.first { $0.name == "Leveled" }!
+        XCTAssertEqual(saved.compAmount, 60)
+        model.setCompAmount(0)
+        model.applySavedPreset(saved)
+        XCTAssertEqual(model.compAmount, 60)
+    }
+
+    func testHighpassPushesAndClamps() async throws {
+        let client = FakeEngineClient()
+        client.states = [.running(presetId: "flat", revision: 0)]
+        let model = RoomcutViewModel(client: client, debounceNanoseconds: 1_000_000)
+
+        await model.refreshNow()
+        model.setHighpassHz(1000)   // out of range → clamps to 400 (validator max)
+        try await Task.sleep(nanoseconds: 40_000_000)
+
+        XCTAssertEqual(model.highpassHz, 400)
+        XCTAssertEqual(client.setParamsValues.count, 1)
+        XCTAssertEqual(client.setParamsValues.first?.highpassHz, 400)
+    }
+
+    func testCompAmountDoesNotPushWhenEngineLacksDynamics() async throws {
+        let client = FakeEngineClient()
+        client.states = [.running(presetId: "flat", revision: 0,
+                                  capabilities: EngineStatus.spatialParamsCapability)]
+        let model = RoomcutViewModel(client: client, debounceNanoseconds: 1_000_000)
+
+        await model.refreshNow()
+        model.setCompAmount(50)
+        try await Task.sleep(nanoseconds: 40_000_000)
+
+        XCTAssertFalse(model.dynamicsAvailable)
+        XCTAssertEqual(model.compAmount, 0)
+        XCTAssertTrue(client.setParamsValues.isEmpty)
+        XCTAssertEqual(model.errorBanner, "현재 엔진이 볼륨 평준화를 지원하지 않습니다")
+    }
+
+    func testSavedPresetDynamicsBackCompat() throws {
+        // Older saves without the dynamics keys decode safely to 0 (off).
+        let legacy = #"{"name":"X","preampDb":0,"eqGainsDb":[0,0,0,0,0,0,0,0,0,0],"outputGainDb":0}"#
+        let old = try JSONDecoder().decode(SavedPreset.self, from: Data(legacy.utf8))
+        XCTAssertEqual(old.compAmount, 0)
+        XCTAssertEqual(old.highpassHz, 0)
+    }
+
+    // MARK: Per-device presets (Settings → 기기별 프리셋 기억)
+
+    private func clearDevicePresetDefaults() {
+        UserDefaults.standard.removeObject(forKey: "com.roomcut.deviceAutoPreset")
+        UserDefaults.standard.removeObject(forKey: "com.roomcut.devicePresetMap")
+        UserDefaults.standard.removeObject(forKey: "com.roomcut.activeBuiltinPreset")
+        UserDefaults.standard.removeObject(forKey: "com.roomcut.activeSavedPreset")
+    }
+
+    func testDeviceAutoPresetReappliesRememberedPresetOnDeviceSwitch() async throws {
+        defer { clearDevicePresetDefaults() }
+        clearDevicePresetDefaults()
+        let client = FakeEngineClient()
+        client.states = [
+            .running(presetId: "flat", revision: 0, outputDeviceUID: "A"),   // connect
+            .running(presetId: "night", revision: 1, outputDeviceUID: "A"),  // apply night
+            .running(presetId: "night", revision: 1, outputDeviceUID: "B"),  // switch → B (no mapping yet)
+            .running(presetId: "clean", revision: 2, outputDeviceUID: "B"),  // apply clean
+            .running(presetId: "clean", revision: 2, outputDeviceUID: "A"),  // switch back → A
+            .running(presetId: "night", revision: 3, outputDeviceUID: "A"),  // auto-apply readback
+        ]
+        client.params = .flat
+        let model = RoomcutViewModel(client: client, debounceNanoseconds: 1_000_000)
+
+        await model.refreshNow()
+        model.setDeviceAutoPreset(true)
+        await model.applyPreset("night")   // remembered for A
+        await model.refreshNow()           // device A → B, B has no mapping
+        XCTAssertEqual(client.setPresetIds, ["night"])
+        await model.applyPreset("clean")   // remembered for B
+        await model.refreshNow()           // device B → A → re-apply "night"
+
+        // The auto-apply runs as a Task; poll until it lands (CI-safe ceiling).
+        for _ in 0..<200 where client.setPresetIds.count < 3 {
+            try await Task.sleep(nanoseconds: 10_000_000)
+        }
+        XCTAssertEqual(client.setPresetIds, ["night", "clean", "night"])
+    }
+
+    func testDeviceAutoPresetOffNeverAutoApplies() async {
+        defer { clearDevicePresetDefaults() }
+        clearDevicePresetDefaults()
+        // A mapping exists on disk, but the feature is off.
+        UserDefaults.standard.set(["B": "clean"], forKey: "com.roomcut.devicePresetMap")
+        let client = FakeEngineClient()
+        client.states = [
+            .running(presetId: "flat", revision: 0, outputDeviceUID: "A"),
+            .running(presetId: "flat", revision: 0, outputDeviceUID: "B"),
+        ]
+        let model = RoomcutViewModel(client: client, debounceNanoseconds: 1_000_000)
+
+        await model.refreshNow()
+        await model.refreshNow()
+
+        XCTAssertFalse(model.deviceAutoPresetEnabled)
+        XCTAssertTrue(client.setPresetIds.isEmpty)
+    }
+
+    func testDeviceAutoPresetSkipsFirstConnectAndLoadsPersistedState() async throws {
+        defer { clearDevicePresetDefaults() }
+        clearDevicePresetDefaults()
+        // Persisted from a previous session: feature on, device A remembers night.
+        UserDefaults.standard.set(true, forKey: "com.roomcut.deviceAutoPreset")
+        UserDefaults.standard.set(["A": "night"], forKey: "com.roomcut.devicePresetMap")
+        let client = FakeEngineClient()
+        client.states = [.running(presetId: "flat", revision: 0, outputDeviceUID: "A")]
+        let model = RoomcutViewModel(client: client, debounceNanoseconds: 1_000_000)
+
+        await model.refreshNow()
+        try await Task.sleep(nanoseconds: 50_000_000)
+
+        XCTAssertTrue(model.deviceAutoPresetEnabled, "flag persists across sessions")
+        // First connect resumes the engine's own state — never stomps it.
+        XCTAssertTrue(client.setPresetIds.isEmpty)
+    }
+
+    func testDeleteSavedPresetDropsItsDeviceMappings() {
+        defer { clearDevicePresetDefaults() }
+        clearDevicePresetDefaults()
+        UserDefaults.standard.set(true, forKey: "com.roomcut.deviceAutoPreset")
+        UserDefaults.standard.set(["A": "saved:Mine", "B": "night"],
+                                  forKey: "com.roomcut.devicePresetMap")
+        let model = RoomcutViewModel(client: FakeEngineClient(), debounceNanoseconds: 1_000_000)
+        model.savedPresets = [SavedPreset(
+            name: "Mine", preampDb: 0,
+            eqGainsDb: Array(repeating: 0, count: EngineParameters.bandCount),
+            outputGainDb: 0)]
+
+        model.deleteSavedPreset(model.savedPresets[0])
+
+        let map = UserDefaults.standard.dictionary(forKey: "com.roomcut.devicePresetMap") as? [String: String]
+        XCTAssertEqual(map, ["B": "night"])
+        UserDefaults.standard.removeObject(forKey: "com.roomcut.savedPresets")
+    }
+
     func testSavedPresetRoomTuneInfoRoundtripsAndBackCompat() throws {
         let preset = SavedPreset(name: "Room Tune", preampDb: 0,
                                  eqGainsDb: Array(repeating: 0, count: 10), outputGainDb: 0,
@@ -613,9 +826,11 @@ private extension EngineStatus {
         peak: Float = 0,
         limiterGRDb: Float = 0,
         underruns: UInt64 = 0,
+        outputDeviceUID: String = "",
         capabilities: UInt32 = EngineStatus.spatialParamsCapability
             | EngineStatus.parametricCapability
             | EngineStatus.analyzerCapability
+            | EngineStatus.dynamicsCapability
     ) -> EngineStatus {
         var status = EngineStatus()
         status.reachable = true
@@ -625,6 +840,7 @@ private extension EngineStatus {
         status.peak = peak
         status.limiterGRDb = limiterGRDb
         status.underruns = underruns
+        status.outputDeviceUID = outputDeviceUID
         status.capabilities = capabilities
         return status
     }

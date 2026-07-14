@@ -313,6 +313,28 @@ static void test_speaker_surround_adds_field() {
     CHECK(diffSq > 1e-3, "speaker surround adds an ambience field on top of XTC");
 }
 
+// Regression: the Surround toggle must be audible ON ITS OWN — with the
+// crossfeed/Crosstalk slider at 0 (e.g. the headphone Widen preset), surround
+// used to scale purely with crossfeed and the toggle did nothing.
+static void test_surround_works_with_zero_crossfeed(double offMode, double onMode, const char* what) {
+    Spatial off, on;
+    off.prepare(48000.0);
+    on.prepare(48000.0);
+    off.setParams(0.0, 0.0, 0.0, 0.0, offMode);   // crossfeed 0, surround off
+    on.setParams(0.0, 0.0, 0.0, 0.0, onMode);     // crossfeed 0, surround ON
+    double diffSq = 0.0;
+    const int n = 8000;
+    for (int i = 0; i < n; ++i) {
+        const float l = static_cast<float>(0.30 * std::sin(2.0 * M_PI * 440.0 * i / 48000.0));
+        const float r = static_cast<float>(0.25 * std::sin(2.0 * M_PI * 557.0 * i / 48000.0));
+        float f1[2] = {l, r}, f2[2] = {l, r};
+        off.processFrame(f1, 2);
+        on.processFrame(f2, 2);
+        if (i >= 2000) diffSq += (f1[0] - f2[0]) * (f1[0] - f2[0]) + (f1[1] - f2[1]) * (f1[1] - f2[1]);
+    }
+    CHECK(diffSq > 1e-3, what);
+}
+
 // Regression: with surround ON and the Space width raised, a CENTRED (mono) vocal
 // must stay centred (12 o'clock). The virtual surround field is built from the genuine
 // programme side only, so a pure-centre input drives zero ambience — speaker surround
@@ -385,6 +407,8 @@ int main() {
     test_surround_keeps_lr_balanced(2.0, "headphone surround keeps L/R balanced");
     test_surround_keeps_lr_balanced(3.0, "speaker surround keeps L/R balanced");
     test_speaker_surround_adds_field();
+    test_surround_works_with_zero_crossfeed(1.0, 2.0, "headphone surround audible with crossfeed 0");
+    test_surround_works_with_zero_crossfeed(0.0, 3.0, "speaker surround audible with crosstalk 0");
     test_surround_keeps_centre_speaker();
     test_surround_keeps_centre_headphone();
 

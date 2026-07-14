@@ -12,7 +12,7 @@
  *   roomcutctl params get        read current engine ChainParams
  *   roomcutctl params get --json read current engine ChainParams as JSON
  *   roomcutctl analysis --json   read latest analyzer snapshot as JSON
- *   roomcutctl params P g0..g9 R O [W F X RR]
+ *   roomcutctl params P g0..g9 R O [W F X RR [M HPF COMP]]
  *   roomcutctl bypass on|off     manual bypass (crossfaded)
  *   roomcutctl health            heartbeat probe (liveness + coarse state)
  */
@@ -64,7 +64,8 @@ int usage(const char* argv0) {
         "usage: %s status [--json] | preset list [--json] | preset <id> | "
         "params get [--json] | analysis --json | "
         "params <preamp> <g0..g9> <releaseMs> <outDb> "
-        "[<width> <centerFocus> <crossfeed> <roomReduce>] | "
+        "[<width> <centerFocus> <crossfeed> <roomReduce> "
+        "[<mode> <highpassHz> <compAmount>]] | "
         "peq <type> <freqHz> <gainDb> <q> | "
         "device <uid|auto> | "
         "bypass on|off | keepdefault on|off | health\n",
@@ -279,11 +280,12 @@ int main(int argc, char** argv) {
                     "],\"limiterReleaseMs\":%.4f,"
                     "\"outputGainDb\":%.4f,\"spatialWidth\":%.4f,"
                     "\"centerFocus\":%.4f,\"crossfeed\":%.4f,"
-                    "\"roomReduce\":%.4f,\"spatialMode\":%.4f}\n",
+                    "\"roomReduce\":%.4f,\"spatialMode\":%.4f,"
+                    "\"highpassHz\":%.4f,\"compAmount\":%.4f}\n",
                     params.limiterReleaseMs,
                     params.outputGainDb, params.spatialWidth,
                     params.centerFocus, params.crossfeed, params.roomReduce,
-                    params.spatialMode);
+                    params.spatialMode, params.highpassHz, params.compAmount);
                 rc = 0;
             } else {
                 std::printf("preset:   %s\n", params.presetId);
@@ -300,25 +302,31 @@ int main(int argc, char** argv) {
                 std::printf("spatial:  width %.2f, center %.2f, crossfeed %.2f, room %.2f, mode %.2f\n",
                             params.spatialWidth, params.centerFocus,
                             params.crossfeed, params.roomReduce, params.spatialMode);
+                std::printf("dynamics: highpass %.2f Hz, leveling %.2f\n",
+                            params.highpassHz, params.compAmount);
                 rc = 0;
             }
         }
-    } else if (std::strcmp(cmd, "params") == 0 && (argc == 15 || argc == 19)) {
+    } else if (std::strcmp(cmd, "params") == 0 && (argc == 15 || argc == 19 || argc == 22)) {
         double preamp = std::strtod(argv[2], nullptr);
         double gains[10];
         for (int b = 0; b < 10; ++b) gains[b] = std::strtod(argv[3 + b], nullptr);
         double releaseMs = std::strtod(argv[13], nullptr);
         double outDb     = std::strtod(argv[14], nullptr);
-        double width = argc == 19 ? std::strtod(argv[15], nullptr) : 0.0;
-        double center = argc == 19 ? std::strtod(argv[16], nullptr) : 0.0;
-        double crossfeed = argc == 19 ? std::strtod(argv[17], nullptr) : 0.0;
-        double room = argc == 19 ? std::strtod(argv[18], nullptr) : 0.0;
+        double width = argc >= 19 ? std::strtod(argv[15], nullptr) : 0.0;
+        double center = argc >= 19 ? std::strtod(argv[16], nullptr) : 0.0;
+        double crossfeed = argc >= 19 ? std::strtod(argv[17], nullptr) : 0.0;
+        double room = argc >= 19 ? std::strtod(argv[18], nullptr) : 0.0;
+        double mode = argc == 22 ? std::strtod(argv[19], nullptr) : 0.0;
+        double hpf  = argc == 22 ? std::strtod(argv[20], nullptr) : 0.0;
+        double comp = argc == 22 ? std::strtod(argv[21], nullptr) : 0.0;
         uint32_t status = 1;
         // CLI does not edit parametric bands — pass none (the engine keeps the
         // band array flat for a custom set from the CLI).
         kern_return_t kr = controlSetParams(service, preamp, gains,
                                             releaseMs, outDb,
-                                            width, center, crossfeed, room, 0.0 /* spatialMode */,
+                                            width, center, crossfeed, room, mode,
+                                            hpf, comp,
                                             nullptr, kTimeoutMs, &status);
         if (kr != KERN_SUCCESS || status != 0) {
             std::fprintf(stderr, "roomcutctl: params failed (%d)\n", kr);
@@ -342,6 +350,7 @@ int main(int argc, char** argv) {
         kern_return_t kr = controlSetParams(service, 0.0, flatGains,
                                             100.0, 0.0,
                                             0.0, 0.0, 0.0, 0.0, 0.0,
+                                            0.0, 0.0,
                                             bands, kTimeoutMs, &status);
         if (kr != KERN_SUCCESS || status != 0) {
             std::fprintf(stderr, "roomcutctl: peq failed (%d)\n", kr);

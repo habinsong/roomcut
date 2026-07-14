@@ -260,9 +260,13 @@ public:
                 // The old single decorrelator added L+ / R− with g=1.2, which piled the
                 // (low-passed) ambience into the left channel — a fixed asymmetry that
                 // made the left sound muffled while the right stayed clear.
+                // Surround ON carries its own BASE amount: it used to scale purely
+                // with the Crossfeed slider, so at crossfeed 0 (e.g. the headphone
+                // Widen preset) the Surround toggle was silent — "doesn't work".
+                // Crossfeed still scales it up to the same full-slider strength.
                 double ambL, ambR;
                 surroundAmbience(ambPre, ambL, ambR);
-                const double g = 1.10 * crossfeed;                // envelopment amount (doubled)
+                const double g = 1.10 * (kSurrBase + (1.0 - kSurrBase) * crossfeed);
                 outLeft  += g * ambL;
                 outRight += g * ambR;
             }
@@ -281,9 +285,11 @@ public:
                 // headphones because the room itself already supplies reflections.
                 // Built from the genuine programme side (not the decorrelated/RACE
                 // output) so a centred vocal stays centred — see programmeSide above.
+                // Same base amount as the headphone path: the toggle must be audible
+                // even with Crosstalk 3D at 0 (see kSurrBase).
                 double ambL, ambR;
                 surroundAmbience(programmeSide, ambL, ambR);
-                const double g = 1.2 * crossfeed;   // doubled envelopment amount
+                const double g = 1.2 * (kSurrBase + (1.0 - kSurrBase) * crossfeed);
                 outLeft  += g * ambL;
                 outRight += g * ambR;
             }
@@ -415,6 +421,9 @@ private:
     // self-contained on a 2ch device); an ambience-based virtual surround.
     bool surround_ = false;
     bool speakerSurround_ = false;     // mode 3: surround layered on the speaker path
+    // Surround ON always contributes at least this fraction of the full envelopment;
+    // the crossfeed amount scales the rest (full slider = unchanged old strength).
+    static constexpr double kSurrBase = 0.40;
     static constexpr std::size_t kSurrLen = 512;    // ambience delay line (~10.7 ms @48k)
     static constexpr std::size_t kSurrTap1 = 252;   // ~5.25 ms tap (left ambience)
     static constexpr std::size_t kSurrTap2 = 393;   // ~8.19 ms tap (right ambience)

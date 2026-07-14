@@ -117,10 +117,7 @@ struct MenuContent: View {
     private var albumArt: some View {
         Group {
             if let art = monitor.artwork, hasNowPlaying {
-                Image(nsImage: art)
-                    .resizable()
-                    .renderingMode(.original)
-                    .aspectRatio(contentMode: .fill)
+                ExtendedArtwork(image: art, blurRadius: 10)
             } else {
                 Rectangle()
                     .fill(ink.opacity(0.12))

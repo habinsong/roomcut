@@ -62,6 +62,7 @@ public struct EngineStatus {
     public static let spatialParamsCapability = UInt32(ROOMCUT_CLIENT_CAP_SPATIAL_PARAMS)
     public static let parametricCapability = UInt32(ROOMCUT_CLIENT_CAP_PARAMETRIC)
     public static let analyzerCapability = UInt32(ROOMCUT_CLIENT_CAP_ANALYZER)
+    public static let dynamicsCapability = UInt32(ROOMCUT_CLIENT_CAP_DYNAMICS)
 
     public var reachable = false
     public var state: UInt32 = EngineStatus.stopped
@@ -90,6 +91,10 @@ public struct EngineStatus {
 
     public var supportsAnalyzer: Bool {
         (capabilities & Self.analyzerCapability) != 0
+    }
+
+    public var supportsDynamics: Bool {
+        (capabilities & Self.dynamicsCapability) != 0
     }
 
     public var stateName: String {
@@ -182,6 +187,8 @@ public struct EngineParameters: Equatable {
     public var crossfeed: Double
     public var roomReduce: Double
     public var spatialMode: Double   // 0 = speaker (XTC), 1 = headphone (crossfeed)
+    public var highpassHz: Double    // dynamics: 0 = off
+    public var compAmount: Double    // dynamics: 0..100 leveling amount, 0 = off
     public var parametric: [ParametricBand]
 
     public init(preampDb: Double,
@@ -193,6 +200,8 @@ public struct EngineParameters: Equatable {
                 crossfeed: Double = 0.0,
                 roomReduce: Double = 0.0,
                 spatialMode: Double = 0.0,
+                highpassHz: Double = 0.0,
+                compAmount: Double = 0.0,
                 parametric: [ParametricBand] = []) {
         self.preampDb = preampDb
         self.eqGainsDb = Array(eqGainsDb.prefix(Self.bandCount))
@@ -206,6 +215,8 @@ public struct EngineParameters: Equatable {
         self.crossfeed = crossfeed
         self.roomReduce = roomReduce
         self.spatialMode = spatialMode
+        self.highpassHz = highpassHz
+        self.compAmount = compAmount
         self.parametric = Array(parametric.prefix(Self.paramBandCount))
         if self.parametric.count < Self.paramBandCount {
             self.parametric.append(contentsOf:
@@ -347,6 +358,8 @@ public final class LiveEngineClient: EngineClientProtocol {
                 crossfeed: c.crossfeed,
                 roomReduce: c.roomReduce,
                 spatialMode: c.spatialMode,
+                highpassHz: c.highpassHz,
+                compAmount: c.compAmount,
                 parametric: bands
             )
         }
@@ -431,6 +444,8 @@ public final class LiveEngineClient: EngineClientProtocol {
                         params.crossfeed,
                         params.roomReduce,
                         params.spatialMode,
+                        params.highpassHz,
+                        params.compAmount,
                         pbuf.baseAddress
                     )
                 }

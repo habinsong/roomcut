@@ -115,21 +115,42 @@ struct NowPlayingView: View {
                                             artworkPalette: monitor.artworkPalette)
     }
 
-    private var inkPrimary: Color { darkBackdrop ? .white : RoomcutTokens.textPrimary(scheme) }
+    // Dark-mode counterpart: a near-white Cover wash makes the light ink invisible,
+    // so the whole Home chrome flips to BLACK — same judgement as the tab bar.
+    private var brightBackdrop: Bool {
+        guard !menuLike, !compact, scheme == .dark, live != nil else { return false }
+        return NowPlayingInk.isBrightBackdrop(theme: theme, scheme: scheme,
+                                              artworkColor: monitor.artworkColor,
+                                              artworkPalette: monitor.artworkPalette)
+    }
+
+    private var inkPrimary: Color {
+        if darkBackdrop { return .white }
+        if brightBackdrop { return .black }
+        return RoomcutTokens.textPrimary(scheme)
+    }
     // Artist/album over a LIGHT backdrop: darker than the stock secondary grey
     // (0x6E6E73) but still below the title's near-black (0x1D1D1F), so the
-    // metadata reads stronger without competing with the title. Dark mode keeps
-    // the adaptive token; a dark backdrop keeps white.
+    // metadata reads stronger without competing with the title. Dark mode uses
+    // plain white (the grey token read as washed-out); a dark backdrop keeps
+    // white; a bright dark-mode backdrop takes the light-backdrop grey.
     private var inkSecondary: Color {
-        darkBackdrop ? Color.white.opacity(0.72)
-                     : (scheme == .light ? Color(hex: 0x3A3A3C) : RoomcutTokens.textSecondary(scheme))
+        if darkBackdrop { return Color.white.opacity(0.72) }
+        if brightBackdrop { return Color(hex: 0x3A3A3C) }
+        return scheme == .light ? Color(hex: 0x3A3A3C) : .white
     }
-    private var fullInk: Color { darkBackdrop ? .white : menuInk }
+    private var fullInk: Color {
+        if darkBackdrop { return .white }
+        if brightBackdrop { return .black }
+        return menuInk
+    }
 
     private var fullMetadataColor: Color {
         // else == light mode over a light backdrop → use the same stronger grey
         // (0x3A3A3C) as inkSecondary instead of the lighter 0x6E6E73.
-        (darkBackdrop || scheme == .dark) ? Color.white.opacity(0.78) : Color(hex: 0x3A3A3C)
+        if brightBackdrop { return Color(hex: 0x3A3A3C) }
+        if darkBackdrop { return Color.white.opacity(0.78) }
+        return scheme == .dark ? .white : Color(hex: 0x3A3A3C)
     }
 
     private var menuTitle: String { live?.title ?? "재생 정보 없음" }
@@ -397,9 +418,7 @@ struct NowPlayingView: View {
     private func bArtwork(width: CGFloat, cornerRadius: CGFloat = 0) -> some View {
         Group {
             if let img = (live != nil ? monitor.artwork : nil) {
-                Image(nsImage: img)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
+                ExtendedArtwork(image: img)
             } else {
                 let colors: [Color] = scheme == .dark
                     ? [Color(hex: 0x2A2D33), Color(hex: 0x17191D)]
@@ -445,7 +464,7 @@ struct NowPlayingView: View {
                     .frame(width: 44, height: 44)
                     .matchedGeometryEffect(id: "np-art", in: morphNS, properties: .position)
                 let metaEmpty = artist?.nonEmpty == nil && source?.nonEmpty == nil
-                let metaColor = RoomcutTokens.textSecondary(scheme)
+                let metaColor: Color = scheme == .dark ? .white : RoomcutTokens.textSecondary(scheme)
                 VStack(alignment: .leading, spacing: 1) {
                     Text(title)
                         .font(.system(size: 14, weight: .semibold))
@@ -586,7 +605,8 @@ struct NowPlayingView: View {
             next: lyricLines.next,
             fontSize: lyricFontSize,
             scheme: scheme,
-            forceWhite: darkBackdrop
+            forceWhite: darkBackdrop,
+            forceBlack: brightBackdrop
         )
         .frame(width: width, height: height, alignment: .top)
         .padding(.top, 2)
@@ -595,10 +615,7 @@ struct NowPlayingView: View {
     private var menuAlbumArt: some View {
         Group {
             if let art = monitor.artwork, live != nil {
-                Image(nsImage: art)
-                    .resizable()
-                    .renderingMode(.original)
-                    .aspectRatio(contentMode: .fill)
+                ExtendedArtwork(image: art, blurRadius: 10)
             } else {
                 Rectangle()
                     .fill(menuInk.opacity(0.12))
@@ -669,9 +686,7 @@ struct NowPlayingView: View {
         Group {
             if let img = (live != nil ? monitor.artwork : nil) {
                 // Real album art from the live source.
-                Image(nsImage: img)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
+                ExtendedArtwork(image: img)
             } else {
                 // Deterministic colours from the sample title (fixtures only); the
                 // production fallback uses a calm neutral wash — never fake art.
@@ -1047,6 +1062,59 @@ private struct AuroraBaseColor {
     }
 }
 
+// Artwork in the square art slot, letterbox-aware. Album covers are 1:1 and
+// fill the square exactly; video thumbnails (YouTube etc.) are 16:9 and used to
+// be centre-cropped, losing the left/right edges. Non-square art now renders
+// the FULL image (fit) and fills the top/bottom bands with a blurred, scaled
+// copy of itself — the blur-extension treatment video players use. Square art
+// keeps the plain fast path (the fit layer would cover the frame anyway, so
+// the blur would be invisible cost). Shared by every artwork slot (Card,
+// Poster, compact card, menu-bar popover), so `blurRadius` scales down for the
+// tiny thumbnails.
+struct ExtendedArtwork: View {
+    let image: NSImage
+    var blurRadius: CGFloat = 22
+
+    private var isNearSquare: Bool {
+        let s = image.size
+        guard s.width > 0, s.height > 0 else { return true }
+        return abs(s.width / s.height - 1) < 0.05
+    }
+
+    var body: some View {
+        if isNearSquare {
+            Image(nsImage: image)
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+        } else {
+            // Color.clear owns the LAYOUT: it adopts the caller's frame exactly,
+            // and both image copies ride overlays, which never inflate the host.
+            // Putting the overflowing .fill copy directly in a ZStack grew the
+            // stack to the image's covering size (e.g. 16:9), and the stack then
+            // re-proposed THAT size to the .fit copy — which therefore filled it
+            // edge-to-edge and rendered as a centre crop (the "still cropped"
+            // bug, reproduced in an offscreen render harness).
+            Color.clear
+                .overlay(
+                    // Backdrop: fill copy, scaled past the edges so the blur
+                    // never samples outside the bitmap (washed-out rims).
+                    Image(nsImage: image)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .scaleEffect(1.3)
+                        .blur(radius: blurRadius)
+                        .saturation(1.1)
+                )
+                .overlay(
+                    Image(nsImage: image)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                )
+                .clipped()
+        }
+    }
+}
+
 private struct MenuLikeResizeHandles: View {
     private let edge: CGFloat = 7
     private let corner: CGFloat = 22
@@ -1181,8 +1249,13 @@ private struct TwoLineLyricView: View {
     let fontSize: CGFloat
     let scheme: ColorScheme
     var forceWhite: Bool = false
+    var forceBlack: Bool = false
 
-    private var inkBase: Color { forceWhite ? .white : RoomcutTokens.textPrimary(scheme) }
+    private var inkBase: Color {
+        if forceWhite { return .white }
+        if forceBlack { return .black }
+        return RoomcutTokens.textPrimary(scheme)
+    }
 
     private var primaryColor: Color {
         inkBase.opacity(0.76)

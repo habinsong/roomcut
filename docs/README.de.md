@@ -49,10 +49,10 @@ Die meisten „Audio-Enhancer" machen den Klang nur breiter. Roomcut bewegt ihn 
 - **Globaler EQ.** Ein grafischer 10-Band-EQ und ein parametrischer 6-Band-EQ (Bell, Shelf, Hoch-/Tiefpass, Notch) gestapelt, mit einer Live-Frequenzgangkurve.
 - **Makros.** Die Regler Bass, Warmth, Vocal, Clarity und Air bewegen die passenden Bänder für dich, damit du nicht in Frequenzen denken musst.
 - **Räumlich, in beide Richtungen.** Das Klangbild frei verengen oder verbreitern: Space (Breite), Center (Phantommitten-Fokus), Damping (Raumreduktion) und Crossfeed / Übersprechen. Zwischen Lautsprecher- und Kopfhörermodus wechseln, Surround umschalten, und eine Live-Ansicht des Stereofelds reagiert beim Justieren; Focus und Widen sind Ein-Tipp-Presets.
-- **Limiter und Gain.** Vorverstärker, Ausgangs-Trim und ein Peak-Limiter, damit eine kräftige EQ-Kurve den Ausgang nicht übersteuert.
+- **Limiter und Gain.** Vorverstärker, Ausgangs-Trim und ein Peak-Limiter, damit eine kräftige EQ-Kurve den Ausgang nicht übersteuert. Ein optionaler Regler zur Lautstärkeangleichung glättet laute und leise Passagen fürs nächtliche Hören.
 - **High-Res-fähig.** Verarbeitet intern in 32-Bit-Float und lässt dich Abtastrate und Bittiefe des Ausgabegeräts wählen; die Now-Playing-Karte zeigt Format und Latenz live.
 - **Analyzer.** Live-Peak, RMS, Stereobreite, spektraler Schwerpunkt, eine Spektrumansicht und ein verständliches Label für das, was gerade läuft.
-- **Presets.** Eine integrierte Bibliothek, gegliedert nach Signature, Apple-Geräten, Speakers und Headphones, plus deine eigenen gespeicherten Presets.
+- **Presets.** Eine integrierte Bibliothek, gegliedert nach Signature, Apple-Geräten, Speakers und Headphones, plus deine eigenen gespeicherten Presets. Exportiere und importiere sie als JSON-Dateien, und lass Roomcut je Ausgabegerät ein Preset merken und automatisch wechseln.
 - **Room Tune.** Miss deinen Raum mit einem iPhone über das Integrationsmikrofon und erhalte zurückhaltende EQ-Korrekturen für die stärksten Resonanzen. Es senkt nur ab, hebt nie an, und speichert das Ergebnis als Preset.
 - **Now Playing.** Cover-gesteuerte Themes, synchronisierte Songtexte über [LRCLIB](https://lrclib.net) und Wiedergabesteuerung im Menüleistenfenster.
 - **Lokalisierte Oberfläche.** Englisch, Koreanisch, Japanisch, Französisch und Deutsch, entsprechend der Systemsprache oder manuell gewählt.
@@ -128,7 +128,7 @@ Das Fenster hat fünf Tabs:
 - **Space.** das Stereobild verengen oder verbreitern, Mitten-Fokus, Raumdämpfung und Crossfeed einstellen, mit Focus- / Widen-Presets für Lautsprecher oder Kopfhörer.
 - **Tune.** miss deinen Raum mit einem iPhone (Integrationsmikrofon) und wende zurückhaltende EQ-Korrekturen an.
 - **Inspect.** schreibgeschützte Anzeigen: Peak, Limiter, Aussetzer, Korrelation, Breite, Abtastrate, Latenz und Engine-Zustand.
-- **Settings.** Ausgabegerät und Format, Lautstärke, Start bei der Anmeldung, Erscheinungsbild (Thema, Layout, Sprache) und der Songtext-Cache.
+- **Settings.** Ausgabegerät und Format, Lautstärke, Presets pro Gerät, Start bei der Anmeldung, Erscheinungsbild (Thema, Layout, Sprache), Preset-Export/-Import und der Songtext-Cache.
 
 <div align="center">
 <img src="https://raw.githubusercontent.com/habinsong/roomcut/master/icon/app/main_space.png" alt="Space" width="150"> <img src="https://raw.githubusercontent.com/habinsong/roomcut/master/icon/app/main_tune_start.png" alt="Tune" width="150"> <img src="https://raw.githubusercontent.com/habinsong/roomcut/master/icon/app/main_tune_measuring.png" alt="Tune, Messung" width="150"> <img src="https://raw.githubusercontent.com/habinsong/roomcut/master/icon/app/main_tune_result.png" alt="Tune, Ergebnis" width="150"> <img src="https://raw.githubusercontent.com/habinsong/roomcut/master/icon/app/main_inspect.png" alt="Inspect" width="150">
@@ -147,7 +147,7 @@ Das Klangsteuerungs-Blatt in **Home** hat zwei Modi:
   - **graph.** Der kombinierte EQ-Frequenzgang als eine schreibgeschützte Kurve.
   - **10-Band.** Der klassische grafische EQ; jede Band von Hand ziehen.
   - **Parametric.** Sechs Biquad-Bänder (Bell, Shelf, Hoch-/Tiefpass, Notch) mit Frequenz, Gain und Q.
-  - **Limiter.** Der Peak-Limiter plus Vorverstärker und Ausgangs-Gain.
+  - **Limiter.** Der Peak-Limiter, Vorverstärker und Ausgangs-Gain, plus Lautstärkeangleichung fürs nächtliche Hören.
   - **Analyzer.** Live-Spektrum mit Peak, RMS, Stereobreite und spektralem Schwerpunkt.
 
 <div align="center">

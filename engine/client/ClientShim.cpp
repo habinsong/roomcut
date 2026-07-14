@@ -454,6 +454,8 @@ int roomcutClientGetParams(RoomcutClientParams* out) {
     out->crossfeed        = rep.crossfeed;
     out->roomReduce       = rep.roomReduce;
     out->spatialMode      = rep.spatialMode;
+    out->highpassHz       = rep.highpassHz;
+    out->compAmount       = rep.compAmount;
     static_assert(ROOMCUT_CLIENT_PARAM_BANDS == ROOMCUT_PARAM_BANDS,
                   "parametric band count drifted from the wire protocol");
     for (int b = 0; b < ROOMCUT_PARAM_BANDS; ++b) {
@@ -795,6 +797,7 @@ int roomcutClientSetParams(double preampDb,
                            double outputGainDb, double spatialWidth,
                            double centerFocus, double crossfeed,
                            double roomReduce, double spatialMode,
+                           double highpassHz, double compAmount,
                            const RoomcutClientParamBand parametric[ROOMCUT_CLIENT_PARAM_BANDS]) {
     if (eqGainsDb == nullptr) {
         return -3;
@@ -819,6 +822,7 @@ int roomcutClientSetParams(double preampDb,
                                          limiterReleaseMs,
                                          outputGainDb, spatialWidth,
                                          centerFocus, crossfeed, roomReduce, spatialMode,
+                                         highpassHz, compAmount,
                                          bands, kTimeoutMs, status);
     });
 }

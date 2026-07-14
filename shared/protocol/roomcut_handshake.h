@@ -30,6 +30,7 @@
 #define ROOMCUT_CAP_PARAMETRIC     0x00000002u
 #define ROOMCUT_CAP_ANALYZER       0x00000004u
 #define ROOMCUT_CAP_VOLUME_BOOST   0x00000008u
+#define ROOMCUT_CAP_DYNAMICS       0x00000010u /* highpassHz/compAmount on the wire */
 
 /* Driver → engine: request the handoff. Sent to the engine's service port;
  * header.msgh_local_port carries a reply send-once right. */
@@ -188,6 +189,11 @@ typedef struct {
     double            roomReduce;
     double            spatialMode;  /* 0 = speaker (XTC), 1 = headphone (crossfeed) */
     RoomcutParamBand  parametric[ROOMCUT_PARAM_BANDS];
+    /* Dynamics (ROOMCUT_CAP_DYNAMICS), appended at the end so a version-skewed
+     * peer still parses the fields above: a short message from an older sender
+     * reads as 0 (off) out of the zeroed receive buffer. */
+    double            highpassHz;   /* 0 = off */
+    double            compAmount;   /* 0..100 leveling amount, 0 = off */
 } RoomcutSetParamsRequest;
 
 /* Acknowledgement for SET_* requests. */
@@ -252,6 +258,9 @@ typedef struct {
     double            roomReduce;
     double            spatialMode;
     RoomcutParamBand  parametric[ROOMCUT_PARAM_BANDS];
+    /* Dynamics — appended (see RoomcutSetParamsRequest). */
+    double            highpassHz;
+    double            compAmount;
 } RoomcutGetParamsReply;
 
 typedef struct {

@@ -36,6 +36,7 @@ enum {
 #define ROOMCUT_CLIENT_CAP_PARAMETRIC     0x00000002u
 #define ROOMCUT_CLIENT_CAP_ANALYZER       0x00000004u
 #define ROOMCUT_CLIENT_CAP_VOLUME_BOOST   0x00000008u
+#define ROOMCUT_CLIENT_CAP_DYNAMICS       0x00000010u
 #define ROOMCUT_CLIENT_ANALYSIS_SPECTRUM_BINS 24
 
 /* One parametric-EQ band (mirrors RoomcutParamBand on the wire). `type` indexes
@@ -74,6 +75,8 @@ typedef struct {
     double crossfeed;
     double roomReduce;
     double spatialMode;   /* 0 = speaker (XTC), 1 = headphone (crossfeed) */
+    double highpassHz;    /* dynamics: 0 = off */
+    double compAmount;    /* dynamics: 0..100 leveling amount, 0 = off */
     RoomcutClientParamBand parametric[ROOMCUT_CLIENT_PARAM_BANDS];
 } RoomcutClientParams;
 
@@ -187,6 +190,7 @@ int roomcutClientSetParams(double preampDb,
                            double outputGainDb, double spatialWidth,
                            double centerFocus, double crossfeed,
                            double roomReduce, double spatialMode,
+                           double highpassHz, double compAmount,
                            const RoomcutClientParamBand parametric[ROOMCUT_CLIENT_PARAM_BANDS]);
 
 /* Builtin preset enumeration (no engine connection needed). */

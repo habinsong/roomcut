@@ -540,7 +540,8 @@ final class NowPlayingMonitor: ObservableObject {
         guard let cg = CGImageSourceCreateThumbnailAtIndex(src, 0, opts as CFDictionary) else {
             return NSImage(data: data)
         }
-        return NSImage(cgImage: cg, size: NSSize(width: cg.width, height: cg.height))
+        let final = ArtworkCanvas.trimmedLetterboxBars(cg) ?? cg
+        return NSImage(cgImage: final, size: NSSize(width: final.width, height: final.height))
     }
 
     // Average colour of the artwork's top and bottom edge strips (8% tall), so the

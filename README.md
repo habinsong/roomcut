@@ -65,14 +65,17 @@ between.
   crosstalk. Pick speaker or headphone mode, toggle surround, and a live
   stereo-field view reacts as you adjust; Focus and Widen are one-tap presets.
 - **Limiter and gain.** Pre-amp and output trim plus a peak limiter, so a heavy
-  EQ curve doesn't clip the output.
+  EQ curve doesn't clip the output. An optional Volume Leveling knob evens out
+  loud and quiet passages for night listening.
 - **High-res aware.** Processes in 32-bit float and lets you pick the output
   device's sample rate and bit depth; the Now Playing card shows the live format
   and latency.
 - **Analyzer.** Live peak, RMS, stereo width, spectral centroid, a spectrum
   view, and a plain-language label for what's currently playing.
 - **Presets.** A built-in library grouped by Signature, Apple gear, Speakers,
-  and Headphones, plus your own saved presets.
+  and Headphones, plus your own saved presets. Export and import them as JSON
+  files, and let Roomcut remember a preset per output device and switch
+  automatically.
 - **Room Tune.** Measure your room with an iPhone over the Continuity mic and get
   conservative EQ corrections for its worst resonances. It only cuts, never
   boosts, and saves the result as a preset.
@@ -175,8 +178,9 @@ The window has five tabs:
   conservative EQ corrections.
 - **Inspect.** read-only meters: peak, limiter, dropouts, correlation, width,
   sample rate, latency, and engine state.
-- **Settings.** output device and format, volume, launch at login, appearance
-  (theme, layout, language), and the lyrics cache.
+- **Settings.** output device and format, volume, per-device presets, launch at
+  login, appearance (theme, layout, language), preset export / import, and the
+  lyrics cache.
 
 <div align="center">
 <img src="icon/app/main_space.png" alt="Space" width="150"> <img src="icon/app/main_tune_start.png" alt="Tune" width="150"> <img src="icon/app/main_tune_measuring.png" alt="Tune, measuring" width="150"> <img src="icon/app/main_tune_result.png" alt="Tune, result" width="150"> <img src="icon/app/main_inspect.png" alt="Inspect" width="150">
@@ -204,7 +208,8 @@ The sound-controls sheet on **Home** has two modes:
   - **10-Band.** The classic graphic EQ; drag each band by hand.
   - **Parametric.** Six biquad bands (bell, shelf, high/low pass, notch) with
     frequency, gain, and Q.
-  - **Limiter.** The peak limiter plus pre-amp and output gain.
+  - **Limiter.** The peak limiter, pre-amp and output gain, and Volume Leveling
+    for night listening.
   - **Analyzer.** Live spectrum with peak, RMS, stereo width, and spectral
     centroid.
 

@@ -1,3 +1,4 @@
+import CoreGraphics
 import Foundation
 
 public struct NowPlayingMetadataPayload: Equatable, Sendable {
@@ -131,6 +132,70 @@ private extension NowPlayingQueueItemPayload {
             album: album,
             duration: duration
         )
+    }
+}
+
+// MediaRemote hands video artwork on a FIXED 16:9 canvas: a portrait/Shorts
+// clip arrives pillarboxed (baked-in black bars left/right), cinema-scope
+// content letterboxed (bars top/bottom). Trim those bars off the decoded
+// thumbnail so the UI letterboxes the TRUE content — and so the colour/wash
+// extraction stops sampling the black. Square canvases (album covers) are
+// left alone: a dark cover's black margins are art, not padding.
+public enum ArtworkCanvas {
+    // Returns nil when there is nothing to trim.
+    public static func trimmedLetterboxBars(_ cg: CGImage) -> CGImage? {
+        let w = cg.width, h = cg.height
+        guard w > 16, h > 16 else { return nil }
+        let canvasRatio = Double(w) / Double(h)
+        guard canvasRatio > 1.2 || canvasRatio < 0.83 else { return nil }
+
+        guard let ctx = CGContext(
+            data: nil, width: w, height: h, bitsPerComponent: 8, bytesPerRow: w * 4,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
+        else { return nil }
+        ctx.draw(cg, in: CGRect(x: 0, y: 0, width: w, height: h))
+        guard let raw = ctx.data else { return nil }
+        let px = raw.bindMemory(to: UInt8.self, capacity: w * h * 4)
+
+        // Near-black pixel: every channel under ~10% (headroom for JPEG noise).
+        func isDark(_ x: Int, _ bufferRow: Int) -> Bool {
+            let o = (bufferRow * w + x) * 4
+            return px[o] < 26 && px[o + 1] < 26 && px[o + 2] < 26
+        }
+        // A row/column is a "bar" when ~all of its pixels are near-black.
+        func isBarColumn(_ x: Int) -> Bool {
+            var dark = 0
+            for r in 0..<h where isDark(x, r) { dark += 1 }
+            return Double(dark) >= Double(h) * 0.97
+        }
+        func isBarRow(_ bufferRow: Int) -> Bool {
+            var dark = 0
+            for x in 0..<w where isDark(x, bufferRow) { dark += 1 }
+            return Double(dark) >= Double(w) * 0.97
+        }
+
+        // Trim caps keep a usable core even for extreme content (a 9:16 short on
+        // a 16:9 canvas trims ~35% per side) without ever eating everything.
+        let maxTrimX = Int(Double(w) * 0.42)
+        let maxTrimY = Int(Double(h) * 0.42)
+        var left = 0
+        while left < maxTrimX, isBarColumn(left) { left += 1 }
+        var right = 0
+        while right < maxTrimX, isBarColumn(w - 1 - right) { right += 1 }
+        // CGContext buffer row 0 is the image's BOTTOM row; CGImage.cropping's
+        // rect uses a top-left origin — flip when building the crop rect.
+        var bottom = 0
+        while bottom < maxTrimY, isBarRow(bottom) { bottom += 1 }
+        var top = 0
+        while top < maxTrimY, isBarRow(h - 1 - top) { top += 1 }
+
+        let newW = w - left - right
+        let newH = h - top - bottom
+        guard newW >= 16, newH >= 16 else { return nil }
+        // Only act on a REAL bar (≥ 2% of the axis) — skip 1px encoder edges.
+        guard left + right > w / 50 || top + bottom > h / 50 else { return nil }
+        return cg.cropping(to: CGRect(x: left, y: top, width: newW, height: newH))
     }
 }
 

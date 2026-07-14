@@ -91,7 +91,9 @@ func runSelfTest() -> Int32 {
                                        params.limiterReleaseMs,
                                        params.outputGainDb, params.spatialWidth,
                                        params.centerFocus, params.crossfeed,
-                                       params.roomReduce, params.spatialMode, pbuf.baseAddress)
+                                       params.roomReduce, params.spatialMode,
+                                       params.highpassHz, params.compAmount,
+                                       pbuf.baseAddress)
             }
         }
         guard rc == 0 else {

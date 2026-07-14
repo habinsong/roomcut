@@ -30,7 +30,6 @@ ROOMCUT_CAP_ANALYZER=4
 # reinstall does not silently reset what the user was running (2026-06-13).
 ORIG_DEFAULT_UID=""
 ORIG_PRESET=""
-ORIG_PARAMS=""
 
 if [[ "$(id -u)" -ne 0 ]]; then
   echo "error: run with sudo (installing a system LaunchDaemon)" >&2
@@ -248,34 +247,16 @@ capture_audio_state() {
     return 0
   fi
   ORIG_PRESET="$(sed -n 's/.*"preset":"\([^"]*\)".*/\1/p' <<<"${status}")"
-  if [[ "${ORIG_PRESET}" == "custom" ]]; then
-    ORIG_PARAMS="$("${CTL}" params get 2>/dev/null | awk '
-      $1 == "preamp:"  { p = $2 }
-      $1 == "eq:"      { for (i = 2; i < NF; i++) e = e " " $i }
-      $1 == "limiter:" { c = $3; r = $6 }
-      $1 == "output:"  { o = $2 }
-      $1 == "spatial:" {
-        w = $3; f = $5; x = $7; rr = $9
-        gsub(",", "", w); gsub(",", "", f); gsub(",", "", x)
-      }
-      END { if (p != "" && e != "" && c != "" && r != "" && o != "" &&
-                w != "" && f != "" && x != "" && rr != "")
-              print p e, c, r, o, w, f, x, rr }
-    ')"
-  fi
 }
 
 restore_audio_state() {
   if [[ -n "${ORIG_PRESET}" && "${ORIG_PRESET}" != "flat" && -x "${CTL}" ]]; then
     if [[ "${ORIG_PRESET}" == "custom" ]]; then
-      if [[ -n "${ORIG_PARAMS}" ]]; then
-        # shellcheck disable=SC2086 — ORIG_PARAMS is an argv list on purpose
-        if "${CTL}" params ${ORIG_PARAMS} >/dev/null 2>&1; then
-          echo "Params: custom set reapplied."
-        else
-          echo "install-engine: warning: could not reapply custom params" >&2
-        fi
-      fi
+      # A custom set resumes from the engine's own state file (kept across the
+      # reinstall) — it carries the FULL set (EQ, parametric, spatial mode,
+      # dynamics), which a CLI reapply cannot: pushing a partial params set here
+      # would overwrite the resumed state and silently drop the rest.
+      echo "Params: custom set resumes from ${STATE_FILE}."
     elif "${CTL}" preset "${ORIG_PRESET}" >/dev/null 2>&1; then
       echo "Preset: '${ORIG_PRESET}' reapplied."
     else

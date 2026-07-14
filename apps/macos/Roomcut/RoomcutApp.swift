@@ -295,7 +295,44 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             // Bring the audio engine up with the app (off the main thread so a
             // cold launchd start never stalls the UI); quitting takes it down.
             DispatchQueue.global(qos: .userInitiated).async { EngineService.start() }
+            // A relaunch (`pkill && open`) races the OLD instance's quit-time
+            // bootout against this bootstrap: when the bootout lands second it
+            // silently takes the fresh engine down, and nothing brings it back
+            // (boot autostart is disabled by design) — the app then sits
+            // unreachable forever. Re-assert the start while the control plane
+            // stays unreachable; bounded and idempotent (enable+bootstrap are
+            // no-ops on a live service).
+            scheduleEngineStartRetry(attempt: 1)
             monitor.start()
+        }
+    }
+
+    private func scheduleEngineStartRetry(attempt: Int) {
+        guard attempt <= 3 else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + (attempt == 1 ? 4.0 : 10.0)) { [weak self] in
+            guard let self else { return }
+            let status = self.model.status
+            // "Engine up but the driver never handed off": STOPPED with zero
+            // frames rendered. The driver's reconnect worker only re-engages on
+            // a FRESH Mach service registration, so an engine that came up
+            // while the driver was already waiting sits silent forever.
+            let driverNeverConnected = status.reachable
+                && status.state == EngineStatus.stopped && status.frames == 0
+            if !status.reachable {
+                DispatchQueue.global(qos: .userInitiated).async { EngineService.start() }
+            } else if driverNeverConnected && attempt >= 2 {
+                // Bounce (bootout → bootstrap) to re-register the service and
+                // wake the driver — verified live; harmless while no audio is
+                // flowing. Attempt 1 just waits: a slow first HELLO usually
+                // lands within the first window.
+                DispatchQueue.global(qos: .userInitiated).async {
+                    EngineService.stop()
+                    EngineService.start()
+                }
+            } else if !driverNeverConnected {
+                return  // healthy (or genuinely streaming) — stop retrying
+            }
+            self.scheduleEngineStartRetry(attempt: attempt + 1)
         }
     }
 

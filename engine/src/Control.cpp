@@ -159,6 +159,7 @@ kern_return_t controlSetParams(mach_port_t servicePort,
                                double outputGainDb, double spatialWidth,
                                double centerFocus, double crossfeed,
                                double roomReduce, double spatialMode,
+                               double highpassHz, double compAmount,
                                const RoomcutParamBand* parametric,
                                uint32_t timeoutMs, uint32_t* outStatus) {
     if (eqGainsDb == nullptr) {
@@ -178,6 +179,8 @@ kern_return_t controlSetParams(mach_port_t servicePort,
     req.crossfeed        = crossfeed;
     req.roomReduce       = roomReduce;
     req.spatialMode      = spatialMode;
+    req.highpassHz       = highpassHz;
+    req.compAmount       = compAmount;
     if (parametric != nullptr) {
         for (int b = 0; b < ROOMCUT_PARAM_BANDS; ++b) req.parametric[b] = parametric[b];
     }

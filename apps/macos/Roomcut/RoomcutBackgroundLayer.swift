@@ -40,6 +40,22 @@ enum NowPlayingInk {
         return relLuminance(c) < (0.34 + 0.12 * c.saturationComponent)
     }
 
+    // DARK-mode counterpart: when the Cover wash is so BRIGHT (a near-white album
+    // cover at ~0.92 opacity) that the light ink disappears, flip the floating
+    // chrome to BLACK. Only Cover can get that bright — dark-mode Mesh keeps its
+    // tones capped dark (tahoeTones body ≤ 0.40 brightness) and Halo has no wash.
+    // The saturation bias runs the OTHER way here: vivid colours read better under
+    // white ink, so they must be brighter still before black takes over.
+    static func isBrightBackdrop(theme: RoomcutNowPlayingTheme, scheme: ColorScheme,
+                                 artworkColor: NSColor?, artworkPalette: [NSColor]?) -> Bool {
+        guard scheme == .dark, theme == .cover else { return false }
+        // The wash is the artwork at ~0.92 opacity over the dark base.
+        guard let c = artworkColor?.usingColorSpace(.deviceRGB)?
+            .blended(withFraction: 0.08, of: NSColor(white: 0.07, alpha: 1))?
+            .usingColorSpace(.deviceRGB) else { return false }
+        return relLuminance(c) > (0.62 + 0.10 * c.saturationComponent)
+    }
+
     // The mid/deep tone the centred card sits over in light-mode Mesh (mirrors the
     // seed pick in tahoeTones — the most vivid palette colour, not a muddy average).
     static func meshRepresentativeColor(artworkColor: NSColor?, artworkPalette: [NSColor]?) -> NSColor? {

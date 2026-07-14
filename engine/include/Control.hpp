@@ -56,6 +56,7 @@ kern_return_t controlSetParams(mach_port_t servicePort,
                                double outputGainDb, double spatialWidth,
                                double centerFocus, double crossfeed,
                                double roomReduce, double spatialMode,
+                               double highpassHz, double compAmount,
                                const RoomcutParamBand* parametric,
                                uint32_t timeoutMs, uint32_t* outStatus);
 

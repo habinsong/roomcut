@@ -6,6 +6,7 @@
 //
 import SwiftUI
 import ServiceManagement
+import UniformTypeIdentifiers
 import RoomcutCore
 import RoomcutPresentationCore
 
@@ -15,6 +16,7 @@ struct SettingsTab: View {
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
     @State private var lyricsCacheCount = 0
     @State private var lyricsCacheCleared = false
+    @State private var presetTransferNote: String?
     private let lyricsCachePath = "~/Library/Caches/com.habinsong.roomcut/lyrics.json"
 
     private var enabledBinding: Binding<Bool> {
@@ -98,6 +100,12 @@ struct SettingsTab: View {
                                            set: { model.setKeepDefault($0) }))
                         .disabled(!model.status.reachable)
                 }
+                RoomcutRow(L("기기별 프리셋 기억", "Per-Device Presets", "デバイス別プリセット",
+                             "Préréglages par appareil", "Presets pro Gerät"),
+                           systemImage: "arrow.triangle.2.circlepath") {
+                    settingsSwitch(Binding(get: { model.deviceAutoPresetEnabled },
+                                           set: { model.setDeviceAutoPreset($0) }))
+                }
                 RoomcutRow(L("로그인 시 자동 실행", "Launch at Login", "ログイン時に起動",
                              "Lancer à la connexion", "Beim Anmelden starten"),
                            systemImage: "arrow.right.circle") {
@@ -115,6 +123,28 @@ struct SettingsTab: View {
                            systemImage: "rectangle.on.rectangle") {
                     settingsSwitch(Binding(get: { model.themeSyncEnabled },
                                            set: { model.setThemeSync($0) }))
+                }
+            }
+
+            RoomcutSection(L("Presets", "Presets", "プリセット", "Préréglages", "Presets")) {
+                RoomcutRow(L("프리셋 내보내기", "Export Presets", "プリセットを書き出す",
+                             "Exporter les préréglages", "Presets exportieren"),
+                           systemImage: "square.and.arrow.up") {
+                    glassActionButton(L("JSON 파일…", "JSON File…", "JSONファイル…", "Fichier JSON…", "JSON-Datei…"),
+                                      disabled: model.savedPresets.isEmpty) { exportPresets() }
+                }
+                RoomcutRow(L("프리셋 가져오기", "Import Presets", "プリセットを読み込む",
+                             "Importer des préréglages", "Presets importieren"),
+                           systemImage: "square.and.arrow.down") {
+                    HStack(spacing: 8) {
+                        if let note = presetTransferNote {
+                            Text(note)
+                                .font(.system(size: 11, weight: .medium))
+                                .foregroundStyle(.secondary)
+                        }
+                        glassActionButton(L("JSON 파일…", "JSON File…", "JSONファイル…", "Fichier JSON…", "JSON-Datei…"),
+                                          disabled: false) { importPresets() }
+                    }
                 }
             }
 
@@ -285,6 +315,73 @@ struct SettingsTab: View {
         .background(Capsule().fill(.quaternary))
         .clipShape(Capsule())
         .disabled(disabled)
+    }
+
+    // Small flat-capsule action button, the same recipe as glassMenu's label so
+    // the preset export/import rows match the pickers around them.
+    private func glassActionButton(_ title: String, disabled: Bool,
+                                   action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(disabled ? RoomcutTokens.textTertiary(scheme)
+                                 : RoomcutTokens.textPrimary(scheme))
+                .padding(.horizontal, 11)
+                .padding(.vertical, 7)
+                .contentShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .fixedSize()
+        .background(Capsule().fill(.quaternary))
+        .clipShape(Capsule())
+        .disabled(disabled)
+    }
+
+    private func exportPresets() {
+        guard let data = model.exportPresetsData() else { return }
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [.json]
+        panel.nameFieldStringValue = "Roomcut Presets.json"
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            try data.write(to: url)
+            showPresetTransferNote(L("내보내기 완료", "Exported", "書き出し完了", "Exporté", "Exportiert"))
+        } catch {
+            showPresetTransferNote(L("내보내기 실패", "Export failed", "書き出し失敗",
+                                     "Échec de l'export", "Export fehlgeschlagen"))
+        }
+    }
+
+    private func importPresets() {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.json]
+        panel.allowsMultipleSelection = false
+        guard panel.runModal() == .OK, let url = panel.url,
+              let data = try? Data(contentsOf: url) else { return }
+        if let count = model.importPresets(from: data) {
+            showPresetTransferNote(presetCountLabel(count))
+        } else {
+            showPresetTransferNote(L("파일을 읽을 수 없음", "Unreadable file", "読み込めないファイル",
+                                     "Fichier illisible", "Datei nicht lesbar"))
+        }
+    }
+
+    private func showPresetTransferNote(_ note: String) {
+        withAnimation { presetTransferNote = note }
+        Task {
+            try? await Task.sleep(nanoseconds: 2_200_000_000)
+            withAnimation { presetTransferNote = nil }
+        }
+    }
+
+    private func presetCountLabel(_ n: Int) -> String {
+        switch AppLanguage.effective {
+        case .korean:   return "\(n)개 가져옴"
+        case .japanese: return "\(n) 件を読み込み"
+        case .french:   return "\(n) importés"
+        case .german:   return "\(n) importiert"
+        default:        return "\(n) imported"
+        }
     }
 
     // Native Liquid-Glass action button that clears the on-disk synced-lyrics cache.

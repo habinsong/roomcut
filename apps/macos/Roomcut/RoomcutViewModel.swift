@@ -18,10 +18,13 @@ public struct SavedPreset: Codable, Identifiable, Equatable {
     public var roomReduce: Double
     public var spatialMode: Double
     // v2: also capture Basic macros, Parametric bands and the Limiter, plus a tree
-    // folder. Defaults keep older saves valid.
+    // folder. v3 adds dynamics (highpassHz/compAmount). Defaults keep older saves
+    // valid.
     public var eqMacros: [String: Double]
     public var parametric: [ParametricBand]
     public var limiterReleaseMs: Double
+    public var highpassHz: Double
+    public var compAmount: Double
     public var folder: String?
     public var builtin: Bool   // app-shipped library entry (not user-created)
     public var roomTuneInfo: String?   // Room Tune measurement summary (date · devices · bands)
@@ -39,6 +42,8 @@ public struct SavedPreset: Codable, Identifiable, Equatable {
                 eqMacros: [String: Double] = [:],
                 parametric: [ParametricBand] = [],
                 limiterReleaseMs: Double = 100.0,
+                highpassHz: Double = 0,
+                compAmount: Double = 0,
                 folder: String? = nil,
                 builtin: Bool = false,
                 roomTuneInfo: String? = nil) {
@@ -54,6 +59,8 @@ public struct SavedPreset: Codable, Identifiable, Equatable {
         self.eqMacros = eqMacros
         self.parametric = parametric
         self.limiterReleaseMs = limiterReleaseMs
+        self.highpassHz = highpassHz
+        self.compAmount = compAmount
         self.folder = folder
         self.builtin = builtin
         self.roomTuneInfo = roomTuneInfo
@@ -62,7 +69,8 @@ public struct SavedPreset: Codable, Identifiable, Equatable {
     enum CodingKeys: String, CodingKey {
         case name, preampDb, eqGainsDb, outputGainDb
         case spatialWidth, centerFocus, crossfeed, roomReduce, spatialMode
-        case eqMacros, parametric, limiterReleaseMs, folder, builtin, roomTuneInfo
+        case eqMacros, parametric, limiterReleaseMs, highpassHz, compAmount
+        case folder, builtin, roomTuneInfo
     }
 
     public init(from decoder: Decoder) throws {
@@ -79,6 +87,8 @@ public struct SavedPreset: Codable, Identifiable, Equatable {
         eqMacros = try c.decodeIfPresent([String: Double].self, forKey: .eqMacros) ?? [:]
         parametric = try c.decodeIfPresent([ParametricBand].self, forKey: .parametric) ?? []
         limiterReleaseMs = try c.decodeIfPresent(Double.self, forKey: .limiterReleaseMs) ?? 100.0
+        highpassHz = try c.decodeIfPresent(Double.self, forKey: .highpassHz) ?? 0
+        compAmount = try c.decodeIfPresent(Double.self, forKey: .compAmount) ?? 0
         folder = try c.decodeIfPresent(String.self, forKey: .folder)
         builtin = try c.decodeIfPresent(Bool.self, forKey: .builtin) ?? false
         roomTuneInfo = try c.decodeIfPresent(String.self, forKey: .roomTuneInfo)
@@ -325,6 +335,12 @@ public final class RoomcutViewModel: ObservableObject {
     // 0 = Speaker (crosstalk cancellation), 1 = Headphone (crossfeed). The "crossfeed"
     // control means opposite things on the two systems, so it follows this mode.
     @Published public var spatialMode = 0.0
+    // Dynamics: the light compressor's single knob (0..100, 0 = off) surfaced as
+    // "볼륨 평준화" — evens out loud/quiet passages for night listening. The HPF
+    // has no UI (Dialogue-preset internal) but must round-trip so a hand-tweak
+    // after Dialogue doesn't silently drop it.
+    @Published public var compAmount = 0.0
+    @Published public var highpassHz = 0.0
     @Published public var parametric: [ParametricBand] =
         Array(repeating: ParametricBand(), count: EngineParameters.paramBandCount)
     // Basic-tab macro positions in [-1, 1]. Held on the model (not a transient
@@ -370,6 +386,13 @@ public final class RoomcutViewModel: ObservableObject {
     // UI language override (Settings → Appearance). `auto` follows the system.
     @Published public private(set) var language: AppLanguage = .auto
     @Published public private(set) var analysis: RoomcutAnalysisSnapshot?
+    // Per-device presets (Settings → behavior): when on, applying a builtin or
+    // saved preset remembers it for the CURRENT output device, and switching the
+    // output device re-applies that device's remembered preset. The map persists
+    // in UserDefaults keyed by device UID; values are picker tokens ("night",
+    // "saved:<name>").
+    @Published public private(set) var deviceAutoPresetEnabled = false
+    private var devicePresetMap: [String: String] = [:]
 
     // Sample Now Playing metadata, set only by a `--ui-fixture` launch. nil in
     // production → the UI uses the engine-signal fallback (System Audio).
@@ -444,6 +467,10 @@ public final class RoomcutViewModel: ObservableObject {
             language = l
         }
         AppLanguage.preference = language
+        deviceAutoPresetEnabled = UserDefaults.standard.bool(forKey: Self.deviceAutoPresetKey)
+        if let map = UserDefaults.standard.dictionary(forKey: Self.devicePresetMapKey) as? [String: String] {
+            devicePresetMap = map
+        }
     }
 
     deinit {
@@ -492,6 +519,7 @@ public final class RoomcutViewModel: ObservableObject {
 
         let refreshDate = Date()
         let wasOffline = !status.reachable
+        let previousDeviceUID = status.outputDeviceUID
         let outputDeviceChanged = status.outputDeviceUID != nextStatus.outputDeviceUID
         let needsParams = wasOffline
             || lastSeenPresetId != nextStatus.presetId
@@ -519,6 +547,18 @@ public final class RoomcutViewModel: ObservableObject {
         }
         lastSeenPresetId = nextStatus.presetId
         lastSeenRevision = nextStatus.paramsRevision
+
+        // Per-device presets: react only to a REAL device switch while connected
+        // (both UIDs non-empty, engine previously reachable). First connect is
+        // left alone — the engine already resumed the user's last state, and
+        // stomping it with a mapped preset would surprise.
+        if deviceAutoPresetEnabled && outputDeviceChanged && !wasOffline
+            && !previousDeviceUID.isEmpty && !nextStatus.outputDeviceUID.isEmpty
+            && !isEditingParams,
+           let token = devicePresetMap[nextStatus.outputDeviceUID],
+           token != presetPickerSelection {
+            applyPickerSelection(token)
+        }
 
         // On the first healthy poll, make Roomcut the macOS default output so app
         // audio actually flows through the engine — otherwise the meters sit at
@@ -614,6 +654,8 @@ public final class RoomcutViewModel: ObservableObject {
             eqMacros: Dictionary(uniqueKeysWithValues: macroValues.map { ($0.key.rawValue, $0.value) }),
             parametric: parametricAvailable ? parametric : [],
             limiterReleaseMs: limiterReleaseMs,
+            highpassHz: dynamicsAvailable ? highpassHz : 0,
+            compAmount: dynamicsAvailable ? compAmount : 0,
             folder: folder,
             roomTuneInfo: roomTuneInfo)
     }
@@ -648,6 +690,8 @@ public final class RoomcutViewModel: ObservableObject {
         crossfeed = spatialAvailable ? preset.crossfeed : 0
         roomReduce = spatialAvailable ? preset.roomReduce : 0
         spatialMode = spatialAvailable ? preset.spatialMode : 0
+        highpassHz = dynamicsAvailable ? preset.highpassHz : 0
+        compAmount = dynamicsAvailable ? preset.compAmount : 0
         if parametricAvailable, !preset.parametric.isEmpty {
             var bands = Array(preset.parametric.prefix(EngineParameters.paramBandCount))
             if bands.count < EngineParameters.paramBandCount {
@@ -669,6 +713,12 @@ public final class RoomcutViewModel: ObservableObject {
         savedPresets.removeAll { $0.id == preset.id }
         persistSavedPresets()
         if activeSavedPreset == preset.name { setActivePreset(savedName: nil, builtinId: nil) }
+        // Drop per-device mappings that pointed at the deleted preset.
+        let token = "saved:\(preset.name)"
+        if devicePresetMap.contains(where: { $0.value == token }) {
+            devicePresetMap = devicePresetMap.filter { $0.value != token }
+            persistDevicePresetMap()
+        }
     }
 
     // The name to show wherever the preset surfaces (menu bar, Settings, the EQ
@@ -715,6 +765,92 @@ public final class RoomcutViewModel: ObservableObject {
         else { UserDefaults.standard.removeObject(forKey: Self.activePresetKey) }
         if let builtinId { UserDefaults.standard.set(builtinId, forKey: Self.activeBuiltinPresetKey) }
         else { UserDefaults.standard.removeObject(forKey: Self.activeBuiltinPresetKey) }
+        recordDevicePreset()
+    }
+
+    // MARK: Per-device presets
+
+    public func setDeviceAutoPreset(_ on: Bool) {
+        guard deviceAutoPresetEnabled != on else { return }
+        deviceAutoPresetEnabled = on
+        UserDefaults.standard.set(on, forKey: Self.deviceAutoPresetKey)
+        // Turning it on adopts the currently active preset for the current device
+        // right away, so the very next device round-trip already restores it.
+        if on { recordDevicePreset() }
+    }
+
+    // Remember an EXPLICIT preset activation (builtin or saved) for the current
+    // output device. Custom hand-edits (both names nil) leave the map alone — the
+    // device keeps its last known preset.
+    private func recordDevicePreset() {
+        guard deviceAutoPresetEnabled else { return }
+        let uid = status.outputDeviceUID
+        guard !uid.isEmpty else { return }
+        let token = activeSavedPreset.map { "saved:\($0)" } ?? activeBuiltinPresetId
+        guard let token, devicePresetMap[uid] != token else { return }
+        devicePresetMap[uid] = token
+        persistDevicePresetMap()
+    }
+
+    private func persistDevicePresetMap() {
+        UserDefaults.standard.set(devicePresetMap, forKey: Self.devicePresetMapKey)
+    }
+
+    private static let deviceAutoPresetKey = "com.roomcut.deviceAutoPreset"
+    private static let devicePresetMapKey = "com.roomcut.devicePresetMap"
+
+    // MARK: Preset file export / import (backup & sharing)
+
+    // On-disk JSON envelope. Versioned so the format can evolve; presets reuse
+    // SavedPreset's Codable (same decode-if-present back-compat as UserDefaults).
+    public struct PresetExportFile: Codable {
+        public var version: Int
+        public var presets: [SavedPreset]
+    }
+
+    // All user-saved presets as pretty-printed JSON. nil when there is nothing
+    // to export (the UI disables the button).
+    public func exportPresetsData() -> Data? {
+        guard !savedPresets.isEmpty else { return nil }
+        let file = PresetExportFile(version: 1, presets: savedPresets.filter { !$0.builtin })
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        return try? encoder.encode(file)
+    }
+
+    // Merge presets from an exported file: same-name user presets are
+    // OVERWRITTEN (the same rule as saving), everything imports as a user preset
+    // (builtin is never trusted from disk). Returns the imported count, or nil
+    // when the data isn't a Roomcut preset file.
+    @discardableResult
+    public func importPresets(from data: Data) -> Int? {
+        let decoder = JSONDecoder()
+        let incoming: [SavedPreset]
+        if let file = try? decoder.decode(PresetExportFile.self, from: data) {
+            incoming = file.presets
+        } else if let bare = try? decoder.decode([SavedPreset].self, from: data) {
+            incoming = bare
+        } else {
+            return nil
+        }
+        var imported = 0
+        for preset in incoming {
+            var p = preset
+            p.builtin = false
+            let trimmed = p.name.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty else { continue }
+            p.name = trimmed
+            if let idx = savedPresets.firstIndex(where: {
+                !$0.builtin && $0.name.caseInsensitiveCompare(trimmed) == .orderedSame
+            }) {
+                savedPresets[idx] = p
+            } else {
+                savedPresets.append(p)
+            }
+            imported += 1
+        }
+        if imported > 0 { persistSavedPresets() }
+        return imported
     }
 
     private static let savedPresetsKey = "com.roomcut.savedPresets"
@@ -878,6 +1014,29 @@ public final class RoomcutViewModel: ObservableObject {
     public var spatialAvailable: Bool { status.reachable && status.supportsSpatialParams }
     public var parametricAvailable: Bool { status.reachable && status.supportsParametric }
     public var analyzerAvailable: Bool { status.reachable && status.supportsAnalyzer }
+    public var dynamicsAvailable: Bool { status.reachable && status.supportsDynamics }
+
+    public func setCompAmount(_ value: Double) {
+        guard ensureDynamicsAvailable() else { return }
+        compAmount = Self.clamp(value, 0, 100)
+        schedulePushParams(preservingPresetSelection: true)
+    }
+
+    // Low Cut (HPF). The engine treats < 20 Hz as off (DSPChain::configureHpf);
+    // 400 Hz mirrors PresetBounds::kHighpassMaxHz.
+    public func setHighpassHz(_ value: Double) {
+        guard ensureDynamicsAvailable() else { return }
+        highpassHz = Self.clamp(value, 0, 400)
+        schedulePushParams(preservingPresetSelection: true)
+    }
+
+    private func ensureDynamicsAvailable() -> Bool {
+        guard dynamicsAvailable else {
+            errorBanner = status.reachable ? "현재 엔진이 볼륨 평준화를 지원하지 않습니다" : "연결 끊김"
+            return false
+        }
+        return true
+    }
 
     public func setAnalyzerVisible(_ visible: Bool) {
         analyzerVisible = visible
@@ -1135,6 +1294,8 @@ public final class RoomcutViewModel: ObservableObject {
                          crossfeed: spatialAvailable ? crossfeed : 0,
                          roomReduce: spatialAvailable ? roomReduce : 0,
                          spatialMode: spatialAvailable ? spatialMode : 0,
+                         highpassHz: dynamicsAvailable ? highpassHz : 0,
+                         compAmount: dynamicsAvailable ? compAmount : 0,
                          parametric: parametricAvailable ? parametric
                                      : Array(repeating: ParametricBand(), count: EngineParameters.paramBandCount))
     }
@@ -1149,6 +1310,8 @@ public final class RoomcutViewModel: ObservableObject {
         crossfeed = spatialAvailable ? params.crossfeed : 0
         roomReduce = spatialAvailable ? params.roomReduce : 0
         spatialMode = spatialAvailable ? params.spatialMode : 0
+        highpassHz = dynamicsAvailable ? params.highpassHz : 0
+        compAmount = dynamicsAvailable ? params.compAmount : 0
         parametric = params.parametric.count == EngineParameters.paramBandCount
             ? params.parametric
             : Array(repeating: ParametricBand(), count: EngineParameters.paramBandCount)

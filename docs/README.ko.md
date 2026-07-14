@@ -59,13 +59,15 @@ Widen은 더 넓은 무대가 필요할 때 펼칩니다. <br><br>
 - **양방향 공간 제어.** 이미지를 좁히거나 넓히는 걸 자유롭게: Space(폭), Center(팬텀 센터 포커스), Damping(룸 감쇠), 크로스피드/크로스토크. <br>
 스피커·헤드폰 모드 전환과 서라운드 토글을 제공하고, 슬라이더를 움직이면 실시간 스테레오 필드 뷰가 반응합니다. Focus·Widen은 원탭 프리셋.
 - **리미터와 게인.** 프리앰프·출력 트림과 피크 리미터로, <br>
-과한 EQ 곡선이 출력을 클리핑하지 않게 합니다.
+과한 EQ 곡선이 출력을 클리핑하지 않게 합니다. <br>
+볼륨 평준화 노브는 큰 소리와 작은 소리의 차이를 줄여 심야 감상에 좋습니다.
 - **고해상도 대응.** 내부적으로 32비트 플로트로 처리하고, 출력 장치의 샘플레이트와 비트 뎁스를 선택할 수 있습니다. <br>
 Now Playing 카드에 현재 포맷과 지연이 표시됩니다.
 - **분석기.** 실시간 피크, RMS, 스테레오 폭, 스펙트럴 센트로이드,<br>
  스펙트럼 뷰, 그리고 지금 재생 중인 소리를 설명하는 라벨.
 - **프리셋.** Signature·Apple 기기·Speakers·Headphones로 묶인 <br>
-내장 라이브러리와 직접 저장한 프리셋입니다.
+내장 라이브러리와 직접 저장한 프리셋입니다. JSON 파일로 내보내고 가져올 수 있으며, <br>
+출력 기기별로 프리셋을 기억해 자동으로 전환할 수도 있습니다.
 - **Room Tune.** iPhone을 마이크로 써서 방을 측정하고, 룸튜닝을 진행합니다.<br>
  가장 두드러진 공진에 보수적인 EQ 보정을 제안합니다. <br>
 깎기만 하고 올리지 않으며, 결과를 프리셋으로 저장합니다.
@@ -143,7 +145,7 @@ sudo bash scripts/install-driver.sh
 - **Space.** 스테레오 이미지를 좁히거나 넓히고, 센터 포커스·룸 댐핑·크로스피드를 설정합니다. 스피커·헤드폰용 Focus / Widen 프리셋 포함.
 - **Tune.** iPhone(Continuity 마이크)으로 방을 측정하고 보수적인 EQ 보정을 적용합니다.
 - **Inspect.** 읽기 전용 미터: 피크, 리미터, 드롭아웃, 상관도, 폭, 샘플레이트, 지연, 엔진 상태.
-- **Settings.** 출력 장치와 포맷, 볼륨, 로그인 시 실행, 외관(테마·레이아웃·언어), 가사 캐시.
+- **Settings.** 출력 장치와 포맷, 볼륨, 기기별 프리셋 기억, 로그인 시 실행, 외관(테마·레이아웃·언어), 프리셋 내보내기/가져오기, 가사 캐시.
 
 <div align="center">
 <img src="https://raw.githubusercontent.com/habinsong/roomcut/master/icon/app/main_space.png" alt="Space" width="150"> <img src="https://raw.githubusercontent.com/habinsong/roomcut/master/icon/app/main_tune_start.png" alt="Tune" width="150"> <img src="https://raw.githubusercontent.com/habinsong/roomcut/master/icon/app/main_tune_measuring.png" alt="Tune 측정 중" width="150"> <img src="https://raw.githubusercontent.com/habinsong/roomcut/master/icon/app/main_tune_result.png" alt="Tune 결과" width="150"> <img src="https://raw.githubusercontent.com/habinsong/roomcut/master/icon/app/main_inspect.png" alt="Inspect" width="150">
@@ -162,7 +164,7 @@ Home의 사운드 컨트롤 시트에는 두 가지 모드가 있습니다:
   - **graph.** 합쳐진 EQ 응답을 읽기 전용 곡선 하나로 표시.
   - **10-Band.** 클래식 그래픽 EQ. 각 밴드를 직접 끕니다.
   - **Parametric.** 6개 바이쿼드 밴드(벨·셸프·하이/로우 패스·노치)를 주파수·게인·Q로 조정.
-  - **Limiter.** 피크 리미터와 프리앰프·출력 게인.
+  - **Limiter.** 피크 리미터와 프리앰프·출력 게인, 심야 감상용 볼륨 평준화.
   - **Analyzer.** 실시간 스펙트럼과 피크·RMS·스테레오 폭·스펙트럴 센트로이드.
 
 <div align="center">

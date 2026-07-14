@@ -109,6 +109,65 @@ struct AdvancedControls: View {
                        value: $model.preampDb, range: -24...12)
             gainSlider(title: L("Output", "Output", "出力", "Sortie", "Ausgabe"),
                        value: $model.outputGainDb, range: -24...12)
+            if model.dynamicsAvailable {
+                levelingSlider
+                lowCutSlider
+            }
+        }
+    }
+
+    // Low Cut (HPF): trims rumble below the set frequency. The engine treats
+    // anything under 20 Hz as off, so the bottom of the slider reads "Off".
+    private var lowCutSlider: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack {
+                Text(L("저음 컷", "Low Cut", "ローカット", "Coupe-bas", "Low Cut"))
+                    .foregroundStyle(RoomcutTokens.textSecondary(scheme))
+                Spacer()
+                Text(model.highpassHz < 20
+                     ? L("꺼짐", "Off", "オフ", "Désactivé", "Aus")
+                     : "\(Int(model.highpassHz.rounded())) Hz")
+                    .monospacedDigit()
+                    .foregroundStyle(RoomcutTokens.textPrimary(scheme))
+            }
+            .font(.callout)
+            Slider(value: Binding(
+                get: { model.highpassHz },
+                set: { model.setHighpassHz($0) }
+            ), in: 0...400)
+            .tint(RoomcutTokens.blue(scheme))
+            .accessibilityLabel(L("저음 컷", "Low Cut", "ローカット", "Coupe-bas", "Low Cut"))
+            .accessibilityValue(model.highpassHz < 20
+                ? L("꺼짐", "Off", "オフ", "Désactivé", "Aus")
+                : "\(Int(model.highpassHz.rounded())) Hz")
+        }
+    }
+
+    // 볼륨 평준화: the light compressor's single knob (0 = off). Evens out
+    // loud/quiet passages — night listening without riding the volume.
+    private var levelingSlider: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack {
+                Text(L("볼륨 평준화", "Volume Leveling", "音量の平準化", "Nivellement du volume", "Lautstärkeangleichung"))
+                    .foregroundStyle(RoomcutTokens.textSecondary(scheme))
+                Spacer()
+                Text(model.compAmount < 0.5
+                     ? L("꺼짐", "Off", "オフ", "Désactivé", "Aus")
+                     : "\(Int(model.compAmount.rounded()))%")
+                    .monospacedDigit()
+                    .foregroundStyle(RoomcutTokens.textPrimary(scheme))
+            }
+            .font(.callout)
+            Slider(value: Binding(
+                get: { model.compAmount },
+                set: { model.setCompAmount($0) }
+            ), in: 0...100)
+            .tint(RoomcutTokens.blue(scheme))
+            .accessibilityLabel(L("볼륨 평준화", "Volume Leveling", "音量の平準化",
+                                  "Nivellement du volume", "Lautstärkeangleichung"))
+            .accessibilityValue(model.compAmount < 0.5
+                ? L("꺼짐", "Off", "オフ", "Désactivé", "Aus")
+                : "\(Int(model.compAmount.rounded())) %")
         }
     }
 

@@ -186,4 +186,74 @@ final class NowPlayingPayloadTests: XCTestCase {
             [-1]
         )
     }
+
+    // MARK: Baked-in letterbox/pillarbox trimming (video artwork canvases)
+
+    // A synthetic canvas: `fill` background with a `content`-coloured rect.
+    private func makeCanvas(width: Int, height: Int,
+                            contentRect: CGRect?,
+                            fill: CGColor,
+                            content: CGColor) -> CGImage {
+        let ctx = CGContext(
+            data: nil, width: width, height: height, bitsPerComponent: 8,
+            bytesPerRow: width * 4, space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+        ctx.setFillColor(fill)
+        ctx.fill(CGRect(x: 0, y: 0, width: width, height: height))
+        if let contentRect {
+            ctx.setFillColor(content)
+            ctx.fill(contentRect)
+        }
+        return ctx.makeImage()!
+    }
+
+    private var gray: CGColor { CGColor(red: 0.5, green: 0.55, blue: 0.6, alpha: 1) }
+    private var black: CGColor { CGColor(red: 0, green: 0, blue: 0, alpha: 1) }
+
+    func testTrimsPillarboxBarsFromWideCanvas() {
+        // A Shorts-style 16:9 canvas: black pillars, ~portrait content centred.
+        let cg = makeCanvas(width: 336, height: 188,
+                            contentRect: CGRect(x: 74, y: 0, width: 188, height: 188),
+                            fill: black, content: gray)
+        let out = ArtworkCanvas.trimmedLetterboxBars(cg)
+        XCTAssertNotNil(out)
+        XCTAssertLessThanOrEqual(abs(out!.width - 188), 3, "pillars trimmed to the content")
+        XCTAssertEqual(out!.height, 188)
+    }
+
+    func testTrimsLetterboxBarsFromTallCanvas() {
+        // Landscape content baked into a tall canvas (bars top/bottom).
+        let cg = makeCanvas(width: 188, height: 336,
+                            contentRect: CGRect(x: 0, y: 118, width: 188, height: 100),
+                            fill: black, content: gray)
+        let out = ArtworkCanvas.trimmedLetterboxBars(cg)
+        XCTAssertNotNil(out)
+        XCTAssertLessThanOrEqual(abs(out!.height - 100), 3, "letterbox trimmed to the content")
+        XCTAssertEqual(out!.width, 188)
+    }
+
+    func testSquareCanvasIsNeverTrimmed() {
+        // A dark album cover with black margins is art, not padding.
+        let cg = makeCanvas(width: 300, height: 300,
+                            contentRect: CGRect(x: 100, y: 100, width: 100, height: 100),
+                            fill: black, content: gray)
+        XCTAssertNil(ArtworkCanvas.trimmedLetterboxBars(cg))
+    }
+
+    func testFullBleedWideContentIsNotTrimmed() {
+        let cg = makeCanvas(width: 336, height: 188, contentRect: nil,
+                            fill: gray, content: gray)
+        XCTAssertNil(ArtworkCanvas.trimmedLetterboxBars(cg))
+    }
+
+    func testAllBlackWideCanvasKeepsAUsableCore() {
+        // Pathological: an entirely black frame must not trim to nothing — the
+        // per-axis caps stop at 42% per side and the result stays usable.
+        let cg = makeCanvas(width: 336, height: 188, contentRect: nil,
+                            fill: black, content: black)
+        if let out = ArtworkCanvas.trimmedLetterboxBars(cg) {
+            XCTAssertGreaterThanOrEqual(out.width, 16)
+            XCTAssertGreaterThanOrEqual(out.height, 16)
+        }
+    }
 }
