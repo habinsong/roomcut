@@ -29,6 +29,19 @@ struct SettingsTab: View {
         // Tighter than the other tabs (smaller section gaps + denser rows + no inner
         // dividers) so the whole list — including Quit — fits above the tab bar.
         RoomcutTabScreen(spacing: 10, bottomPadding: 80) {
+            RoomcutSection(L("Appearance", "Appearance", "外観", "Apparence", "Erscheinungsbild")) {
+                appearanceSelector
+                themeSelector
+                layoutSelector
+                languageSelector
+                RoomcutRow(L("축소 모드에도 테마 적용", "Apply Theme in Compact Mode", "コンパクト表示でもテーマを適用",
+                             "Appliquer le thème en mode compact", "Thema auch im Kompaktmodus"),
+                           systemImage: "rectangle.on.rectangle") {
+                    settingsSwitch(Binding(get: { model.themeSyncEnabled },
+                                           set: { model.setThemeSync($0) }))
+                }
+            }
+
             RoomcutSection(L("Output", "Output", "出力", "Sortie", "Ausgabe")) {
                 RoomcutRow(L("출력 장치", "Output Device", "出力デバイス", "Périphérique de sortie", "Ausgabegerät"),
                            systemImage: "hifispeaker") {
@@ -113,37 +126,27 @@ struct SettingsTab: View {
                 }
             }
 
-            RoomcutSection(L("Appearance", "Appearance", "外観", "Apparence", "Erscheinungsbild")) {
-                appearanceSelector
-                themeSelector
-                layoutSelector
-                languageSelector
-                RoomcutRow(L("축소 모드에도 테마 적용", "Apply Theme in Compact Mode", "コンパクト表示でもテーマを適用",
-                             "Appliquer le thème en mode compact", "Thema auch im Kompaktmodus"),
-                           systemImage: "rectangle.on.rectangle") {
-                    settingsSwitch(Binding(get: { model.themeSyncEnabled },
-                                           set: { model.setThemeSync($0) }))
-                }
-            }
-
-            RoomcutSection(L("Presets", "Presets", "プリセット", "Préréglages", "Presets")) {
-                RoomcutRow(L("프리셋 내보내기", "Export Presets", "プリセットを書き出す",
-                             "Exporter les préréglages", "Presets exportieren"),
-                           systemImage: "square.and.arrow.up") {
-                    glassActionButton(L("JSON 파일…", "JSON File…", "JSONファイル…", "Fichier JSON…", "JSON-Datei…"),
-                                      disabled: model.savedPresets.isEmpty) { exportPresets() }
-                }
-                RoomcutRow(L("프리셋 가져오기", "Import Presets", "プリセットを読み込む",
-                             "Importer des préréglages", "Presets importieren"),
-                           systemImage: "square.and.arrow.down") {
+            RoomcutSection("") {
+                RoomcutRow(L("프리셋", "Presets", "プリセット", "Préréglages", "Presets"),
+                           systemImage: "slider.horizontal.3") {
                     HStack(spacing: 8) {
                         if let note = presetTransferNote {
                             Text(note)
                                 .font(.system(size: 11, weight: .medium))
                                 .foregroundStyle(.secondary)
                         }
-                        glassActionButton(L("JSON 파일…", "JSON File…", "JSONファイル…", "Fichier JSON…", "JSON-Datei…"),
+                        glassActionButton(systemImage: "square.and.arrow.up",
+                                          accessibilityLabel: L("프리셋 내보내기", "Export Presets", "プリセットを書き出す",
+                                                                "Exporter les préréglages", "Presets exportieren"),
+                                          disabled: model.savedPresets.isEmpty) { exportPresets() }
+                            .help(L("프리셋 내보내기", "Export Presets", "プリセットを書き出す",
+                                    "Exporter les préréglages", "Presets exportieren"))
+                        glassActionButton(systemImage: "square.and.arrow.down",
+                                          accessibilityLabel: L("프리셋 가져오기", "Import Presets", "プリセットを読み込む",
+                                                                "Importer des préréglages", "Presets importieren"),
                                           disabled: false) { importPresets() }
+                            .help(L("프리셋 가져오기", "Import Presets", "プリセットを読み込む",
+                                    "Importer des préréglages", "Presets importieren"))
                     }
                 }
             }
@@ -317,12 +320,13 @@ struct SettingsTab: View {
         .disabled(disabled)
     }
 
-    // Small flat-capsule action button, the same recipe as glassMenu's label so
-    // the preset export/import rows match the pickers around them.
-    private func glassActionButton(_ title: String, disabled: Bool,
+    // Small icon-only flat-capsule action button, the same recipe as glassMenu's
+    // label so the preset export/import rows match the pickers around them.
+    private func glassActionButton(systemImage: String, accessibilityLabel: String,
+                                   disabled: Bool,
                                    action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Text(title)
+            Image(systemName: systemImage)
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(disabled ? RoomcutTokens.textTertiary(scheme)
                                  : RoomcutTokens.textPrimary(scheme))
@@ -335,6 +339,7 @@ struct SettingsTab: View {
         .background(Capsule().fill(.quaternary))
         .clipShape(Capsule())
         .disabled(disabled)
+        .accessibilityLabel(accessibilityLabel)
     }
 
     private func exportPresets() {
