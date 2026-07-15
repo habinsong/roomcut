@@ -183,6 +183,19 @@ int roomcutClientBalanceSet(double pan);
  * default, < 0 on error. In-process CoreAudio (no engine round-trip). */
 int roomcutClientMakeDefaultOutput(void);
 
+/* Master switch OFF: route the system default output away from Roomcut, back to
+ * the real device the engine renders to (or any real output device), so audio
+ * bypasses Roomcut entirely. Pair with roomcutClientSetKeepDefault(0) so the
+ * engine doesn't immediately reclaim the default. Returns 0 if it set the
+ * default, 1 if a real device was already default, < 0 on error. In-process
+ * CoreAudio (no engine round-trip). */
+int roomcutClientRestoreRealDefault(void);
+
+/* Is the Roomcut virtual device the current system default output? 1 = yes
+ * (app audio routes through the engine), 0 = a real device is default, < 0 on
+ * error. In-process CoreAudio. */
+int roomcutClientRoomcutIsDefault(void);
+
 /* Push a full custom parameter set (engine clamps via PresetValidator). */
 int roomcutClientSetParams(double preampDb,
                            const double eqGainsDb[ROOMCUT_CLIENT_EQ_BANDS],

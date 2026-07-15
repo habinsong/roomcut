@@ -509,7 +509,9 @@ private struct TopBar: View {
         if brightBackdrop { return .black }
         return RoomcutTokens.textPrimary(scheme)
     }
-    private var isOn: Bool { RoomcutMainPresentation.roomcutEnabled(manualBypass: model.status.manualBypass) }
+    // Master switch: ON when Roomcut is the system default output (audio routed
+    // through the engine), OFF when it's fully out of the path.
+    private var isOn: Bool { model.roomcutIsDefault }
     private var deviceName: String {
         model.outputDevices.first { $0.uid == model.selectedDeviceUID }?.name ?? "출력 장치"
     }
@@ -556,9 +558,10 @@ private struct TopBar: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 32)
 
-            // ON / OFF — background only while pressed.
+            // ON / OFF — master switch (routes the system default in/out of
+            // Roomcut). Background only while pressed.
             Button {
-                model.setBypass(RoomcutMainPresentation.manualBypass(forEnabled: !isOn))
+                model.setMasterEnabled(!isOn)
             } label: {
                 HStack(spacing: 7) {
                     Circle().fill(dotColor).frame(width: 7, height: 7)

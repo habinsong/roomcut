@@ -205,4 +205,9 @@ public final class FixtureEngineClient: EngineClientProtocol, @unchecked Sendabl
     public func volumeSet(_ scalar: Double) { liveVolume = scalar }
     public func balanceGet() -> Double? { kind == .offline ? nil : liveBalance }
     public func balanceSet(_ pan: Double) { liveBalance = pan }
+
+    private var roomcutDefault = true
+    public func makeRoomcutDefaultOutput() { roomcutDefault = true }
+    public func restoreRealDefaultOutput() { roomcutDefault = false }
+    public func roomcutIsDefaultOutput() -> Bool { kind != .offline && roomcutDefault }
 }

@@ -259,6 +259,11 @@ public protocol EngineClientProtocol: AnyObject {
     // routed through the engine (where EQ is applied) without the user changing
     // the system output by hand.
     func makeRoomcutDefaultOutput()
+    // Master switch OFF: route the system default output back to the real device
+    // so audio bypasses Roomcut entirely.
+    func restoreRealDefaultOutput()
+    // Is Roomcut currently the macOS default output? (drives the master toggle)
+    func roomcutIsDefaultOutput() -> Bool
 }
 
 public extension EngineClientProtocol {
@@ -266,6 +271,8 @@ public extension EngineClientProtocol {
     func deviceFormatOptions(for uid: String) -> [DeviceFormatOption] { [] }
     func setDeviceFormat(uid: String, sampleRate: Double, bitDepth: Int) async throws {}
     func makeRoomcutDefaultOutput() {}
+    func restoreRealDefaultOutput() {}
+    func roomcutIsDefaultOutput() -> Bool { false }
 }
 
 public final class LiveEngineClient: EngineClientProtocol {
@@ -521,6 +528,14 @@ public final class LiveEngineClient: EngineClientProtocol {
 
     public func makeRoomcutDefaultOutput() {
         _ = roomcutClientMakeDefaultOutput()
+    }
+
+    public func restoreRealDefaultOutput() {
+        _ = roomcutClientRestoreRealDefault()
+    }
+
+    public func roomcutIsDefaultOutput() -> Bool {
+        roomcutClientRoomcutIsDefault() == 1
     }
 
     private func runOnQueue<T>(_ body: @escaping () throws -> T) async throws -> T {

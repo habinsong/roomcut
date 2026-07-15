@@ -215,6 +215,33 @@ AudioDeviceID findRoomcutDeviceID() {
     return kAudioObjectUnknown;
 }
 
+AudioDeviceID systemDefaultOutputDevice() {
+    AudioObjectPropertyAddress addr{kAudioHardwarePropertyDefaultOutputDevice,
+                                    kAudioObjectPropertyScopeGlobal,
+                                    kAudioObjectPropertyElementMain};
+    AudioDeviceID cur = kAudioObjectUnknown;
+    UInt32 z = sizeof(cur);
+    if (AudioObjectGetPropertyData(kAudioObjectSystemObject, &addr, 0, nullptr, &z, &cur) != noErr) {
+        return kAudioObjectUnknown;
+    }
+    return cur;
+}
+
+// Set the macOS default output device. Returns 0 if it changed the default,
+// 1 if `dev` was already default, negative on error.
+int setSystemDefaultOutputDevice(AudioDeviceID dev) {
+    if (dev == kAudioObjectUnknown) return -1;
+    if (systemDefaultOutputDevice() == dev) return 1;
+    AudioObjectPropertyAddress addr{kAudioHardwarePropertyDefaultOutputDevice,
+                                    kAudioObjectPropertyScopeGlobal,
+                                    kAudioObjectPropertyElementMain};
+    if (AudioObjectSetPropertyData(kAudioObjectSystemObject, &addr, 0, nullptr,
+                                   sizeof(dev), &dev) != noErr) {
+        return -2;
+    }
+    return 0;
+}
+
 AudioStreamID firstOutputStream(AudioDeviceID device) {
     AudioObjectPropertyAddress addr{kAudioDevicePropertyStreams,
                                     kAudioObjectPropertyScopeOutput,
@@ -775,20 +802,33 @@ int roomcutClientBalanceSet(double pan) {
 int roomcutClientMakeDefaultOutput(void) {
     AudioDeviceID rc = findRoomcutDeviceID();
     if (rc == kAudioObjectUnknown) return -1;
-    AudioObjectPropertyAddress addr{kAudioHardwarePropertyDefaultOutputDevice,
-                                    kAudioObjectPropertyScopeGlobal,
-                                    kAudioObjectPropertyElementMain};
-    AudioDeviceID current = kAudioObjectUnknown;
-    UInt32 z = sizeof(current);
-    if (AudioObjectGetPropertyData(kAudioObjectSystemObject, &addr, 0, nullptr, &z, &current) == noErr
-        && current == rc) {
-        return 1; // already the system default
+    return setSystemDefaultOutputDevice(rc);
+}
+
+int roomcutClientRestoreRealDefault(void) {
+    // Prefer the real device the engine renders to (what the user thinks of as
+    // "my output"); fall back to any real output device if the engine hasn't
+    // reported one yet.
+    AudioDeviceID target = kAudioObjectUnknown;
+    RoomcutClientState st;
+    std::memset(&st, 0, sizeof(st));
+    if (roomcutClientGetState(&st) == 0 && st.outputDeviceUID[0] != '\0') {
+        target = findRealOutputDevice(st.outputDeviceUID);
     }
-    if (AudioObjectSetPropertyData(kAudioObjectSystemObject, &addr, 0, nullptr,
-                                   sizeof(rc), &rc) != noErr) {
-        return -2;
+    if (target == kAudioObjectUnknown) {
+        const auto devs = realOutputDevices();
+        if (!devs.empty()) target = devs.front().id;
     }
-    return 0;
+    if (target == kAudioObjectUnknown) return -1;
+    return setSystemDefaultOutputDevice(target);
+}
+
+int roomcutClientRoomcutIsDefault(void) {
+    AudioDeviceID rc = findRoomcutDeviceID();
+    if (rc == kAudioObjectUnknown) return -1;
+    AudioDeviceID cur = systemDefaultOutputDevice();
+    if (cur == kAudioObjectUnknown) return -1;
+    return cur == rc ? 1 : 0;
 }
 
 int roomcutClientSetParams(double preampDb,

@@ -322,6 +322,11 @@ public final class RoomcutMeters: ObservableObject {
 @MainActor
 public final class RoomcutViewModel: ObservableObject {
     @Published public var status = EngineStatus()
+    // Master switch: is Roomcut the live macOS default output (audio routed
+    // through the engine)? Reflected from CoreAudio each poll; drives the top
+    // ON/OFF toggle. OFF means the system default is a real device and Roomcut
+    // is fully out of the path.
+    @Published public private(set) var roomcutIsDefault = false
     @Published public var preampDb = 0.0
     @Published public var eqGainsDb = [Double](repeating: 0, count: EngineParameters.bandCount)
     @Published public var outputGainDb = 0.0
@@ -567,6 +572,14 @@ public final class RoomcutViewModel: ObservableObject {
         if !didClaimDefaultOutput && nextStatus.state == EngineStatus.running {
             didClaimDefaultOutput = true
             client.makeRoomcutDefaultOutput()
+        }
+
+        // Master switch state: reflect whether Roomcut is the live system default
+        // output. Cheap in-process CoreAudio read; only republish on a flip so it
+        // doesn't add to the idle re-render load.
+        let rcDefault = client.roomcutIsDefaultOutput()
+        if roomcutIsDefault != rcDefault {
+            roomcutIsDefault = rcDefault
         }
 
         if shouldRefreshDeviceList {
@@ -1065,6 +1078,32 @@ public final class RoomcutViewModel: ObservableObject {
                 errorBanner = nil
             } catch {
                 errorBanner = "바이패스를 변경하지 못했습니다"
+            }
+        }
+    }
+
+    // Master switch: fully engage/disengage Roomcut by switching the system
+    // default output between the Roomcut virtual device and the real device.
+    // keep-default reclaim is coupled so OFF actually sticks (otherwise the
+    // engine would grab the default straight back).
+    public func setMasterEnabled(_ on: Bool) {
+        // Reflect immediately so the toggle doesn't lag the ~80 ms round-trip;
+        // the poll confirms (or corrects) it.
+        roomcutIsDefault = on
+        Task {
+            do {
+                if on {
+                    try await client.setKeepDefault(true)
+                    client.makeRoomcutDefaultOutput()
+                } else {
+                    try await client.setKeepDefault(false)
+                    client.restoreRealDefaultOutput()
+                }
+                await refreshNow()
+                errorBanner = nil
+            } catch {
+                errorBanner = on ? "Roomcut을 켜지 못했습니다" : "Roomcut을 끄지 못했습니다"
+                await refreshNow()
             }
         }
     }
