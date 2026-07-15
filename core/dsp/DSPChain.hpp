@@ -134,10 +134,12 @@ public:
             spatial_.processFrame(wet, channels_);
             comp_.processFrame(wet);
 
-            // Dry/wet blend, then output gain.
+            // Dry/wet blend. Output gain applies to the WET path only (like the
+            // preamp), so a full bypass (mix_ == 0) is a true passthrough — output
+            // gain no longer leaks through the dry signal.
             for (std::size_t c = 0; c < channels_; ++c) {
-                double mixed = (double)wet[c] * mix_ + (double)frame[c] * (1.0 - mix_);
-                frame[c] = (float)(mixed * outGainLin_);
+                double mixed = (double)wet[c] * outGainLin_ * mix_ + (double)frame[c] * (1.0 - mix_);
+                frame[c] = (float)mixed;
             }
 
             // Limiter always runs (safety), on the blended signal.

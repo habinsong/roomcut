@@ -258,9 +258,10 @@ struct RoomTuneTab: View {
     // the same RBJ biquad magnitude the engine applies (BiquadResponse). Display-only.
     private func beforeAfterChart(_ result: RoomTuneResult) -> some View {
         let resp = result.response
+        let fs = model.audioFormat?.sampleRate ?? 48000
         let after = resp.map { item in
             item.db + result.bands.reduce(0.0) {
-                $0 + BiquadResponse.magnitudeDb(band: $1, freqHz: item.freq, fs: 48000)
+                $0 + BiquadResponse.magnitudeDb(band: $1, freqHz: item.freq, fs: fs)
             }
         }
         let allDb = resp.map { $0.db } + after

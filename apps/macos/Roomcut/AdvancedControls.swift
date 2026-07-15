@@ -97,7 +97,9 @@ struct AdvancedControls: View {
 
     private var eqOverview: some View {
         EqResponseCurve(eqGains: model.eqGainsDb, parametric: model.parametric,
-                        preampDb: model.preampDb, accent: RoomcutTokens.blue(scheme), scheme: scheme)
+                        preampDb: model.preampDb,
+                        sampleRate: model.audioFormat?.sampleRate ?? 48000,
+                        accent: RoomcutTokens.blue(scheme), scheme: scheme)
             .equatable()
             .frame(height: 120)
     }

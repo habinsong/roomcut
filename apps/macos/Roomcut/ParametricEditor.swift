@@ -47,7 +47,9 @@ struct ParametricEditor: View {
             }
 
             // Magnitude response — flat content, not glass (HIG).
-            ParametricCurve(bands: model.parametric, accent: accent, scheme: scheme)
+            ParametricCurve(bands: model.parametric,
+                            sampleRate: model.audioFormat?.sampleRate ?? 48000,
+                            accent: accent, scheme: scheme)
                 .equatable()
                 .frame(height: 96)
                 .frame(maxWidth: .infinity)
@@ -105,6 +107,10 @@ struct ParametricEditor: View {
 
 private struct ParametricCurve: View, Equatable {
     let bands: [ParametricBand]
+    // The rate the engine actually runs the biquads at (the real output device's
+    // rate). The response is rate-dependent (bilinear warping near Nyquist), so
+    // hardcoding 48 kHz drew a curve that didn't match what's heard at hi-res.
+    let sampleRate: Double
     let accent: Color
     let scheme: ColorScheme
 
@@ -112,7 +118,8 @@ private struct ParametricCurve: View, Equatable {
     private let fMin = 20.0, fMax = 20000.0
 
     static func == (l: ParametricCurve, r: ParametricCurve) -> Bool {
-        l.bands == r.bands && l.accent == r.accent && l.scheme == r.scheme
+        l.bands == r.bands && l.sampleRate == r.sampleRate
+            && l.accent == r.accent && l.scheme == r.scheme
     }
 
     var body: some View {
@@ -159,7 +166,7 @@ private struct ParametricCurve: View, Equatable {
     private func totalMagnitudeDb(at f: Double) -> Double {
         var sum = 0.0
         for b in bands where b.enabled {
-            sum += BiquadResponse.magnitudeDb(band: b, freqHz: f, fs: 48000)
+            sum += BiquadResponse.magnitudeDb(band: b, freqHz: f, fs: sampleRate)
         }
         return sum
     }

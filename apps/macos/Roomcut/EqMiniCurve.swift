@@ -87,12 +87,16 @@ struct EqResponseCurve: View, Equatable {
     let eqGains: [Double]
     let parametric: [ParametricBand]
     let preampDb: Double
+    // The engine's actual biquad rate (real output device rate); the response is
+    // rate-dependent, so a fixed 48 kHz mis-drew the curve at hi-res.
+    let sampleRate: Double
     let accent: Color
     let scheme: ColorScheme
 
     static func == (l: EqResponseCurve, r: EqResponseCurve) -> Bool {
         l.eqGains == r.eqGains && l.parametric == r.parametric
-            && l.preampDb == r.preampDb && l.accent == r.accent && l.scheme == r.scheme
+            && l.preampDb == r.preampDb && l.sampleRate == r.sampleRate
+            && l.accent == r.accent && l.scheme == r.scheme
     }
 
     private let fLo = 20.0, fHi = 20_000.0, dbRange = 18.0
@@ -138,10 +142,10 @@ struct EqResponseCurve: View, Equatable {
             sum += BiquadResponse.magnitudeDb(
                 band: ParametricBand(enabled: true, type: 0, freqHz: EqBands.centersHz[i],
                                      gainDb: eqGains[i], q: 1.41),
-                freqHz: f, fs: 48000)
+                freqHz: f, fs: sampleRate)
         }
         for b in parametric where b.enabled {
-            sum += BiquadResponse.magnitudeDb(band: b, freqHz: f, fs: 48000)
+            sum += BiquadResponse.magnitudeDb(band: b, freqHz: f, fs: sampleRate)
         }
         return sum
     }

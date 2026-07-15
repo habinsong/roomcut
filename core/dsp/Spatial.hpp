@@ -36,6 +36,16 @@ public:
         raceHpA_ = 1.0 / (1.0 + 2.0 * kPi * 250.0 / fs_);     // 1st-order HP ~250 Hz
         raceLpA_ = 1.0 - std::exp(-2.0 * kPi * 4500.0 / fs_); // 1st-order LP ~4.5 kHz
         surrLpA_ = 1.0 - std::exp(-2.0 * kPi * 4000.0 / fs_); // surround behind-cue roll-off ~4 kHz
+        // Surround ambience taps in TIME, not fixed sample counts: the old
+        // constexpr 252 / 393 were ~5.25 ms / ~8.19 ms only at 48 kHz and shrank
+        // 8x at 384 kHz (the field collapsed at hi-res). Compute from fs so the
+        // decorrelation delay is rate-independent. At 48 kHz these round back to
+        // 252 / 393 exactly (bit-identical to the old behaviour). Clamp to the
+        // line length for extreme rates.
+        surrTap1_ = std::max<std::size_t>(1, (std::size_t)std::lround(fs_ * 5.25e-3));
+        surrTap2_ = std::max<std::size_t>(1, (std::size_t)std::lround(fs_ * 8.1875e-3));
+        if (surrTap1_ >= kSurrLen) surrTap1_ = kSurrLen - 1;
+        if (surrTap2_ >= kSurrLen) surrTap2_ = kSurrLen - 1;
         reset();
     }
 
@@ -185,10 +195,17 @@ public:
             // Effective width = set width scaled up for correlated/narrow material, but
             // capped just past the +100 ceiling so the lift can never run away.
             const double effW = std::min(kAdaptWidthCeil, w01_ * (1.0 + adaptDepth_ * adaptAmt_));
+            // Per-band widen slopes. Raised from 0.9/1.3/1.9 (v1.0.3-4): the
+            // 4-band split had dropped the low-mid/presence side gain (~×1.9/×2.3)
+            // well below the old flat ~×2.8 above 250 Hz, so +100 read narrower
+            // than earlier builds. These restore and slightly exceed that width
+            // where envelopment lives, bass still held tight. Measured: side
+            // ~×2.6-2.9 at +100, worst-case (fully decorrelated, hot) limiter GR
+            // ~3 dB — safe, real music far less.
             outSide = bBass * sgBass_
-                    + bLowMid * ((1.0 + 0.9 * effW) * cdLowMid_)
-                    + bMid    * ((1.0 + 1.3 * effW) * cdMid_)
-                    + bAir    * ((1.0 + 1.9 * effW) * cdAir_);
+                    + bLowMid * ((1.0 + 1.6 * effW) * cdLowMid_)
+                    + bMid    * ((1.0 + 2.0 * effW) * cdMid_)
+                    + bAir    * ((1.0 + 2.5 * effW) * cdAir_);
         } else {
             const double bHigh = bLowMid + bMid + bAir;   // = side − bBass
             outSide = bBass * sgNarrowLow_ + bHigh * sgNarrowHigh_;
@@ -320,8 +337,8 @@ private:
         // (A bare all-pass keeps the same frequencies in phase with the base, which is
         // what tipped the energy toward one side.)
         surrLine_[surrWrite_] = src;
-        const std::size_t t1 = (surrWrite_ + kSurrLen - kSurrTap1) % kSurrLen;
-        const std::size_t t2 = (surrWrite_ + kSurrLen - kSurrTap2) % kSurrLen;
+        const std::size_t t1 = (surrWrite_ + kSurrLen - surrTap1_) % kSurrLen;
+        const std::size_t t2 = (surrWrite_ + kSurrLen - surrTap2_) % kSurrLen;
         surrWrite_ = (surrWrite_ + 1) % kSurrLen;
         surrLpL_ += surrLpA_ * (surrLine_[t1] - surrLpL_);   // ~4 kHz distance roll-off
         surrLpR_ += surrLpA_ * (surrLine_[t2] - surrLpR_);
@@ -424,9 +441,12 @@ private:
     // Surround ON always contributes at least this fraction of the full envelopment;
     // the crossfeed amount scales the rest (full slider = unchanged old strength).
     static constexpr double kSurrBase = 0.40;
-    static constexpr std::size_t kSurrLen = 512;    // ambience delay line (~10.7 ms @48k)
-    static constexpr std::size_t kSurrTap1 = 252;   // ~5.25 ms tap (left ambience)
-    static constexpr std::size_t kSurrTap2 = 393;   // ~8.19 ms tap (right ambience)
+    // Line sized for the longest tap (~8.19 ms) at the highest supported rate
+    // (768 kHz → ~6290 samples); 8192 (pow2) covers it with margin. The taps
+    // themselves are set from fs in prepare() (surrTap1_/surrTap2_).
+    static constexpr std::size_t kSurrLen = 8192;
+    std::size_t surrTap1_ = 252;   // ~5.25 ms (set from fs in prepare)
+    std::size_t surrTap2_ = 393;   // ~8.19 ms (set from fs in prepare)
     double surrLine_[kSurrLen] = {0.0};
     std::size_t surrWrite_ = 0;
     double surrLpL_ = 0.0, surrLpR_ = 0.0;  // per-side ~4 kHz roll-off states

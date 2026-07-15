@@ -166,6 +166,11 @@ struct EngineContext {
     uint32_t               dumpCapFrames = 0;
     std::atomic<uint32_t>  dumpFrames{0};
 
+    // The real output device rate the render callback runs at (set in
+    // openOutputOn before start). Read by pullRender to keep time-based smoothing
+    // (underrun fade, volume ramp) rate-independent instead of hardcoded to 48k.
+    std::atomic<uint32_t>  renderSampleRate{48000};
+
     std::vector<float>     analysisRing;
     std::atomic<uint64_t>  analysisWriteFrames{0};
     std::atomic<uint32_t>  analysisSampleRate{0};
@@ -283,10 +288,13 @@ void pullRender(void* vctx, float* dst, uint32_t frames, uint32_t channels) {
     // costs one branch.
     {
         constexpr float kFadeMs = 3.0f;
-        // Approximate fade step assuming ~48kHz; exact SR doesn't matter much
-        // for a 3ms cosmetic fade. Step per sample = 1/(SR*fadeMs/1000).
-        // At 48k: 1/(48000*0.003) = ~0.00694. At 96k it's half that (gentler).
-        const float fadeStep = 1.0f / (48.0f * kFadeMs); // ~0.00694
+        // Per-sample step to fade 1.0 → 0 over kFadeMs at the ACTUAL render rate:
+        // step = 1 / (SR * fadeMs/1000) = 1000 / (SR * fadeMs). The old fixed
+        // 1/(48*kFadeMs) assumed 48 kHz, so the fade was 8x too fast (~0.375 ms)
+        // at 384 kHz — an abrupt jump on dropout recovery. At 48 kHz this is
+        // identical (~0.00694).
+        const float sr = (float)ctx->renderSampleRate.load(std::memory_order_relaxed);
+        const float fadeStep = 1000.0f / (std::max(1.0f, sr) * kFadeMs);
 
         const bool ringDry = (ctx->lastRingGot == 0 &&
                               ctx->ringPrimed.load(std::memory_order_relaxed));
@@ -373,10 +381,11 @@ void pullRender(void* vctx, float* dst, uint32_t frames, uint32_t channels) {
             for (uint32_t i = 0; i < n; ++i) dst[i] *= v;
         }
     } else {
-        // Ramp toward target over ~10ms worth of samples (480 @ 48kHz).
-        // Use frames as a conservative approximation of available samples/channel;
-        // the step is recomputed each block so any SR is handled correctly.
-        const float rampSamples = (float)frames > 480.0f ? (float)frames : 480.0f;
+        // Ramp toward target over ~10ms at the actual render rate (480 samples
+        // @ 48kHz, 3840 @ 384kHz). The old fixed 480 floor made the ramp 8x
+        // shorter in time at hi-res; deriving it from SR keeps the ~10ms glide.
+        const float rampFloor = 0.010f * (float)ctx->renderSampleRate.load(std::memory_order_relaxed);
+        const float rampSamples = (float)frames > rampFloor ? (float)frames : rampFloor;
         const float step = (ctx->volTarget - ctx->volCurrent) / rampSamples;
         const uint32_t ch = channels;
         float vol = ctx->volCurrent;
@@ -500,6 +509,8 @@ OSStatus openOutputOn(EngineContext& ctx, OutputDevice& output,
     ctx.dsp.prepare(output.sampleRate(), ROOMCUT_MVP_CHANNELS);
     ctx.dsp.setParams(params);
     ctx.resampler.prepare((double)ringSR, output.sampleRate(), ROOMCUT_MVP_CHANNELS);
+    ctx.renderSampleRate.store((uint32_t)std::lround(output.sampleRate()),
+                               std::memory_order_release);
     ctx.analysisSampleRate.store(0, std::memory_order_release);
     ctx.analysisChannels.store(0, std::memory_order_release);
     ctx.analysisWriteFrames.store(0, std::memory_order_release);
