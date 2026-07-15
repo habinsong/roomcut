@@ -11,6 +11,7 @@
  */
 #include "OutputDevice.hpp"
 
+#include <cstdio>
 #include <cstring>
 #include <vector>
 
@@ -99,7 +100,7 @@ OSStatus OutputDevice::renderThunk(void* inRefCon,
                                    UInt32 /*inBusNumber*/,
                                    UInt32 inNumberFrames,
                                    AudioBufferList* ioData) {
-    auto* self = static_cast<OutputDevice*>(inRefCon);
+    auto* gate = static_cast<RenderGate*>(inRefCon);
     if (ioData == nullptr || ioData->mNumberBuffers == 0) {
         return noErr;
     }
@@ -108,10 +109,11 @@ OSStatus OutputDevice::renderThunk(void* inRefCon,
     if (dst == nullptr) {
         return noErr;
     }
-    if (self->pull_) {
-        self->pull_(self->ctx_, dst, (uint32_t)inNumberFrames, self->channels_);
+    PullFn pull = gate->pull.load(std::memory_order_acquire);
+    if (pull) {
+        pull(gate->ctx, dst, (uint32_t)inNumberFrames, gate->channels);
     } else {
-        std::memset(dst, 0, (size_t)inNumberFrames * self->channels_ * sizeof(float));
+        std::memset(dst, 0, (size_t)inNumberFrames * gate->channels * sizeof(float));
     }
     return noErr;
 }
@@ -119,9 +121,11 @@ OSStatus OutputDevice::renderThunk(void* inRefCon,
 OSStatus OutputDevice::open(PullFn pull, void* ctx, uint32_t channels,
                             AudioDeviceID device, double desiredRate) {
     close();
-    pull_ = pull;
-    ctx_  = ctx;
     channels_ = channels;
+    gate_ = new RenderGate;
+    gate_->ctx      = ctx;
+    gate_->channels = channels;
+    gate_->pull.store(pull, std::memory_order_release);
 
     AudioDeviceID dev = device;
     if (dev == kAudioObjectUnknown) {
@@ -179,7 +183,7 @@ OSStatus OutputDevice::open(PullFn pull, void* ctx, uint32_t channels,
     // Install the render callback.
     AURenderCallbackStruct cb = {};
     cb.inputProc       = &OutputDevice::renderThunk;
-    cb.inputProcRefCon = this;
+    cb.inputProcRefCon = gate_;
     err = AudioUnitSetProperty(unit_, kAudioUnitProperty_SetRenderCallback,
                                kAudioUnitScope_Input, kOutputBus,
                                &cb, sizeof(cb));
@@ -208,17 +212,34 @@ OSStatus OutputDevice::stop() {
 }
 
 void OutputDevice::close() {
+    bool teardownClean = true;
     if (unit_ != nullptr) {
+        OSStatus serr = noErr;
         if (running_) {
-            AudioOutputUnitStop(unit_);
+            serr = AudioOutputUnitStop(unit_);
             running_ = false;
         }
-        AudioUnitUninitialize(unit_);
-        AudioComponentInstanceDispose(unit_);
+        OSStatus uerr = AudioUnitUninitialize(unit_);
+        OSStatus derr = AudioComponentInstanceDispose(unit_);
+        if (serr != noErr || uerr != noErr || derr != noErr) {
+            teardownClean = false;
+            std::fprintf(stderr,
+                "[engine] output teardown failed (stop=%d uninit=%d dispose=%d); "
+                "gate disarmed, zombie unit renders silence\n",
+                (int)serr, (int)uerr, (int)derr);
+        }
         unit_ = nullptr;
     }
-    pull_ = nullptr;
-    ctx_  = nullptr;
+    if (gate_ != nullptr) {
+        gate_->pull.store(nullptr, std::memory_order_release);
+        if (teardownClean) {
+            // Stop is synchronous with the render thread, so no callback can
+            // still be inside the gate once the unit is disposed.
+            delete gate_;
+        }
+        // else: intentionally leaked (a zombie unit may still read it).
+        gate_ = nullptr;
+    }
     sampleRate_ = 0.0;
     device_ = kAudioObjectUnknown;
 }

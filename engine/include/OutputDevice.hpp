@@ -21,6 +21,7 @@
 #ifndef ROOMCUT_OUTPUT_DEVICE_HPP
 #define ROOMCUT_OUTPUT_DEVICE_HPP
 
+#include <atomic>
 #include <cstdint>
 
 #include <AudioUnit/AudioUnit.h>
@@ -32,6 +33,19 @@ namespace roomcut {
 // OutputDevice::channels()). Runs on the render thread — RT-safe only. `ctx` is
 // the opaque pointer passed to open().
 using PullFn = void (*)(void* ctx, float* dst, uint32_t frames, uint32_t channels);
+
+// Per-open() render state, heap-allocated and handed to the AU as refCon. The
+// HAL can refuse to tear a unit down (seen around device removal): such a
+// zombie unit keeps firing renderThunk. With `this` as refCon the zombie would
+// resume pulling the single-consumer ring the moment the NEXT open() re-armed
+// pull_ — N generations then drain the ring at N× real time (the 2026-07-15
+// 4×384 kHz warble). A gate is disarmed on close() and never re-armed, so a
+// zombie renders silence forever.
+struct RenderGate {
+    std::atomic<PullFn> pull{nullptr};
+    void*               ctx      = nullptr;
+    uint32_t            channels = 2;
+};
 
 class OutputDevice {
 public:
@@ -83,8 +97,7 @@ private:
                                 AudioBufferList* ioData);
 
     AudioUnit     unit_      = nullptr;
-    PullFn        pull_      = nullptr;
-    void*         ctx_       = nullptr;
+    RenderGate*   gate_      = nullptr;
     double        sampleRate_ = 0.0;
     uint32_t      channels_  = 2;
     AudioDeviceID device_    = kAudioObjectUnknown;
