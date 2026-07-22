@@ -90,6 +90,9 @@ bool trySetNominalRate(AudioDeviceID dev, double desired) {
 
 } // namespace
 
+// The one render generation allowed to consume the ring (see OutputDevice.hpp).
+std::atomic<RenderGate*> OutputDevice::sActiveGate_{nullptr};
+
 OutputDevice::~OutputDevice() {
     close();
 }
@@ -109,7 +112,15 @@ OSStatus OutputDevice::renderThunk(void* inRefCon,
     if (dst == nullptr) {
         return noErr;
     }
-    PullFn pull = gate->pull.load(std::memory_order_acquire);
+    // Single-consumer guard: only the ONE currently-active render generation may
+    // pull the ring. A zombie unit (its IO thread outlived a noErr dispose — seen
+    // on USB DACs when the device re-rates) carries a gate that is no longer the
+    // active one, so it writes silence and never touches the SPSC ring. This holds
+    // no matter how the zombie came to exist — the active slot is the hard
+    // single-consumer invariant, independent of per-gate disarm below.
+    PullFn pull = (gate == sActiveGate_.load(std::memory_order_acquire))
+                      ? gate->pull.load(std::memory_order_acquire)
+                      : nullptr;
     if (pull) {
         pull(gate->ctx, dst, (uint32_t)inNumberFrames, gate->channels);
     } else {
@@ -192,6 +203,10 @@ OSStatus OutputDevice::open(PullFn pull, void* ctx, uint32_t channels,
     err = AudioUnitInitialize(unit_);
     if (err != noErr) { close(); return err; }
 
+    // Publish this generation as the sole permitted ring consumer, just before
+    // the caller starts IO. Any prior generation (including a zombie whose IO
+    // thread is still alive) is now non-active and renders silence.
+    sActiveGate_.store(gate_, std::memory_order_release);
     return noErr;
 }
 
@@ -212,7 +227,24 @@ OSStatus OutputDevice::stop() {
 }
 
 void OutputDevice::close() {
-    bool teardownClean = true;
+    // Disarm the render gate FIRST — before stop / uninitialize / dispose. On a
+    // device or sample-rate switch (notably a USB DAC re-rating, e.g. iFi
+    // 96k->384k) AudioComponentInstanceDispose can return noErr yet leave the
+    // HAL IO thread alive; that zombie unit keeps firing renderThunk. Disarming
+    // up front means every callback it fires from this point on — during
+    // teardown or forever after — reads pull==nullptr and writes silence, so it
+    // can never pull the single-consumer ring. (Previously the disarm ran AFTER
+    // dispose, leaving a window in which a surviving zombie still drained it.)
+    if (gate_ != nullptr) {
+        gate_->pull.store(nullptr, std::memory_order_release);
+        // Retire this generation from the active slot: its unit — and any zombie
+        // that outlives dispose — immediately stops being the ring's consumer.
+        // compare_exchange so we never clear a newer generation's publish.
+        RenderGate* expected = gate_;
+        sActiveGate_.compare_exchange_strong(expected, nullptr,
+                                             std::memory_order_release,
+                                             std::memory_order_relaxed);
+    }
     if (unit_ != nullptr) {
         OSStatus serr = noErr;
         if (running_) {
@@ -222,24 +254,23 @@ void OutputDevice::close() {
         OSStatus uerr = AudioUnitUninitialize(unit_);
         OSStatus derr = AudioComponentInstanceDispose(unit_);
         if (serr != noErr || uerr != noErr || derr != noErr) {
-            teardownClean = false;
             std::fprintf(stderr,
                 "[engine] output teardown failed (stop=%d uninit=%d dispose=%d); "
-                "gate disarmed, zombie unit renders silence\n",
+                "gate already disarmed, zombie unit renders silence\n",
                 (int)serr, (int)uerr, (int)derr);
         }
         unit_ = nullptr;
     }
-    if (gate_ != nullptr) {
-        gate_->pull.store(nullptr, std::memory_order_release);
-        if (teardownClean) {
-            // Stop is synchronous with the render thread, so no callback can
-            // still be inside the gate once the unit is disposed.
-            delete gate_;
-        }
-        // else: intentionally leaked (a zombie unit may still read it).
-        gate_ = nullptr;
-    }
+    // Never delete the gate. A disposed-but-alive zombie unit may still hold this
+    // pointer and fire renderThunk at any later time, on ANY device — a noErr
+    // dispose does not guarantee the IO thread has joined. Freeing it is thus
+    // never provably safe: with the freed block still intact the callback would
+    // read pull==pullRender and resume draining the ring, the exact
+    // multi-consumer warble this guards against (2026-07-15 at 4x384kHz; again on
+    // a Mac mini->iFi switch). A disarmed gate is ~24 bytes and renders silence
+    // forever; it is intentionally leaked and reclaimed when the engine process
+    // exits (the engine follows the app lifecycle, so sessions stay short).
+    gate_ = nullptr;
     sampleRate_ = 0.0;
     device_ = kAudioObjectUnknown;
 }

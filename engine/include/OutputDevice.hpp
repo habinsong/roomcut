@@ -35,12 +35,16 @@ namespace roomcut {
 using PullFn = void (*)(void* ctx, float* dst, uint32_t frames, uint32_t channels);
 
 // Per-open() render state, heap-allocated and handed to the AU as refCon. The
-// HAL can refuse to tear a unit down (seen around device removal): such a
-// zombie unit keeps firing renderThunk. With `this` as refCon the zombie would
-// resume pulling the single-consumer ring the moment the NEXT open() re-armed
-// pull_ — N generations then drain the ring at N× real time (the 2026-07-15
-// 4×384 kHz warble). A gate is disarmed on close() and never re-armed, so a
-// zombie renders silence forever.
+// HAL can leave a unit's IO thread alive even when AudioComponentInstanceDispose
+// returns noErr (seen around device removal and USB re-rating): such a zombie
+// unit keeps firing renderThunk. With `this` as refCon the zombie would resume
+// pulling the single-consumer ring the moment the NEXT open() re-armed pull_ —
+// N generations then drain the ring at N× real time (the 2026-07-15 4×384 kHz
+// warble). Each open() gets its OWN gate; close() disarms it (pull=nullptr)
+// BEFORE tearing the unit down and never frees it, so a surviving zombie reads a
+// live, disarmed gate and renders silence forever instead of stealing the ring.
+// Disarmed gates are intentionally leaked (a zombie may hold the pointer for the
+// rest of the process) — a few dozen bytes per device switch, cleared on exit.
 struct RenderGate {
     std::atomic<PullFn> pull{nullptr};
     void*               ctx      = nullptr;
@@ -102,6 +106,14 @@ private:
     uint32_t      channels_  = 2;
     AudioDeviceID device_    = kAudioObjectUnknown;
     bool          running_   = false;
+
+    // The single render generation currently permitted to pull the ring. open()
+    // publishes its gate here; close() clears it. renderThunk pulls ONLY when its
+    // refCon gate matches — so a zombie unit (IO thread that outlived dispose)
+    // can never become a second consumer of the SPSC ring, whatever race spawned
+    // it. The engine runs one OutputDevice at a time, so a single shared slot is
+    // the whole-process invariant.
+    static std::atomic<RenderGate*> sActiveGate_;
 };
 
 } // namespace roomcut
