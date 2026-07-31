@@ -12,10 +12,12 @@
 //   np_test    exit(0) if Now Playing is reachable, exit(1) otherwise
 //
 // The main Roomcut app never links MediaRemote; this private API stays isolated
-// in the child perl process. Mechanism referenced from ungive/mediaremote-adapter
-// (BSD-3-Clause). Local display/control only — no network, no logging of metadata.
+// in the child perl process. The perl-loader technique is the one published by
+// ungive/mediaremote-adapter (BSD-3-Clause) — see THIRD_PARTY_NOTICES.md — but
+// this file is an independent implementation of it. Local display/control only —
+// no network, no logging of metadata.
 //
-// SPDX-License-Identifier: BSD-3-Clause
+// SPDX-License-Identifier: Apache-2.0
 
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>

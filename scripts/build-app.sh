@@ -80,6 +80,11 @@ clang -dynamiclib -fobjc-arc -O2 \
 cp "${NP_DIR}/roomcut-nowplaying.pl" "${RES}/roomcut-nowplaying.pl"
 codesign --force --sign - "${RES}/RoomcutNowPlaying.dylib"
 
+# Apache-2.0 §4(a): every copy of the app carries the license, plus the
+# third-party attributions, so the .app is self-contained wherever it's moved.
+cp "${REPO_ROOT}/LICENSE"                "${RES}/LICENSE"
+cp "${REPO_ROOT}/THIRD_PARTY_NOTICES.md" "${RES}/THIRD_PARTY_NOTICES.md"
+
 # App icon: build a multi-resolution AppIcon.icns from icon/roomcut_icon.png.
 # The source is already a rounded "squircle" with transparent margins (macOS
 # icon shape), so we only downscale into the standard iconset sizes.

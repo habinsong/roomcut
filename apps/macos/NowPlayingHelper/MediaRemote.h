@@ -4,11 +4,12 @@
 // framework. They are NOT linked at compile time; the helper resolves them at
 // runtime via CFBundleGetFunctionPointerForName so the main app stays clean.
 //
-// Symbol declarations referenced from the public reverse-engineering work in
-// ungive/mediaremote-adapter (BSD-3-Clause) and widely published MediaRemote
-// headers. Used for local display/control only.
+// The symbol names and dictionary keys below describe Apple's private API. The
+// technique of reaching it is the one published by ungive/mediaremote-adapter
+// (BSD-3-Clause) — see THIRD_PARTY_NOTICES.md — but this header shares no code
+// with it. Used for local display/control only.
 //
-// SPDX-License-Identifier: BSD-3-Clause
+// SPDX-License-Identifier: Apache-2.0
 
 #ifndef ROOMCUT_MEDIAREMOTE_H
 #define ROOMCUT_MEDIAREMOTE_H

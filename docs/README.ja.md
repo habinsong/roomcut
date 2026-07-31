@@ -216,3 +216,7 @@ LRCLIB のサーバーとクライアントは MIT ライセンスで、Roomcut 
 ## ライセンス
 
 Roomcut は Apache License 2.0 で配布されます。全文は [LICENSE](../LICENSE) を参照してください。このライセンスはソースコードに適用され、Roomcut の名称とブランディングは対象外です（Apache 2.0 は商標権を付与しません）。
+
+このリポジトリにサードパーティのソースは同梱していません。Roomcut が参照した技法やサービスのクレジット、およびプリセットやスクリーンショットに登場する機器名の商標表示は [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md) にあります。両ファイルはすべてのリリースに同梱されるため、ダウンロードしたビルドにも必ず含まれます。
+
+Roomcut は Now Playing のメタデータを Apple の非公開 MediaRemote フレームワーク経由で読み取ります。そのため Mac App Store には配信できず、macOS のアップデートで Now Playing パネルが動作しなくなる可能性があります（オーディオ経路は動作し続けます）。

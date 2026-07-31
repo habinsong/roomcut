@@ -216,3 +216,7 @@ Server und Client von LRCLIB stehen unter der MIT-Lizenz, und Roomcut kommunizie
 ## Lizenz
 
 Roomcut steht unter der Apache-Lizenz 2.0. Den vollständigen Text findest du in [LICENSE](../LICENSE). Die Lizenz deckt den Quellcode ab; der Name und das Branding von Roomcut gehören nicht dazu, da Apache 2.0 keine Markenrechte gewährt.
+
+In diesem Repository ist kein Fremdcode enthalten. Die Danksagungen für die Verfahren und Dienste, auf denen Roomcut aufbaut, sowie die Markenhinweise zu den in Presets und Screenshots genannten Gerätenamen stehen in [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md). Beide Dateien liegen jedem Release bei, sodass ein heruntergeladener Build sie immer mitbringt.
+
+Roomcut liest die Now-Playing-Metadaten über Apples privates MediaRemote-Framework. Deshalb kann Roomcut nicht in den Mac App Store, und das Now-Playing-Panel kann durch ein macOS-Update ausfallen, während der Audiopfad weiterläuft.

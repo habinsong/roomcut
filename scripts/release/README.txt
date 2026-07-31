@@ -27,3 +27,9 @@ NOTE ON SIGNING
   System Settings ▸ Privacy & Security.
 
   Prefer a double-click installer? Use the .pkg from the same release instead.
+
+LICENSE
+  Roomcut is licensed under the Apache License 2.0 — full text in LICENSE, next
+  to this file. Third-party attributions and trademark notices are in
+  THIRD_PARTY_NOTICES.md. Both are also installed to
+  /Library/Application Support/Roomcut/ and inside Roomcut.app/Contents/Resources/.

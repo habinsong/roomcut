@@ -95,6 +95,10 @@ cp "${PLIST_RENDERED}" "${PAYLOAD}/Library/LaunchDaemons/com.roomcut.engine.plis
 # Stash the uninstaller where pkg users can find it (pkgs can't self-uninstall).
 cp "${RELEASE_DIR}/uninstall.sh" "${PAYLOAD}/Library/Application Support/Roomcut/uninstall.sh"
 chmod +x "${PAYLOAD}/Library/Application Support/Roomcut/uninstall.sh"
+# Apache-2.0 §4(a): ship the license (and third-party attributions) with every
+# binary distribution, next to the uninstaller where a pkg user can find them.
+cp "${REPO_ROOT}/LICENSE"                "${PAYLOAD}/Library/Application Support/Roomcut/LICENSE"
+cp "${REPO_ROOT}/THIRD_PARTY_NOTICES.md" "${PAYLOAD}/Library/Application Support/Roomcut/THIRD_PARTY_NOTICES.md"
 
 SCRIPTS="${WORK}/scripts"
 mkdir -p "${SCRIPTS}"
@@ -139,6 +143,8 @@ cp "${PLIST_RENDERED}"           "${STAGE}/com.roomcut.engine.plist"
 cp "${RELEASE_DIR}/install.sh"   "${STAGE}/install.sh"
 cp "${RELEASE_DIR}/uninstall.sh" "${STAGE}/uninstall.sh"
 cp "${RELEASE_DIR}/README.txt"   "${STAGE}/README.txt"
+cp "${REPO_ROOT}/LICENSE"                "${STAGE}/LICENSE"
+cp "${REPO_ROOT}/THIRD_PARTY_NOTICES.md" "${STAGE}/THIRD_PARTY_NOTICES.md"
 chmod +x "${STAGE}/install.sh" "${STAGE}/uninstall.sh"
 
 ZIP_OUT="${DIST}/Roomcut-${VERSION}.zip"

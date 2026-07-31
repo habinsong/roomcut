@@ -12,8 +12,10 @@
 #   ROOMCUT_NP_COMMAND      MRCommand id for np_send
 #   ROOMCUT_NP_POSITION_US  position in microseconds for np_seek
 #
-# Mechanism referenced from ungive/mediaremote-adapter (BSD-3-Clause).
-# SPDX-License-Identifier: BSD-3-Clause
+# The perl-loader technique is the one published by ungive/mediaremote-adapter
+# (BSD-3-Clause) — see THIRD_PARTY_NOTICES.md. This script is an independent
+# implementation of it.
+# SPDX-License-Identifier: Apache-2.0
 
 use strict;
 use warnings;

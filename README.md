@@ -308,3 +308,12 @@ through its public HTTP API, so none of that code ships here.
 Roomcut is licensed under the Apache License 2.0. See [LICENSE](LICENSE) for the
 full text. The license covers the source code; the Roomcut name and branding
 aren't part of the grant, since Apache 2.0 doesn't assign trademark rights.
+
+No third-party source is vendored here. Attributions for the techniques and
+services Roomcut builds on, and trademark notices for the device names used in
+presets and screenshots, are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+Both files ship inside every release, so a downloaded build always carries them.
+
+Roomcut reads Now Playing metadata through Apple's private MediaRemote framework.
+That's why it can't go to the Mac App Store, and why the Now Playing panel may
+break on a macOS update while the audio path keeps working.
