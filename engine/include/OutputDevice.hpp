@@ -84,10 +84,18 @@ public:
     // actively pulling the render callback.
     bool running() const { return running_; }
 
-    // The device's native sample rate (0 until open() succeeds). The caller
-    // compares this to the ring's SR to decide on conversion (Phase 4+).
+    // The rate we feed the unit at — the rate the hardware had settled on when
+    // open() succeeded (0 until then). The caller compares this to the ring's SR
+    // to decide on conversion (Phase 4+).
     double   sampleRate() const { return sampleRate_; }
     uint32_t channels()   const { return channels_; }
+
+    // The rate the open unit's hardware side is running at right now, straight
+    // from the unit (0 if closed or unreadable). Equals sampleRate() while things
+    // are healthy; a difference means the device moved under us and the unit must
+    // be rebuilt — checking this instead of the device's nominal-rate property is
+    // what keeps a mid-switch DAC from looking like a permanent mismatch.
+    double   currentHardwareRate() const;
 
     // The device the unit is bound to (kAudioObjectUnknown until open()).
     AudioDeviceID deviceID() const { return device_; }

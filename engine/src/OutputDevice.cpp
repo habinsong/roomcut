@@ -81,11 +81,50 @@ bool trySetNominalRate(AudioDeviceID dev, double desired) {
     if (AudioObjectSetPropertyData(dev, &addr, 0, nullptr, sizeof(sr), &sr) != noErr) {
         return false;
     }
-    for (int i = 0; i < 40; ++i) {            // the change is async; wait <= ~400 ms
+    // The change is async. Cap the wait at ~250 ms: open() runs on the thread that
+    // answers the driver's 500 ms heartbeat, and this is the largest blocking step
+    // in it. A device that needs longer simply doesn't get switched — we then open
+    // it at whatever rate it is on and resample, and the next device-change event
+    // tries again.
+    for (int i = 0; i < 25; ++i) {
         if (deviceNominalSampleRate(dev) == desired) return true;
         usleep(10000);
     }
     return deviceNominalSampleRate(dev) == desired;
+}
+
+// The rate the UNIT's hardware side is actually running at, read back until it
+// holds still. This — not kAudioDevicePropertyNominalSampleRate — is what our
+// client format has to match: the nominal property flips to the new value while
+// a USB DAC is still re-clocking, and a client format that disagrees with the
+// hardware silently engages AUHAL's internal AudioConverter, after which the
+// render callback is pulled by that converter instead of the device cycle. Two
+// identical reads in a row means the device has settled. Returns 0 if the format
+// can't be read at all. Rate-agnostic: whatever the device reports — 44100,
+// 96000, 192000, 384000 — is what we take.
+//
+// Hard-capped at ~40 ms because open() runs on the control thread, which also
+// answers the driver's heartbeat: the driver retires the whole connection if a
+// beat goes unanswered for ROOMCUT_HEARTBEAT_TIMEOUT_MS (500 ms), so every
+// blocking step in an open has to fit inside that budget together. A device that
+// has not settled by then keeps its last reported rate and the ring resampler
+// bridges the difference — worse than bit-exact, far better than a dropped
+// connection.
+double settledHardwareRate(AudioUnit unit) {
+    double last = -1.0;
+    for (int i = 0; i < 8; ++i) {
+        AudioStreamBasicDescription hw = {};
+        UInt32 size = sizeof(hw);
+        if (AudioUnitGetProperty(unit, kAudioUnitProperty_StreamFormat,
+                                 kAudioUnitScope_Output, kOutputBus,
+                                 &hw, &size) != noErr) {
+            return 0.0;
+        }
+        if (hw.mSampleRate > 0.0 && hw.mSampleRate == last) return hw.mSampleRate;
+        last = hw.mSampleRate;
+        usleep(5000);
+    }
+    return last > 0.0 ? last : 0.0;
 }
 
 } // namespace
@@ -170,26 +209,27 @@ OSStatus OutputDevice::open(PullFn pull, void* ctx, uint32_t channels,
     if (err != noErr) { close(); return err; }
     device_ = dev;
 
-    // Match the device to the ring rate when possible → bit-exact passthrough.
+    // Ask the device for the ring rate — a device that can do it feeds 1:1
+    // (bit-exact) instead of being resampled. Best effort only: whatever rate the
+    // device actually ends up on is the rate we adopt below, and the caller
+    // resamples the difference.
     trySetNominalRate(dev, desiredRate);
-    sampleRate_ = deviceNominalSampleRate(dev);
-    if (sampleRate_ <= 0.0) sampleRate_ = 48000.0;
 
-    // Tell the unit what WE produce: interleaved float32 at the device rate.
+    // Adopt the rate the hardware settled on, read back from the unit itself.
+    // Reading kAudioDevicePropertyNominalSampleRate once here is what broke
+    // before: the property reports the target while a USB DAC is still switching,
+    // so the client format got frozen at a rate the hardware wasn't running,
+    // AUHAL's converter took over the pull, and the control loop then saw
+    // "sample rate changed" on every tick and reopened forever.
     AudioStreamBasicDescription asbd = {};
-    asbd.mSampleRate       = sampleRate_;
-    asbd.mFormatID         = kAudioFormatLinearPCM;
-    asbd.mFormatFlags      = kAudioFormatFlagIsFloat | kAudioFormatFlagIsPacked; // interleaved
-    asbd.mFramesPerPacket  = 1;
-    asbd.mChannelsPerFrame = channels_;
-    asbd.mBitsPerChannel   = 32;
-    asbd.mBytesPerFrame    = sizeof(float) * channels_;
-    asbd.mBytesPerPacket   = asbd.mBytesPerFrame;
-
-    err = AudioUnitSetProperty(unit_, kAudioUnitProperty_StreamFormat,
-                               kAudioUnitScope_Input, kOutputBus,
-                               &asbd, sizeof(asbd));
+    AudioStreamBasicDescription hw   = {};
+    UInt32 hwSize = sizeof(hw);
+    err = AudioUnitGetProperty(unit_, kAudioUnitProperty_StreamFormat,
+                               kAudioUnitScope_Output, kOutputBus, &hw, &hwSize);
     if (err != noErr) { close(); return err; }
+    sampleRate_ = settledHardwareRate(unit_);
+    if (sampleRate_ <= 0.0) sampleRate_ = hw.mSampleRate;
+    if (sampleRate_ <= 0.0) { close(); return kAudioHardwareUnspecifiedError; }
 
     // Install the render callback.
     AURenderCallbackStruct cb = {};
@@ -200,14 +240,59 @@ OSStatus OutputDevice::open(PullFn pull, void* ctx, uint32_t channels,
                                &cb, sizeof(cb));
     if (err != noErr) { close(); return err; }
 
-    err = AudioUnitInitialize(unit_);
-    if (err != noErr) { close(); return err; }
+    // Publish our format at that rate and initialize. Initializing can itself pull
+    // the device somewhere else (another client re-rating it, a DAC finishing its
+    // switch), so re-read afterwards and re-arm if it moved. Bounded — a device
+    // that never holds still keeps the last rate and the ring resampler covers
+    // the difference, which is audible-but-fine rather than a reopen loop.
+    for (int attempt = 0; ; ++attempt) {
+        // Tell the unit what WE produce: interleaved float32 at the hardware rate.
+        asbd = AudioStreamBasicDescription{};
+        asbd.mSampleRate       = sampleRate_;
+        asbd.mFormatID         = kAudioFormatLinearPCM;
+        asbd.mFormatFlags      = kAudioFormatFlagIsFloat | kAudioFormatFlagIsPacked; // interleaved
+        asbd.mFramesPerPacket  = 1;
+        asbd.mChannelsPerFrame = channels_;
+        asbd.mBitsPerChannel   = 32;
+        asbd.mBytesPerFrame    = sizeof(float) * channels_;
+        asbd.mBytesPerPacket   = asbd.mBytesPerFrame;
+
+        err = AudioUnitSetProperty(unit_, kAudioUnitProperty_StreamFormat,
+                                   kAudioUnitScope_Input, kOutputBus,
+                                   &asbd, sizeof(asbd));
+        if (err != noErr) { close(); return err; }
+
+        err = AudioUnitInitialize(unit_);
+        if (err != noErr) { close(); return err; }
+
+        // One re-arm only — the whole open has to fit in the heartbeat budget, and
+        // a device that moves twice is hunting, which the resampler handles.
+        const double settled = settledHardwareRate(unit_);
+        if (attempt >= 1 || settled <= 0.0 || settled == sampleRate_) break;
+
+        std::fprintf(stderr,
+            "[engine] output rate moved %.0f -> %.0f Hz during open; re-arming\n",
+            sampleRate_, settled);
+        AudioUnitUninitialize(unit_);
+        sampleRate_ = settled;
+    }
 
     // Publish this generation as the sole permitted ring consumer, just before
     // the caller starts IO. Any prior generation (including a zombie whose IO
     // thread is still alive) is now non-active and renders silence.
     sActiveGate_.store(gate_, std::memory_order_release);
     return noErr;
+}
+
+double OutputDevice::currentHardwareRate() const {
+    if (unit_ == nullptr) return 0.0;
+    AudioStreamBasicDescription hw = {};
+    UInt32 size = sizeof(hw);
+    if (AudioUnitGetProperty(unit_, kAudioUnitProperty_StreamFormat,
+                             kAudioUnitScope_Output, kOutputBus, &hw, &size) != noErr) {
+        return 0.0;
+    }
+    return hw.mSampleRate;
 }
 
 OSStatus OutputDevice::start() {

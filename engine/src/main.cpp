@@ -493,11 +493,16 @@ uint32_t deviceAvailableSampleRates(AudioDeviceID dev, uint32_t* out, uint32_t c
 
 OSStatus openOutputOn(EngineContext& ctx, OutputDevice& output,
                       AudioDeviceID device, uint32_t ringSR,
-                      const ChainParams& params) {
+                      const ChainParams& params, bool matchRingRate = true) {
     // Ask the device to run at the ring rate so the render path is bit-exact
     // (ratio 1.0) rather than linear-interpolated — the fix for the soft,
-    // low-resolution sound vs. listening to the device directly.
-    OSStatus err = output.open(&pullRender, &ctx, ROOMCUT_MVP_CHANNELS, device, (double)ringSR);
+    // low-resolution sound vs. listening to the device directly. With
+    // matchRingRate=false we open the device wherever it already is: some devices
+    // accept the rate change and then fall back to their own, and insisting on
+    // every reopen just restarts that fight. Resampling to a stable device beats
+    // bit-exact to one that keeps moving.
+    OSStatus err = output.open(&pullRender, &ctx, ROOMCUT_MVP_CHANNELS, device,
+                               matchRingRate ? (double)ringSR : 0.0);
     if (err != noErr) return err;
 
     // Pre-allocate render scratch buffers BEFORE the callback fires (RT-safety:
@@ -1295,11 +1300,27 @@ int main(int argc, char** argv) {
             "restoring a real device in 3 s unless the driver connects\n");
     }
 
+    // Render-runaway watchdog state. framesRendered must advance at exactly the
+    // open output's own sample rate; renderWatchFrom suppresses the check across
+    // a reopen, where the rate legitimately changes mid-measurement.
+    uint64_t renderFramesMark   = 0;
+    auto     renderFramesMarkAt = std::chrono::steady_clock::now();
+    int      renderRunawayHits  = 0;
+    int      renderRunawayFixes = 0;
+    auto     renderWatchFrom    = std::chrono::steady_clock::now() + std::chrono::seconds(5);
+
+    // Reopen-storm guard for recoverOutput (see the throttle there).
+    int  reopenStreak      = 0;
+    auto lastReopenAt      = std::chrono::steady_clock::now();
+    auto reopenAllowedFrom = std::chrono::steady_clock::now();
+
     // Reopen the output on the policy-picked device after any device-world
     // change (default flipped, device un/plugged, SR changed). Idempotent: a
     // spurious event that resolves to the same device+rate is a no-op. On
     // failure the dirty flag is re-armed so the next 500 ms tick retries.
-    auto recoverOutput = [&]() {
+    // `force` skips the no-op check so the render-runaway watchdog below can
+    // rebuild the unit even when the device and its rate look unchanged.
+    auto recoverOutput = [&](bool force = false) {
         if (!outputStarted || ringSR == 0) return;
         AudioDeviceID pick = pickOutput();
         if (pick == kAudioObjectUnknown) {
@@ -1308,18 +1329,50 @@ int main(int argc, char** argv) {
             return;
         }
         const bool sameDevice = (pick == output.deviceID());
-        if (sameDevice && deviceNominalSampleRate(pick) == output.sampleRate()) {
-            return; // nothing actually changed for us
+        if (!force && sameDevice) {
+            // Compare against what the UNIT's hardware side is doing right now,
+            // not the device's nominal-rate property: the property flips to the
+            // target while a DAC is still switching, so a nominal comparison
+            // reports a mismatch that reopening cannot fix — the 500 ms reopen
+            // loop. If our format still matches the hardware, there is nothing
+            // to do however loudly the device world signalled a change.
+            const double hwNow = output.currentHardwareRate();
+            if (hwNow > 0.0 && hwNow == output.sampleRate()) {
+                reopenStreak = 0;
+                return;
+            }
+            // A device that keeps re-rating (USB hot-plug, a DAC hunting for a
+            // lock) would otherwise be torn down and rebuilt every tick, which
+            // sounds worse than settling on one rate and resampling. Let the
+            // first few reopens through, then throttle.
+            const auto nowTick = std::chrono::steady_clock::now();
+            if (reopenStreak >= 3 && nowTick < reopenAllowedFrom) {
+                ctx.devicesDirty.store(true, std::memory_order_relaxed);
+                return;
+            }
         }
         std::fprintf(stderr, "[engine] device change: reopening output (%s)\n",
-                     sameDevice ? "sample rate changed" : "target device changed");
+                     force ? "render runaway"
+                           : (sameDevice ? "sample rate changed" : "target device changed"));
         ctx.lifecycle.store(engineNext(ctx.lifecycle.load(), EngineEvent::OutputLost),
                             std::memory_order_relaxed);
         output.stop();
         watcher.watchSR(kAudioObjectUnknown);
         output.close();
 
-        OSStatus oerr = openOutputOn(ctx, output, pick, ringSR, currentParams);
+        // Two failed attempts to hold the ring rate is enough: stop pushing the
+        // device and take whatever rate it settles on, resampling the difference.
+        // Without this, a device that accepts 384 kHz and then drops back to its
+        // own rate gets re-pushed on every reopen — the loop that left the user
+        // with no audio at all.
+        const bool insistOnRingRate = (reopenStreak < 2);
+        if (!insistOnRingRate) {
+            std::fprintf(stderr,
+                "[engine] device keeps leaving the ring rate; opening at its own "
+                "rate and resampling\n");
+        }
+        OSStatus oerr = openOutputOn(ctx, output, pick, ringSR, currentParams,
+                                     insistOnRingRate);
         if (oerr == noErr) oerr = output.start();
         if (oerr != noErr) {
             std::fprintf(stderr,
@@ -1327,6 +1380,17 @@ int main(int argc, char** argv) {
             ctx.devicesDirty.store(true, std::memory_order_relaxed);
             return;
         }
+        // Give the new unit a clean measurement window: a rate reading that
+        // straddles the reopen mixes two sample rates and would false-positive.
+        const auto reopenedAt = std::chrono::steady_clock::now();
+        renderFramesMark = 0;
+        renderWatchFrom  = reopenedAt + std::chrono::seconds(3);
+        // Back-to-back reopens mean the device is still hunting; widen the gap so
+        // it gets a chance to settle instead of being rebuilt on every tick.
+        reopenStreak = (reopenedAt - lastReopenAt < std::chrono::seconds(2))
+                           ? reopenStreak + 1 : 0;
+        lastReopenAt = reopenedAt;
+        reopenAllowedFrom = reopenedAt + std::chrono::seconds(reopenStreak >= 5 ? 5 : 2);
         watcher.watchSR(output.deviceID());
         setSavedReal(deviceUID(output.deviceID()));
         ctx.realOutputDevice.store(output.deviceID(), std::memory_order_relaxed);
@@ -1431,6 +1495,51 @@ int main(int argc, char** argv) {
                                     std::memory_order_relaxed);
                 std::fprintf(stderr, "[engine] driver feed stalled and heartbeat lost; "
                                      "rendering silence (wire: RECOVER)\n");
+            }
+        }
+
+        // Render-runaway watchdog. The output unit pulls us at its client stream
+        // format's rate, so framesRendered must advance at exactly
+        // output.sampleRate() frames/s — whatever is playing, silence included.
+        // A boot-time device re-rate can leave the render path pulling several
+        // times real time (2026-08-01: iFi opened at 48 kHz, reopened at 384 kHz
+        // moments later, then ran at 3.37x with the ring draining and underruns
+        // climbing ~128k/s — the dropout warble). Nothing else caught it:
+        // recoverOutput compares device+rate, both of which look unchanged, so
+        // the engine stayed broken until the user restarted it by hand. Rebuild
+        // the unit instead — a fresh AU comes back at 1.00x.
+        if (output.running() && ringSR != 0 && output.sampleRate() > 0.0) {
+            const auto     now    = std::chrono::steady_clock::now();
+            const uint64_t frames = ctx.framesRendered.load(std::memory_order_relaxed);
+            const double   dt =
+                std::chrono::duration<double>(now - renderFramesMarkAt).count();
+            if (now < renderWatchFrom || renderFramesMark == 0) {
+                renderFramesMark   = frames;   // still settling after a reopen
+                renderFramesMarkAt = now;
+            } else if (dt >= 1.0) {
+                const double sr   = output.sampleRate();
+                const double rate = (double)(frames - renderFramesMark) / dt;
+                renderFramesMark   = frames;
+                renderFramesMarkAt = now;
+                // A healthy unit measures 1.00x within timing jitter, a runaway
+                // 3x+, so 1.5x separates them with room to spare. Two readings
+                // in a row keeps a scheduling hiccup from tearing down the unit.
+                if (rate <= sr * 1.5) {
+                    renderRunawayHits  = 0;
+                    renderRunawayFixes = 0;
+                } else if (++renderRunawayHits >= 2) {
+                    renderRunawayHits = 0;
+                    // Cap the retries: if rebuilding does not restore 1.00x, a
+                    // reopen loop would chop the audio worse than the runaway.
+                    if (renderRunawayFixes < 3) {
+                        ++renderRunawayFixes;
+                        std::fprintf(stderr,
+                            "[engine] render runaway: %.0f frames/s vs device %.0f Hz "
+                            "(%.2fx); rebuilding output unit (attempt %d/3)\n",
+                            rate, sr, rate / sr, renderRunawayFixes);
+                        recoverOutput(true);
+                    }
+                }
             }
         }
 

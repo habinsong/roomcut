@@ -25,6 +25,7 @@
 
 #define ROOMCUT_CONNECT_TIMEOUT_MS 1000u
 #define ROOMCUT_HEARTBEAT_TIMEOUT_MS 500u
+#define ROOMCUT_HEARTBEAT_MAX_MISSES 3u
 #define ROOMCUT_RETRY_DELAY_MS 250u
 #define ROOMCUT_HEARTBEAT_INTERVAL_MS 1000u
 
@@ -349,6 +350,7 @@ static void* roomcut_transport_worker(void* unused)
     memset(&connection, 0, sizeof(connection));
     uint32_t connectedGeneration = 0u;
     uint32_t heartbeatSequence = 1u;
+    uint32_t missedBeats = 0u;
 
     for (;;) {
         const uint32_t wantedGeneration =
@@ -399,12 +401,26 @@ static void* roomcut_transport_worker(void* unused)
         }
 
         if (__atomic_load_n(&gTransport.generation, __ATOMIC_ACQUIRE) !=
-            connectedGeneration ||
-            roomcut_probe_engine(
-                connection.servicePort,
-                heartbeatSequence++,
-                ROOMCUT_HEARTBEAT_TIMEOUT_MS) != KERN_SUCCESS) {
+            connectedGeneration) {
+            missedBeats = 0u;
             roomcut_retire_connection(&connection);
+        } else if (roomcut_probe_engine(
+                       connection.servicePort,
+                       heartbeatSequence++,
+                       ROOMCUT_HEARTBEAT_TIMEOUT_MS) != KERN_SUCCESS) {
+            /* A single late beat does not mean the engine is gone. It answers
+             * heartbeats on the same thread that opens output devices, and a
+             * device switch there can legitimately outlast the 500 ms timeout —
+             * retiring on the first miss tore down a working ring, and the
+             * reconnect churned so hard that no audio flowed at all. Give it
+             * three consecutive misses (~3 s at the beat interval) before
+             * declaring the engine dead. */
+            if (++missedBeats >= ROOMCUT_HEARTBEAT_MAX_MISSES) {
+                missedBeats = 0u;
+                roomcut_retire_connection(&connection);
+            }
+        } else {
+            missedBeats = 0u;
         }
     }
 
