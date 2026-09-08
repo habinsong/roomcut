@@ -1,0 +1,27 @@
+Internal ctest changing into directory: /Users/songhabin/roomcut/build
+Test project /Users/songhabin/roomcut/build
+    Start 10: client_volume
+1/1 Test #10: client_volume ....................***Failed    0.54 sec
+FAIL: boost rejection propagates without changing device scalars (169)
+FAIL: real volume failure is not hidden by a successful virtual write (172)
+FAIL: stop remaining device writes after a real failure (173)
+FAIL: virtual failure is not hidden by a successful real write (175)
+FAIL: failed unmute is not reported as successful audible volume (179)
+FAIL: a failed property query is an error, not unsupported hardware (182)
+FAIL: already-unmuted read-only mute does not prevent a valid scalar write (185)
+FAIL: unsupported boost cannot silently apply 100 percent (189)
+FAIL: a vanished selected device cannot report successful volume (198)
+FAIL: non-finite input cannot set maximum hardware volume (213)
+FAIL: non-finite input cannot set maximum hardware volume (213)
+FAIL: non-finite input cannot set maximum hardware volume (213)
+FAIL: unknown existing boost prevents an uncoordinated write (217)
+rejected boost: result=0, real=1.00, virtual=1.00
+
+
+0% tests passed, 1 tests failed out of 1
+
+Total Test time (real) =   0.55 sec
+
+The following tests FAILED:
+	 10 - client_volume (Failed)
+Errors while running CTest

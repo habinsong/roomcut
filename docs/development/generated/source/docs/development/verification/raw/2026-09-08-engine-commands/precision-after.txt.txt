@@ -1,0 +1,10 @@
+Internal ctest changing into directory: /Users/songhabin/roomcut/build
+Test project /Users/songhabin/roomcut/build
+    Start 30: engine_state
+1/2 Test #30: engine_state .....................   Passed    1.42 sec
+    Start 35: engine_commands
+2/2 Test #35: engine_commands ..................   Passed    0.50 sec
+
+100% tests passed, 0 tests failed out of 2
+
+Total Test time (real) =   1.92 sec

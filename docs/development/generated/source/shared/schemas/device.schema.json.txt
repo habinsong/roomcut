@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://roomcut.app/schemas/device.schema.json",
+  "title": "RoomcutDeviceState",
+  "description": "Hardware output device descriptor and per-device override settings.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "name"],
+  "properties": {
+    "id": { "type": "string", "description": "CoreAudio device UID." },
+    "name": { "type": "string" },
+    "transport": {
+      "type": "string",
+      "enum": ["builtin", "usb", "bluetooth", "hdmi", "displayport", "aggregate", "virtual", "unknown"]
+    },
+    "supportedSampleRates": {
+      "type": "array",
+      "items": { "type": "number" }
+    },
+    "channelCount": { "type": "integer", "minimum": 1 },
+    "overrides": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "defaultPreset": { "type": "string" },
+        "gainOffsetDb": { "type": "number", "minimum": -24, "maximum": 12 },
+        "crossfeed": { "type": "number", "minimum": 0, "maximum": 100 },
+        "exclusiveBypass": { "type": "boolean" }
+      }
+    }
+  }
+}

@@ -1,0 +1,31 @@
+[0/1] Planning build
+Building for production...
+[0/4] Write sources
+[1/4] Write swift-version--58304C5D6DBC2206.txt
+[3/5] Compiling RoomcutPresentationCore RoomcutMainPresentation.swift
+[4/6] Compiling RoomcutCore AppPreferences.swift
+[5/9] Compiling RoomcutTests DeviceCommandTests.swift
+[6/10] Compiling RoomcutPackageTests runner.swift
+[6/10] Write Objects.LinkFileList
+[7/10] Linking RoomcutPackageTests
+[9/10] Compiling Roomcut AdvancedControls.swift
+[9/11] Write Objects.LinkFileList
+[10/11] Linking Roomcut
+Build complete! (49.12s)
+Test Suite 'Selected tests' started at 2026-09-08 13:58:36.092.
+Test Suite 'RoomcutPackageTests.xctest' started at 2026-09-08 13:58:36.097.
+Test Suite 'PollingLifecycleTests' started at 2026-09-08 13:58:36.097.
+Test Case '-[RoomcutTests.PollingLifecycleTests testSlowDeviceReadDoesNotPauseStatusAndMeters]' started.
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/PollingLifecycleTests.swift:95: error: -[RoomcutTests.PollingLifecycleTests testSlowDeviceReadDoesNotPauseStatusAndMeters] : XCTAssertGreaterThanOrEqual failed: ("1") is less than ("2")
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/PollingLifecycleTests.swift:96: error: -[RoomcutTests.PollingLifecycleTests testSlowDeviceReadDoesNotPauseStatusAndMeters] : XCTAssertEqualWithAccuracy failed: ("0.0") is not equal to ("0.8") +/- ("0.001")
+Test Case '-[RoomcutTests.PollingLifecycleTests testSlowDeviceReadDoesNotPauseStatusAndMeters]' failed (0.592 seconds).
+Test Suite 'PollingLifecycleTests' failed at 2026-09-08 13:58:36.690.
+	 Executed 1 test, with 2 failures (0 unexpected) in 0.592 (0.593) seconds
+Test Suite 'RoomcutPackageTests.xctest' failed at 2026-09-08 13:58:36.690.
+	 Executed 1 test, with 2 failures (0 unexpected) in 0.592 (0.593) seconds
+Test Suite 'Selected tests' failed at 2026-09-08 13:58:36.690.
+	 Executed 1 test, with 2 failures (0 unexpected) in 0.592 (0.599) seconds
+◇ Test run started.
+↳ Testing Library Version: 1902
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

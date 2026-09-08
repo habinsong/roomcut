@@ -1,0 +1,114 @@
+[0/1] Planning build
+Building for debugging...
+[0/5] Write sources
+[1/5] Write swift-version--58304C5D6DBC2206.txt
+[3/5] Emitting module RoomcutTests
+[4/5] Compiling RoomcutTests RoomTunePCMTests.swift
+[4/6] Write Objects.LinkFileList
+[5/6] Linking RoomcutPackageTests
+Build complete! (3.88s)
+Test Suite 'Selected tests' started at 2026-09-08 15:15:25.684.
+Test Suite 'RoomcutPackageTests.xctest' started at 2026-09-08 15:15:25.686.
+Test Suite 'RoomTuneAnalysisTests' started at 2026-09-08 15:15:25.686.
+Test Case '-[RoomcutTests.RoomTuneAnalysisTests testAudioFileConvertsLowRateMicrophoneRecordings]' started.
+Test Case '-[RoomcutTests.RoomTuneAnalysisTests testAudioFileConvertsLowRateMicrophoneRecordings]' passed (0.074 seconds).
+Test Case '-[RoomcutTests.RoomTuneAnalysisTests testClockAndNoiseMatrixPreservesFlatResponse]' started.
+Test Case '-[RoomcutTests.RoomTuneAnalysisTests testClockAndNoiseMatrixPreservesFlatResponse]' passed (46.668 seconds).
+Test Case '-[RoomcutTests.RoomTuneAnalysisTests testFlatResponseRemovesExcitationSpectrumAndUnknownDelay]' started.
+Test Case '-[RoomcutTests.RoomTuneAnalysisTests testFlatResponseRemovesExcitationSpectrumAndUnknownDelay]' passed (11.945 seconds).
+Test Case '-[RoomcutTests.RoomTuneAnalysisTests testInvalidSampleRateAndNonFiniteRecordingAreRejected]' started.
+Test Case '-[RoomcutTests.RoomTuneAnalysisTests testInvalidSampleRateAndNonFiniteRecordingAreRejected]' passed (0.653 seconds).
+Test Case '-[RoomcutTests.RoomTuneAnalysisTests testKnownResonanceStaysAt500HzAcrossRecordingDelays]' started.
+Test Case '-[RoomcutTests.RoomTuneAnalysisTests testKnownResonanceStaysAt500HzAcrossRecordingDelays]' passed (18.883 seconds).
+Test Case '-[RoomcutTests.RoomTuneAnalysisTests testRecordingTruncatedByDelayedPlaybackIsRejected]' started.
+Test Case '-[RoomcutTests.RoomTuneAnalysisTests testRecordingTruncatedByDelayedPlaybackIsRejected]' passed (5.240 seconds).
+Test Case '-[RoomcutTests.RoomTuneAnalysisTests testSilenceAndClippingAreMeasurementFailures]' started.
+Test Case '-[RoomcutTests.RoomTuneAnalysisTests testSilenceAndClippingAreMeasurementFailures]' passed (1.516 seconds).
+Test Case '-[RoomcutTests.RoomTuneAnalysisTests testUnrelatedToneIsNotReportedAsARoomMeasurement]' started.
+Test Case '-[RoomcutTests.RoomTuneAnalysisTests testUnrelatedToneIsNotReportedAsARoomMeasurement]' passed (2.052 seconds).
+Test Case '-[RoomcutTests.RoomTuneAnalysisTests testUnrelatedWhiteNoiseIsRejected]' started.
+Test Case '-[RoomcutTests.RoomTuneAnalysisTests testUnrelatedWhiteNoiseIsRejected]' passed (2.317 seconds).
+Test Suite 'RoomTuneAnalysisTests' passed at 2026-09-08 15:16:55.040.
+	 Executed 9 tests, with 0 failures (0 unexpected) in 89.348 (89.354) seconds
+Test Suite 'RoomTuneAudioFileTests' started at 2026-09-08 15:16:55.040.
+Test Case '-[RoomcutTests.RoomTuneAudioFileTests testPCMFileFormatsAndSampleRatesPreserveLevel]' started.
+Test Case '-[RoomcutTests.RoomTuneAudioFileTests testPCMFileFormatsAndSampleRatesPreserveLevel]' passed (0.458 seconds).
+Test Suite 'RoomTuneAudioFileTests' passed at 2026-09-08 15:16:55.499.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.458 (0.459) seconds
+Test Suite 'RoomTunePCMTests' started at 2026-09-08 15:16:55.499.
+Test Case '-[RoomcutTests.RoomTunePCMTests testCaptureConversionKeepsTheInputSampleRate]' started.
+Test Case '-[RoomcutTests.RoomTunePCMTests testCaptureConversionKeepsTheInputSampleRate]' passed (0.006 seconds).
+Test Case '-[RoomcutTests.RoomTunePCMTests testFirstChannelAcrossPCMFormatsAndLayouts]' started.
+Test Case '-[RoomcutTests.RoomTunePCMTests testFirstChannelAcrossPCMFormatsAndLayouts]' passed (0.002 seconds).
+Test Case '-[RoomcutTests.RoomTunePCMTests testNonFiniteInputFailsButClippedLevelsRemainVisible]' started.
+Test Case '-[RoomcutTests.RoomTunePCMTests testNonFiniteInputFailsButClippedLevelsRemainVisible]' passed (0.001 seconds).
+Test Case '-[RoomcutTests.RoomTunePCMTests testPacked24BitPCMEndiannessAndChannelLayouts]' started.
+Test Case '-[RoomcutTests.RoomTunePCMTests testPacked24BitPCMEndiannessAndChannelLayouts]' passed (0.002 seconds).
+Test Case '-[RoomcutTests.RoomTunePCMTests testRejectsUnreadyInvalidatedAndTruncatedBuffers]' started.
+Test Case '-[RoomcutTests.RoomTunePCMTests testRejectsUnreadyInvalidatedAndTruncatedBuffers]' passed (0.001 seconds).
+Test Case '-[RoomcutTests.RoomTunePCMTests testRepeatedConvertedBuffersRoundTripThroughWAV]' started.
+Test Case '-[RoomcutTests.RoomTunePCMTests testRepeatedConvertedBuffersRoundTripThroughWAV]' passed (0.002 seconds).
+Test Suite 'RoomTunePCMTests' passed at 2026-09-08 15:16:55.513.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 0.013 (0.014) seconds
+Test Suite 'RoomcutPackageTests.xctest' passed at 2026-09-08 15:16:55.513.
+	 Executed 16 tests, with 0 failures (0 unexpected) in 89.819 (89.827) seconds
+Test Suite 'Selected tests' passed at 2026-09-08 15:16:55.513.
+	 Executed 16 tests, with 0 failures (0 unexpected) in 89.819 (89.829) seconds
+Room Tune clock=-1000.0 ppm, SNR=20.0 dB: max error=0.04492198778693535 dB, cuts=0
+Room Tune clock=-1000.0 ppm, SNR=40.0 dB: max error=0.006314598284511419 dB, cuts=0
+Room Tune clock=0.0 ppm, SNR=20.0 dB: max error=0.04308189685977837 dB, cuts=0
+Room Tune clock=0.0 ppm, SNR=40.0 dB: max error=0.002373157434440998 dB, cuts=0
+Room Tune clock=1000.0 ppm, SNR=20.0 dB: max error=0.06567089649565361 dB, cuts=0
+Room Tune clock=1000.0 ppm, SNR=40.0 dB: max error=0.0066334330451987 dB, cuts=0
+WAV 8000 Hz, 16 bit, float=false: frames=12000, rms=0.0706888527104694
+WAV 8000 Hz, 24 bit, float=false: frames=12000, rms=0.07068741987349861
+WAV 8000 Hz, 32 bit, float=false: frames=12000, rms=0.07068742501425986
+WAV 8000 Hz, 32 bit, float=true: frames=12000, rms=0.0706874248688052
+WAV 16000 Hz, 16 bit, float=false: frames=12000, rms=0.07068455736305027
+WAV 16000 Hz, 24 bit, float=false: frames=12000, rms=0.07068740450551439
+WAV 16000 Hz, 32 bit, float=false: frames=12000, rms=0.07068741962566605
+WAV 16000 Hz, 32 bit, float=true: frames=12000, rms=0.07068741962566605
+WAV 44100 Hz, 16 bit, float=false: frames=12000, rms=0.07068812459612696
+WAV 44100 Hz, 24 bit, float=false: frames=12000, rms=0.07068742617662897
+WAV 44100 Hz, 32 bit, float=false: frames=12000, rms=0.07068742161643686
+WAV 44100 Hz, 32 bit, float=true: frames=12000, rms=0.07068742161750793
+WAV 48000 Hz, 16 bit, float=false: frames=12000, rms=0.07068819564401994
+WAV 48000 Hz, 24 bit, float=false: frames=12000, rms=0.07068740254870974
+WAV 48000 Hz, 32 bit, float=false: frames=12000, rms=0.07068741728114061
+WAV 48000 Hz, 32 bit, float=true: frames=12000, rms=0.07068741728114061
+WAV 96000 Hz, 16 bit, float=false: frames=12000, rms=0.07068948859557798
+WAV 96000 Hz, 24 bit, float=false: frames=12000, rms=0.07068736569967253
+WAV 96000 Hz, 32 bit, float=false: frames=12000, rms=0.07068737618113873
+WAV 96000 Hz, 32 bit, float=true: frames=12000, rms=0.07068737618113873
+WAV 192000 Hz, 16 bit, float=false: frames=12000, rms=0.0706898304404078
+WAV 192000 Hz, 24 bit, float=false: frames=12000, rms=0.07068742110040689
+WAV 192000 Hz, 32 bit, float=false: frames=12000, rms=0.07068742970070524
+WAV 192000 Hz, 32 bit, float=true: frames=12000, rms=0.07068742970070524
+PCM format=1, channels=1, interleaved=false: max error 0.0
+PCM format=1, channels=1, interleaved=true: max error 0.0
+PCM format=1, channels=2, interleaved=false: max error 0.0
+PCM format=1, channels=2, interleaved=true: max error 0.0
+PCM format=2, channels=1, interleaved=false: max error 0.0
+PCM format=2, channels=1, interleaved=true: max error 0.0
+PCM format=2, channels=2, interleaved=false: max error 0.0
+PCM format=2, channels=2, interleaved=true: max error 0.0
+PCM format=3, channels=1, interleaved=false: max error 0.0
+PCM format=3, channels=1, interleaved=true: max error 0.0
+PCM format=3, channels=2, interleaved=false: max error 0.0
+PCM format=3, channels=2, interleaved=true: max error 0.0
+PCM format=4, channels=1, interleaved=false: max error 0.0
+PCM format=4, channels=1, interleaved=true: max error 0.0
+PCM format=4, channels=2, interleaved=false: max error 0.0
+PCM format=4, channels=2, interleaved=true: max error 0.0
+PCM packed24 channels=1, interleaved=false, bigEndian=false: max error 0.0
+PCM packed24 channels=1, interleaved=false, bigEndian=true: max error 0.0
+PCM packed24 channels=1, interleaved=true, bigEndian=false: max error 0.0
+PCM packed24 channels=1, interleaved=true, bigEndian=true: max error 0.0
+PCM packed24 channels=2, interleaved=false, bigEndian=false: max error 0.0
+PCM packed24 channels=2, interleaved=false, bigEndian=true: max error 0.0
+PCM packed24 channels=2, interleaved=true, bigEndian=false: max error 0.0
+PCM packed24 channels=2, interleaved=true, bigEndian=true: max error 0.0
+◇ Test run started.
+↳ Testing Library Version: 1902
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

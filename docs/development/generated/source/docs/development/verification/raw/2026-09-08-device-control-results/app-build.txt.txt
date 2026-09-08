@@ -1,0 +1,12 @@
+[0/1] Planning build
+Building for production...
+[0/2] Write swift-version--58304C5D6DBC2206.txt
+[2/3] Compiling RoomcutPresentationCore RoomcutMainPresentation.swift
+[3/5] Compiling RoomcutCore AppPreferences.swift
+[4/6] Compiling Roomcut AdvancedControls.swift
+[4/6] Write Objects.LinkFileList
+[5/6] Linking Roomcut
+Build complete! (40.03s)
+/Users/songhabin/roomcut/build/Roomcut.app/Contents/Resources/RoomcutNowPlaying.dylib: replacing existing signature
+/Users/songhabin/roomcut/build/Roomcut.app: replacing existing signature
+Assembled /Users/songhabin/roomcut/build/Roomcut.app

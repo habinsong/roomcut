@@ -1,0 +1,37 @@
+Building for production...
+[0/6] Write sources
+[3/6] Write swift-version--58304C5D6DBC2206.txt
+[5/7] Compiling RoomcutCore AppPreferences.swift
+[6/10] Compiling Roomcut AdvancedControls.swift
+/Users/songhabin/roomcut/apps/macos/Roomcut/RoomTuneTab.swift:309:51: error: binary operator '??' cannot be applied to operands of type 'Binding<Subject>?' and 'String'
+307 |     private func roomTuneSummary(_ result: RoomTuneResult) -> String {
+308 |         let date = DateFormatter.localizedString(from: Date(), dateStyle: .medium, timeStyle: .short)
+309 |         let input = scanner.device?.localizedName ?? "iPhone"
+    |                                                   `- error: binary operator '??' cannot be applied to operands of type 'Binding<Subject>?' and 'String'
+310 |         let output = model.outputDevices.first { $0.uid == model.selectedDeviceUID }?.name
+311 |             ?? L("출력 장치", "Output Device", "出力デバイス", "Périphérique de sortie", "Ausgabegerät")
+
+/Users/songhabin/roomcut/apps/macos/Roomcut/RoomTuneTab.swift:309:29: error: value of type 'RoomTuneInputScanner' has no dynamic member 'device' using key path from root type 'RoomTuneInputScanner'
+307 |     private func roomTuneSummary(_ result: RoomTuneResult) -> String {
+308 |         let date = DateFormatter.localizedString(from: Date(), dateStyle: .medium, timeStyle: .short)
+309 |         let input = scanner.device?.localizedName ?? "iPhone"
+    |                             `- error: value of type 'RoomTuneInputScanner' has no dynamic member 'device' using key path from root type 'RoomTuneInputScanner'
+310 |         let output = model.outputDevices.first { $0.uid == model.selectedDeviceUID }?.name
+311 |             ?? L("출력 장치", "Output Device", "出力デバイス", "Périphérique de sortie", "Ausgabegerät")
+
+/Users/songhabin/roomcut/apps/macos/Roomcut/RoomTuneTab.swift:309:21: error: referencing subscript 'subscript(dynamicMember:)' requires wrapper 'ObservedObject<RoomTuneInputScanner>.Wrapper'
+307 |     private func roomTuneSummary(_ result: RoomTuneResult) -> String {
+308 |         let date = DateFormatter.localizedString(from: Date(), dateStyle: .medium, timeStyle: .short)
+309 |         let input = scanner.device?.localizedName ?? "iPhone"
+    |                     `- error: referencing subscript 'subscript(dynamicMember:)' requires wrapper 'ObservedObject<RoomTuneInputScanner>.Wrapper'
+310 |         let output = model.outputDevices.first { $0.uid == model.selectedDeviceUID }?.name
+311 |             ?? L("출력 장치", "Output Device", "出力デバイス", "Périphérique de sortie", "Ausgabegerät")
+
+/Users/songhabin/roomcut/apps/macos/Roomcut/RoomTuneTab.swift:309:35: error: cannot use optional chaining on non-optional value of type 'Binding<Subject>'
+307 |     private func roomTuneSummary(_ result: RoomTuneResult) -> String {
+308 |         let date = DateFormatter.localizedString(from: Date(), dateStyle: .medium, timeStyle: .short)
+309 |         let input = scanner.device?.localizedName ?? "iPhone"
+    |                                   `- error: cannot use optional chaining on non-optional value of type 'Binding<Subject>'
+310 |         let output = model.outputDevices.first { $0.uid == model.selectedDeviceUID }?.name
+311 |             ?? L("출력 장치", "Output Device", "出力デバイス", "Périphérique de sortie", "Ausgabegerät")
+error: fatalError

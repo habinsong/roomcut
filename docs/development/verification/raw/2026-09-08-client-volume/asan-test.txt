@@ -1,0 +1,28 @@
+Internal ctest changing into directory: /Users/songhabin/roomcut/build/client-volume-audit/asan
+UpdateCTestConfiguration  from :/Users/songhabin/roomcut/build/client-volume-audit/asan/DartConfiguration.tcl
+UpdateCTestConfiguration  from :/Users/songhabin/roomcut/build/client-volume-audit/asan/DartConfiguration.tcl
+Test project /Users/songhabin/roomcut/build/client-volume-audit/asan
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 10
+    Start 10: client_volume
+
+10: Test command: /Users/songhabin/roomcut/build/client-volume-audit/asan/core/tests/test_client_volume
+10: Working Directory: /Users/songhabin/roomcut/build/client-volume-audit/asan/core/tests
+10: Test timeout computed to be: 20
+10: ==22709==AddressSanitizer: detect_leaks is not supported on this platform.
+1/1 Test #10: client_volume ....................Subprocess aborted***Exception:   0.74 sec
+
+0% tests passed, 1 tests failed out of 1
+
+Total Test time (real) =   0.74 sec
+
+The following tests FAILED:
+	 10 - client_volume (Subprocess aborted)
+Errors while running CTest
+Output from these tests are in: /Users/songhabin/roomcut/build/client-volume-audit/asan/Testing/Temporary/LastTest.log
+Use "--rerun-failed --output-on-failure" to re-run the failed cases verbosely.

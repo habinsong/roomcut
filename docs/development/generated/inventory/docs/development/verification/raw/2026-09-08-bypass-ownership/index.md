@@ -1,0 +1,12 @@
+# `docs/development/verification/raw/2026-09-08-bypass-ownership`
+
+| 현재 파일 | 전체 원문 | 행 | 바이트 | SHA-256 |
+|---|---|---:|---:|---|
+| [before.txt](../../../../../../../verification/raw/2026-09-08-bypass-ownership/before.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-bypass-ownership/before.txt.txt) | 36 | 2959 | `12a01b654c16768090fca7515b6b519fd7d81c4251309a731f7ef44ceba34d99` |
+| [expanded-after.txt](../../../../../../../verification/raw/2026-09-08-bypass-ownership/expanded-after.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-bypass-ownership/expanded-after.txt.txt) | 42 | 3521 | `d506d91557acbd2ec775f4c47f38646d38d7f9a9c96420fbebb494104e3e3351` |
+| [expanded-before.txt](../../../../../../../verification/raw/2026-09-08-bypass-ownership/expanded-before.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-bypass-ownership/expanded-before.txt.txt) | 127 | 8153 | `487ca2acf12e689f5c87e6c3b437d1a01460622da3ad867de52d6968866e7a47` |
+| [swift-tests.txt](../../../../../../../verification/raw/2026-09-08-bypass-ownership/swift-tests.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-bypass-ownership/swift-tests.txt.txt) | 554 | 56475 | `f36ece402465569eac3bf37c129bc98986623fcefaff9c8d5335148b930bba70` |
+| [targeted.txt](../../../../../../../verification/raw/2026-09-08-bypass-ownership/targeted.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-bypass-ownership/targeted.txt.txt) | 37 | 2406 | `84c519c2c9a905eca250b5559509dabf7f2cbb67f122e666aa26bed8a860e9c1` |
+| [tsan.txt](../../../../../../../verification/raw/2026-09-08-bypass-ownership/tsan.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-bypass-ownership/tsan.txt.txt) | 168 | 12444 | `acd4a41c0ff8c7846cce796946905190304fff226fbd4319240f26411a9cd3e6` |
+| [ui-trace-3s.txt](../../../../../../../verification/raw/2026-09-08-bypass-ownership/ui-trace-3s.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-bypass-ownership/ui-trace-3s.txt.txt) | 11 | 609 | `ee6d2128e9b913fa21ac914b78d6767b1c27e446d503091a9109147348b5e26f` |
+| [ui-trace-5s.txt](../../../../../../../verification/raw/2026-09-08-bypass-ownership/ui-trace-5s.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-bypass-ownership/ui-trace-5s.txt.txt) | 20 | 1087 | `50e311fd64e4350779887178d5d36d5d3a68871c84af93bcc488a54e2d440f98` |

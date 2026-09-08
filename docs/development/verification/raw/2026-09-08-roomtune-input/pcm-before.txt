@@ -1,0 +1,51 @@
+[0/1] Planning build
+Building for production...
+[0/8] Write sources
+[3/8] Write swift-version--58304C5D6DBC2206.txt
+[5/9] Compiling RoomcutPresentationCore RoomcutMainPresentation.swift
+[6/10] Compiling RoomcutCore AppPreferences.swift
+[7/12] Compiling RoomcutTests DeviceCommandTests.swift
+[8/13] Compiling RoomcutPackageTests runner.swift
+[8/13] Write Objects.LinkFileList
+[9/13] Linking RoomcutPackageTests
+[11/13] Compiling Roomcut AdvancedControls.swift
+[11/13] Write Objects.LinkFileList
+[12/13] Linking Roomcut
+Build complete! (44.60s)
+Test Suite 'Selected tests' started at 2026-09-08 14:56:42.405.
+Test Suite 'RoomcutPackageTests.xctest' started at 2026-09-08 14:56:42.406.
+Test Suite 'RoomTunePCMTests' started at 2026-09-08 14:56:42.406.
+Test Case '-[RoomcutTests.RoomTunePCMTests testFirstChannelAcrossPCMFormatsAndLayouts]' started.
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/RoomTunePCMTests.swift:60: error: -[RoomcutTests.RoomTunePCMTests testFirstChannelAcrossPCMFormatsAndLayouts] : failed - valid PCM was discarded: format=1, channels=2, interleaved=false
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/RoomTunePCMTests.swift:65: error: -[RoomcutTests.RoomTunePCMTests testFirstChannelAcrossPCMFormatsAndLayouts] : XCTAssertTrue failed - first channel differs: format=2, channels=1, interleaved=false, errors=[0.25, 2.125, 0.0, 2.5, 1.0, 0.5]
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/RoomTunePCMTests.swift:65: error: -[RoomcutTests.RoomTunePCMTests testFirstChannelAcrossPCMFormatsAndLayouts] : XCTAssertTrue failed - first channel differs: format=2, channels=1, interleaved=true, errors=[0.25, 2.125, 0.0, 2.5, 1.0, 0.5]
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/RoomTunePCMTests.swift:60: error: -[RoomcutTests.RoomTunePCMTests testFirstChannelAcrossPCMFormatsAndLayouts] : failed - valid PCM was discarded: format=2, channels=2, interleaved=false
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/RoomTunePCMTests.swift:65: error: -[RoomcutTests.RoomTunePCMTests testFirstChannelAcrossPCMFormatsAndLayouts] : XCTAssertTrue failed - first channel differs: format=2, channels=2, interleaved=true, errors=[0.25, 0.5, 0.0, 0.75, 1.0, 0.5]
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/RoomTunePCMTests.swift:60: error: -[RoomcutTests.RoomTunePCMTests testFirstChannelAcrossPCMFormatsAndLayouts] : failed - valid PCM was discarded: format=3, channels=2, interleaved=false
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/RoomTunePCMTests.swift:65: error: -[RoomcutTests.RoomTunePCMTests testFirstChannelAcrossPCMFormatsAndLayouts] : XCTAssertTrue failed - first channel differs: format=4, channels=1, interleaved=false, errors=[0.25, 0.75, 0.0, 1.25, 1.0, 0.5]
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/RoomTunePCMTests.swift:65: error: -[RoomcutTests.RoomTunePCMTests testFirstChannelAcrossPCMFormatsAndLayouts] : XCTAssertTrue failed - first channel differs: format=4, channels=1, interleaved=true, errors=[0.25, 0.75, 0.0, 1.25, 1.0, 0.5]
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/RoomTunePCMTests.swift:60: error: -[RoomcutTests.RoomTunePCMTests testFirstChannelAcrossPCMFormatsAndLayouts] : failed - valid PCM was discarded: format=4, channels=2, interleaved=false
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/RoomTunePCMTests.swift:65: error: -[RoomcutTests.RoomTunePCMTests testFirstChannelAcrossPCMFormatsAndLayouts] : XCTAssertTrue failed - first channel differs: format=4, channels=2, interleaved=true, errors=[0.25, 0.5, 0.0, 0.75, 1.0, 0.5]
+Test Case '-[RoomcutTests.RoomTunePCMTests testFirstChannelAcrossPCMFormatsAndLayouts]' failed (0.361 seconds).
+Test Suite 'RoomTunePCMTests' failed at 2026-09-08 14:56:42.767.
+	 Executed 1 test, with 10 failures (0 unexpected) in 0.361 (0.361) seconds
+Test Suite 'RoomcutPackageTests.xctest' failed at 2026-09-08 14:56:42.767.
+	 Executed 1 test, with 10 failures (0 unexpected) in 0.361 (0.361) seconds
+Test Suite 'Selected tests' failed at 2026-09-08 14:56:42.767.
+	 Executed 1 test, with 10 failures (0 unexpected) in 0.361 (0.362) seconds
+PCM format=1, channels=1, interleaved=false: max error 0.0
+PCM format=1, channels=1, interleaved=true: max error 0.0
+PCM format=1, channels=2, interleaved=true: max error 0.0
+PCM format=2, channels=1, interleaved=false: max error 2.5
+PCM format=2, channels=1, interleaved=true: max error 2.5
+PCM format=2, channels=2, interleaved=true: max error 1.0
+PCM format=3, channels=1, interleaved=false: max error 0.0
+PCM format=3, channels=1, interleaved=true: max error 0.0
+PCM format=3, channels=2, interleaved=true: max error 0.0
+PCM format=4, channels=1, interleaved=false: max error 1.25
+PCM format=4, channels=1, interleaved=true: max error 1.25
+PCM format=4, channels=2, interleaved=true: max error 1.0
+◇ Test run started.
+↳ Testing Library Version: 1902
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

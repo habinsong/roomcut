@@ -1,0 +1,1 @@
+{"preset":"custom","paramsRevision":7,"preampDb":-1.5264,"eqGainsDb":[2.0000,1.0000,0.5000,0.0000,-1.0000,-0.5000,-1.5000,0.0000,0.0000,0.0000],"limiterReleaseMs":100.0000,"outputGainDb":-1.5241,"spatialWidth":100.0000,"centerFocus":0.0000,"crossfeed":0.0000,"roomReduce":0.0000,"spatialMode":2.0000,"highpassHz":0.0000,"compAmount":0.0000}

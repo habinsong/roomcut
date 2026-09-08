@@ -1,0 +1,2 @@
+rejected boost: result=7, real=0.40, virtual=0.40
+all client volume tests passed (real C shim/Mach, fake HAL/service lookup)

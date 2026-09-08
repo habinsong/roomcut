@@ -1,0 +1,24 @@
+#include "roomcut_client.h"
+#include <cstdio>
+int main() {
+    RoomcutClientState state{};
+    RoomcutClientParams params{};
+    RoomcutClientAudioFormat format{};
+    double volume = -1;
+    const int s = roomcutClientGetState(&state);
+    const int p = roomcutClientGetParams(&params);
+    const int v = roomcutClientVolumeGet(&volume);
+    const int f = s == 0 ? roomcutClientAudioFormat(state.outputDeviceUID, &format) : -1;
+    std::printf("state=%d params=%d volume=%d format=%d\n", s, p, v, f);
+    if (s == 0) std::printf("output=%s bypass=%d boost=%.17g capabilities=%u\n", state.outputDeviceUID, state.manualBypass, state.volumeBoost, state.capabilities);
+    if (v == 0) std::printf("volume=%.17g\n", volume);
+    if (f == 0) std::printf("sampleRate=%.17g bitDepth=%u latencyMs=%.17g\n", format.sampleRate, format.bitDepth, format.latencyMs);
+    if (p == 0) {
+        std::printf("preamp=%.17g outputGain=%.17g spatialMode=%.17g width=%.17g\n", params.preampDb, params.outputGainDb, params.spatialMode, params.spatialWidth);
+        for (int i=0; i<ROOMCUT_CLIENT_PARAM_BANDS; ++i) {
+            const auto& b = params.parametric[i];
+            std::printf("peq[%d] enabled=%u type=%u freq=%.17g gain=%.17g q=%.17g\n", i, b.enabled, b.type, b.freqHz, b.gainDb, b.q);
+        }
+    }
+    return s || p || v || f ? 1 : 0;
+}

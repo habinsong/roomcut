@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://roomcut.app/schemas/ai_proposal.schema.json",
+  "title": "RoomcutAIProposal",
+  "description": "The constrained JSON an LLM must return. After parsing, this is re-validated against preset.schema.json AND the safety bounds in SafetyValidator before preview/apply.",
+  "type": "object",
+  "required": ["presetName", "changes"],
+  "additionalProperties": false,
+  "properties": {
+    "presetName": { "type": "string", "minLength": 1, "maxLength": 64 },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "explanation": { "type": "string", "maxLength": 512 },
+    "changes": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "preampDb": { "type": "number", "minimum": -12, "maximum": 6 },
+        "eq": {
+          "type": "array",
+          "maxItems": 12,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "frequency", "gainDb", "q"],
+            "properties": {
+              "type": { "type": "string", "enum": ["bell", "low_shelf", "high_shelf", "high_pass", "low_pass", "notch"] },
+              "frequency": { "type": "number", "minimum": 20, "maximum": 20000 },
+              "gainDb": { "type": "number", "minimum": -12, "maximum": 12 },
+              "q": { "type": "number", "minimum": 0.1, "maximum": 10 }
+            }
+          }
+        },
+        "spatial": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "width": { "type": "number", "minimum": -60, "maximum": 60 },
+            "centerFocus": { "type": "number", "minimum": 0, "maximum": 60 },
+            "crossfeed": { "type": "number", "minimum": 0, "maximum": 40 },
+            "roomReduce": { "type": "number", "minimum": 0, "maximum": 60 }
+          }
+        },
+        "limiter": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean" }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,24 @@
+Building for production...
+[0/4] Write sources
+[1/4] Write swift-version--58304C5D6DBC2206.txt
+[3/4] Compiling RoomcutTests DeviceCommandTests.swift
+[4/6] Compiling RoomcutPackageTests runner.swift
+[4/6] Write Objects.LinkFileList
+[5/6] Linking RoomcutPackageTests
+Build complete! (12.29s)
+Test Suite 'Selected tests' started at 2026-09-08 13:15:04.499.
+Test Suite 'RoomcutPackageTests.xctest' started at 2026-09-08 13:15:04.500.
+Test Suite 'DeviceCommandTests' started at 2026-09-08 13:15:04.500.
+Test Case '-[RoomcutTests.DeviceCommandTests testAutomaticClaimCannotHideManualFailure]' started.
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/DeviceCommandTests.swift:110: error: -[RoomcutTests.DeviceCommandTests testAutomaticClaimCannotHideManualFailure] : XCTAssertEqual failed: ("nil") is not equal to ("Optional("볼륨을 변경하지 못했습니다")")
+Test Case '-[RoomcutTests.DeviceCommandTests testAutomaticClaimCannotHideManualFailure]' failed (0.253 seconds).
+Test Suite 'DeviceCommandTests' failed at 2026-09-08 13:15:04.754.
+	 Executed 1 test, with 1 failure (0 unexpected) in 0.253 (0.254) seconds
+Test Suite 'RoomcutPackageTests.xctest' failed at 2026-09-08 13:15:04.754.
+	 Executed 1 test, with 1 failure (0 unexpected) in 0.253 (0.254) seconds
+Test Suite 'Selected tests' failed at 2026-09-08 13:15:04.754.
+	 Executed 1 test, with 1 failure (0 unexpected) in 0.253 (0.256) seconds
+◇ Test run started.
+↳ Testing Library Version: 1902
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

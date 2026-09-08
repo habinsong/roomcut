@@ -1,0 +1,12 @@
+# `docs/development/verification/raw/2026-09-08-meter-polling`
+
+| 현재 파일 | 전체 원문 | 행 | 바이트 | SHA-256 |
+|---|---|---:|---:|---|
+| [app-build.txt](../../../../../../../verification/raw/2026-09-08-meter-polling/app-build.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-meter-polling/app-build.txt.txt) | 12 | 584 | `9e19d6230291bda02f29e81c0178236d4d34764a7550ec91a72697d74d62596d` |
+| [before.txt](../../../../../../../verification/raw/2026-09-08-meter-polling/before.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-meter-polling/before.txt.txt) | 31 | 2064 | `0ffee5f83b883762c3b673231f5ba184e831fe0a40a96fa0f4df543930d85eb8` |
+| [hung-test.sample.txt](../../../../../../../verification/raw/2026-09-08-meter-polling/hung-test.sample.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-meter-polling/hung-test.sample.txt.txt) | 757 | 136738 | `785afa2a3e285378e3bfc8ead42d1a4644e19c7d43895dfa2fc34227c2e4fde2` |
+| [swift-tests.txt](../../../../../../../verification/raw/2026-09-08-meter-polling/swift-tests.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-meter-polling/swift-tests.txt.txt) | 415 | 42974 | `4b93f00f4d50ad3aa2bea42a2f6e98bb3091d553075cc1aaed5f85704fa098e4` |
+| [targeted-interrupted.txt](../../../../../../../verification/raw/2026-09-08-meter-polling/targeted-interrupted.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-meter-polling/targeted-interrupted.txt.txt) | 42 | 3404 | `91b4e47192763db7bbe6d705180ae7d78342ba8c01e54a7474c52922371f6148` |
+| [targeted.txt](../../../../../../../verification/raw/2026-09-08-meter-polling/targeted.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-meter-polling/targeted.txt.txt) | 58 | 5117 | `34ba7ef8e2a0d443661dcd0805d6d0fad9eb11f5a44df7d7779f2a2dbd5b324c` |
+| [tsan.txt](../../../../../../../verification/raw/2026-09-08-meter-polling/tsan.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-meter-polling/tsan.txt.txt) | 156 | 11909 | `a8495a6dcef032270cbaa69c61541f09073533f9c5245bd37c8c4a8486b614cc` |
+| [ui-smoke.txt](../../../../../../../verification/raw/2026-09-08-meter-polling/ui-smoke.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-meter-polling/ui-smoke.txt.txt) | 16 | 680 | `bf1944d4b0359e86d7cf589c2a0198eed9ba8ede76a71cf58e2c6a5a93973764` |

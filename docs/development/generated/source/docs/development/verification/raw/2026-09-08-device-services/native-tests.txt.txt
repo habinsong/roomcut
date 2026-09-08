@@ -1,0 +1,72 @@
+Internal ctest changing into directory: /Users/songhabin/roomcut/build
+Test project /Users/songhabin/roomcut/build
+      Start  1: ring
+ 1/33 Test  #1: ring .............................   Passed    0.02 sec
+      Start  2: ring_region
+ 2/33 Test  #2: ring_region ......................   Passed    0.01 sec
+      Start  3: handshake
+ 3/33 Test  #3: handshake ........................   Passed    0.00 sec
+      Start  4: handshake_validation
+ 4/33 Test  #4: handshake_validation .............   Passed    0.23 sec
+      Start  5: heartbeat
+ 5/33 Test  #5: heartbeat ........................   Passed    0.21 sec
+      Start  6: mach_cleanup
+ 6/33 Test  #6: mach_cleanup .....................   Passed    0.05 sec
+      Start  7: control
+ 7/33 Test  #7: control ..........................   Passed    0.01 sec
+      Start  8: control_validation
+ 8/33 Test  #8: control_validation ...............   Passed    0.01 sec
+      Start  9: engine_connection
+ 9/33 Test  #9: engine_connection ................   Passed    0.03 sec
+      Start 10: lifecycle
+10/33 Test #10: lifecycle ........................   Passed    0.01 sec
+      Start 11: resampler
+11/33 Test #11: resampler ........................   Passed    0.62 sec
+      Start 12: resampler_quality
+12/33 Test #12: resampler_quality ................   Passed    3.05 sec
+      Start 13: biquad
+13/33 Test #13: biquad ...........................   Passed    0.02 sec
+      Start 14: graphic_eq
+14/33 Test #14: graphic_eq .......................   Passed    0.03 sec
+      Start 15: limiter
+15/33 Test #15: limiter ..........................   Passed    0.03 sec
+      Start 16: spatial
+16/33 Test #16: spatial ..........................   Passed    0.05 sec
+      Start 17: compressor
+17/33 Test #17: compressor .......................   Passed    0.01 sec
+      Start 18: parametric
+18/33 Test #18: parametric .......................   Passed    0.01 sec
+      Start 19: analyzer
+19/33 Test #19: analyzer .........................   Passed    0.01 sec
+      Start 20: dsp_chain
+20/33 Test #20: dsp_chain ........................   Passed    0.15 sec
+      Start 21: dsp_transitions
+21/33 Test #21: dsp_transitions ..................   Passed    0.22 sec
+      Start 22: comparison
+22/33 Test #22: comparison .......................   Passed    0.79 sec
+      Start 23: presets
+23/33 Test #23: presets ..........................   Passed    0.01 sec
+      Start 24: device_policy
+24/33 Test #24: device_policy ....................   Passed    0.01 sec
+      Start 25: volume_ramp
+25/33 Test #25: volume_ramp ......................   Passed    0.01 sec
+      Start 26: render_pipeline
+26/33 Test #26: render_pipeline ..................   Passed    0.57 sec
+      Start 27: realtime_params
+27/33 Test #27: realtime_params ..................   Passed    0.03 sec
+      Start 28: analysis_tap
+28/33 Test #28: analysis_tap .....................   Passed    1.53 sec
+      Start 29: render_gate
+29/33 Test #29: render_gate ......................   Passed    0.49 sec
+      Start 30: engine_state
+30/33 Test #30: engine_state .....................   Passed    0.93 sec
+      Start 31: output_device
+31/33 Test #31: output_device ....................   Passed    0.05 sec
+      Start 32: device_volume
+32/33 Test #32: device_volume ....................   Passed    0.40 sec
+      Start 33: device_services
+33/33 Test #33: device_services ..................   Passed    0.55 sec
+
+100% tests passed, 0 tests failed out of 33
+
+Total Test time (real) =  10.20 sec

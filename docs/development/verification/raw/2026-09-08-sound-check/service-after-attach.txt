@@ -1,0 +1,5 @@
+	state = running
+	program = /Library/Application Support/Roomcut/bin/RoomcutAudioEngine
+	pid = 717
+		state = active
+		state = active

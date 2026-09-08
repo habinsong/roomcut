@@ -1,0 +1,42 @@
+[  4%] Built target RoomcutHAL
+[ 10%] Built target roomcut-driver-sim
+[ 14%] Built target roomcutctl
+[ 15%] Building CXX object engine/CMakeFiles/RoomcutAudioEngine.dir/src/EngineState.cpp.o
+[ 17%] Built target test_ring
+[ 19%] Built target test_ring_region
+[ 21%] Built target roomcut-devicectl
+[ 24%] Built target test_handshake
+[ 28%] Built target test_handshake_validation
+[ 31%] Built target test_heartbeat
+[ 35%] Built target test_mach_cleanup
+[ 38%] Built target test_control
+[ 40%] Built target test_control_validation
+[ 42%] Built target test_engine_connection
+[ 44%] Built target test_lifecycle
+[ 46%] Built target test_resampler
+[ 47%] Built target test_resampler_quality
+[ 49%] Built target test_biquad
+[ 51%] Built target test_graphic_eq
+[ 52%] Built target test_limiter
+[ 54%] Built target test_spatial
+[ 54%] Built target test_compressor
+[ 56%] Built target test_parametric
+[ 57%] Built target test_analyzer
+[ 59%] Built target test_dsp_chain
+[ 60%] Built target test_dsp_transitions
+[ 61%] Built target test_comparison
+[ 62%] Built target test_presets
+[ 64%] Built target test_device_policy
+[ 66%] Built target test_volume_ramp
+[ 67%] Built target test_render_pipeline
+[ 69%] Built target test_realtime_params
+[ 71%] Built target test_analysis_tap
+[ 72%] Built target test_render_gate
+[ 74%] Built target test_output_device
+[ 76%] Built target test_device_volume
+[ 78%] Built target test_engine_state
+[ 79%] Built target test_output_recovery
+[ 83%] Built target test_device_services
+[ 89%] Built target test_engine_commands
+[ 90%] Linking CXX executable RoomcutAudioEngine
+[100%] Built target RoomcutAudioEngine

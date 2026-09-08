@@ -1,0 +1,127 @@
+Building for production...
+[0/5] Write sources
+[2/5] Write swift-version--58304C5D6DBC2206.txt
+[4/6] Compiling RoomcutCore AppPreferences.swift
+[4/8] Write Objects.LinkFileList
+[5/9] Linking Roomcut
+[7/9] Compiling RoomcutTests BypassOwnershipTests.swift
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/BypassOwnershipTests.swift:86:33: error: 'async' call in an autoclosure that does not support concurrency
+ 84 |             await model.refreshNow()
+ 85 |             let bypass = model.makeBypassOverride()
+ 86 |             XCTAssertTrue(await bypass.begin())
+    |                                 `- error: 'async' call in an autoclosure that does not support concurrency
+ 87 |             XCTAssertTrue(actual)
+ 88 |             XCTAssertFalse(await bypass.begin())
+
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/BypassOwnershipTests.swift:88:34: error: 'async' call in an autoclosure that does not support concurrency
+ 86 |             XCTAssertTrue(await bypass.begin())
+ 87 |             XCTAssertTrue(actual)
+ 88 |             XCTAssertFalse(await bypass.begin())
+    |                                  `- error: 'async' call in an autoclosure that does not support concurrency
+ 89 |             XCTAssertTrue(await bypass.restore())
+ 90 |             XCTAssertTrue(await bypass.restore())
+
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/BypassOwnershipTests.swift:89:33: error: 'async' call in an autoclosure that does not support concurrency
+ 87 |             XCTAssertTrue(actual)
+ 88 |             XCTAssertFalse(await bypass.begin())
+ 89 |             XCTAssertTrue(await bypass.restore())
+    |                                 `- error: 'async' call in an autoclosure that does not support concurrency
+ 90 |             XCTAssertTrue(await bypass.restore())
+ 91 |             XCTAssertEqual(actual, prior)
+
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/BypassOwnershipTests.swift:90:33: error: 'async' call in an autoclosure that does not support concurrency
+ 88 |             XCTAssertFalse(await bypass.begin())
+ 89 |             XCTAssertTrue(await bypass.restore())
+ 90 |             XCTAssertTrue(await bypass.restore())
+    |                                 `- error: 'async' call in an autoclosure that does not support concurrency
+ 91 |             XCTAssertEqual(actual, prior)
+ 92 |             XCTAssertEqual(writes, [true, prior])
+
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/BypassOwnershipTests.swift:114:29: error: 'async' property access in an autoclosure that does not support concurrency
+112 |         await Task.yield()
+113 |         first?.resume()
+114 |         XCTAssertTrue(await begin.value)
+    |                             `- error: 'async' property access in an autoclosure that does not support concurrency
+115 |         XCTAssertTrue(await bypass.restore())
+116 |         XCTAssertTrue(actual, "restore the pending user choice, not stale polling data")
+
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/BypassOwnershipTests.swift:115:29: error: 'async' call in an autoclosure that does not support concurrency
+113 |         first?.resume()
+114 |         XCTAssertTrue(await begin.value)
+115 |         XCTAssertTrue(await bypass.restore())
+    |                             `- error: 'async' call in an autoclosure that does not support concurrency
+116 |         XCTAssertTrue(actual, "restore the pending user choice, not stale polling data")
+117 |     }
+
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/BypassOwnershipTests.swift:131:29: error: 'async' call in an autoclosure that does not support concurrency
+129 |         let model = RoomcutViewModel(client: client, defaults: defaults)
+130 |         let bypass = model.makeBypassOverride()
+131 |         XCTAssertTrue(await bypass.begin())
+    |                             `- error: 'async' call in an autoclosure that does not support concurrency
+132 |         let restore = Task { await bypass.restore() }
+133 |         try await waitUntil { restoration != nil }
+
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/BypassOwnershipTests.swift:136:29: error: 'async' property access in an autoclosure that does not support concurrency
+134 |         model.setBypass(true)
+135 |         restoration?.resume()
+136 |         XCTAssertTrue(await restore.value)
+    |                             `- error: 'async' property access in an autoclosure that does not support concurrency
+137 |         try await waitUntil { !model.isBypassWritePending }
+138 |         XCTAssertTrue(actual)
+
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/BypassOwnershipTests.swift:177:29: error: 'async' call in an autoclosure that does not support concurrency
+175 |         await model.refreshNow()
+176 |         XCTAssertNotNil(model.errorBanner)
+177 |         XCTAssertTrue(await model.updateBypass(true))
+    |                             `- error: 'async' call in an autoclosure that does not support concurrency
+178 |         XCTAssertNil(model.errorBanner)
+179 |     }
+
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/BypassOwnershipTests.swift:185:29: error: 'async' call in an autoclosure that does not support concurrency
+183 |         let model = RoomcutViewModel(client: client, defaults: defaults)
+184 |         let first = model.makeBypassOverride(), other = model.makeBypassOverride()
+185 |         XCTAssertTrue(await first.begin())
+    |                             `- error: 'async' call in an autoclosure that does not support concurrency
+186 |         XCTAssertFalse(await other.begin())
+187 |         XCTAssertTrue(await other.restore())
+
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/BypassOwnershipTests.swift:186:30: error: 'async' call in an autoclosure that does not support concurrency
+184 |         let first = model.makeBypassOverride(), other = model.makeBypassOverride()
+185 |         XCTAssertTrue(await first.begin())
+186 |         XCTAssertFalse(await other.begin())
+    |                              `- error: 'async' call in an autoclosure that does not support concurrency
+187 |         XCTAssertTrue(await other.restore())
+188 |         XCTAssertEqual(client.bypassValues, [true])
+
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/BypassOwnershipTests.swift:187:29: error: 'async' call in an autoclosure that does not support concurrency
+185 |         XCTAssertTrue(await first.begin())
+186 |         XCTAssertFalse(await other.begin())
+187 |         XCTAssertTrue(await other.restore())
+    |                             `- error: 'async' call in an autoclosure that does not support concurrency
+188 |         XCTAssertEqual(client.bypassValues, [true])
+189 |         XCTAssertTrue(await first.restore())
+
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/BypassOwnershipTests.swift:189:29: error: 'async' call in an autoclosure that does not support concurrency
+187 |         XCTAssertTrue(await other.restore())
+188 |         XCTAssertEqual(client.bypassValues, [true])
+189 |         XCTAssertTrue(await first.restore())
+    |                             `- error: 'async' call in an autoclosure that does not support concurrency
+190 |         XCTAssertEqual(client.bypassValues, [true, false])
+191 |     }
+
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/BypassOwnershipTests.swift:198:30: error: 'async' property access in an autoclosure that does not support concurrency
+196 |         let begin = Task { await bypass.begin() }
+197 |         begin.cancel()
+198 |         XCTAssertFalse(await begin.value)
+    |                              `- error: 'async' property access in an autoclosure that does not support concurrency
+199 |         XCTAssertTrue(await bypass.restore())
+200 |         XCTAssertTrue(client.bypassValues.isEmpty)
+
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/BypassOwnershipTests.swift:199:29: error: 'async' call in an autoclosure that does not support concurrency
+197 |         begin.cancel()
+198 |         XCTAssertFalse(await begin.value)
+199 |         XCTAssertTrue(await bypass.restore())
+    |                             `- error: 'async' call in an autoclosure that does not support concurrency
+200 |         XCTAssertTrue(client.bypassValues.isEmpty)
+201 |     }
+error: fatalError

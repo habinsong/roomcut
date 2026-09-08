@@ -1,0 +1,50 @@
+#!/bin/bash
+# postinstall — runs as root after the .pkg lays down the payload (app, driver,
+# engine, daemon plist). It loads the engine LaunchDaemon and restarts coreaudiod
+# so the HAL driver appears. Must always `exit 0` — a nonzero status aborts the
+# whole install. Everything is guarded.
+#
+# Distribution model: the engine runs as an always-on system daemon (RunAtLoad);
+# there is NO sudoers rule. The menu-bar app's `sudo -n launchctl` calls fail fast
+# and are ignored, so it just talks to the resident engine over its Mach plane.
+
+LABEL="com.roomcut.engine"
+PLIST="/Library/LaunchDaemons/${LABEL}.plist"
+INSTALL_ROOT="/Library/Application Support/Roomcut"
+BIN_DIR="${INSTALL_ROOT}/bin"
+HAL_DRIVER="/Library/Audio/Plug-Ins/HAL/Roomcut.driver"
+APP="/Applications/Roomcut.app"
+LOG_DIR="/Library/Logs/Roomcut"
+
+# Ownership / permissions for the system-owned bits.
+chown -R root:wheel "${HAL_DRIVER}" "${INSTALL_ROOT}" "${PLIST}" 2>/dev/null || true
+chmod 0644 "${PLIST}" 2>/dev/null || true
+chmod 0755 "${BIN_DIR}"/* 2>/dev/null || true
+mkdir -p "${LOG_DIR}" && chown root:wheel "${LOG_DIR}" 2>/dev/null || true
+
+# Defensive: pkg payloads are normally NOT quarantined, but strip it anyway so an
+# ad-hoc-signed driver/app is never gated by Gatekeeper.
+xattr -dr com.apple.quarantine "${HAL_DRIVER}" 2>/dev/null || true
+xattr -dr com.apple.quarantine "${APP}" 2>/dev/null || true
+
+# (Re)load the daemon. bootout any stale instance first; enable clears a possible
+# disabled override from an earlier dev install.
+/bin/launchctl bootout "system/${LABEL}" 2>/dev/null || true
+/bin/launchctl enable "system/${LABEL}" 2>/dev/null || true
+
+# bootstrap can race coreaudiod still holding the engine's Mach name after a
+# reinstall; retry a few times before giving up (non-fatal either way).
+for attempt in 1 2 3; do
+  /bin/launchctl bootstrap system "${PLIST}" 2>/dev/null || true
+  sleep 1
+  if /bin/launchctl print "system/${LABEL}" >/dev/null 2>&1; then
+    break
+  fi
+  sleep $((attempt))
+done
+
+# Reload HAL plug-ins so "Roomcut Output" appears. Briefly glitches system audio.
+killall -9 coreaudiod 2>/dev/null || true
+sleep 2
+
+exit 0

@@ -1,0 +1,168 @@
+Building for debugging...
+[0/17] Write sources
+[0/17] Write Roomcut-entitlement.plist
+[0/17] /Users/songhabin/roomcut/build/bypass-ownership-audit/swift-tsan/arm64-apple-macosx/debug/RoomcutPackageTests.derived/runner.swift
+[5/17] Write sources
+[7/17] Write swift-version--58304C5D6DBC2206.txt
+[8/17] Compiling Control.cpp
+[9/21] Compiling EngineConnection.cpp
+[10/21] Compiling CoreAudioDevices.cpp
+[11/21] Compiling ClientShim.cpp
+[13/21] Compiling RoomcutPresentationCore RoomcutTheme.swift
+[14/21] Emitting module RoomcutPresentationCore
+[15/21] Compiling RoomcutPresentationCore RoomcutPresentation.swift
+[16/21] Compiling RoomcutPresentationCore RoomcutMainPresentation.swift
+[17/43] Compiling RoomcutCore EnginePoller.swift
+[18/43] Compiling RoomcutCore LRCLIBClient.swift
+[19/43] Compiling RoomcutCore NowPlayingPayload.swift
+[20/43] Compiling RoomcutCore ParameterWriter.swift
+[21/43] Compiling RoomcutCore PresetLibrary.swift
+[22/43] Compiling RoomcutCore PresetStore.swift
+[23/43] Compiling RoomcutCore RoomTuneAnalysis.swift
+[24/43] Compiling RoomcutCore RoomTuneAudioFile.swift
+[25/43] Compiling RoomcutCore RoomTunePCM.swift
+[26/43] Compiling RoomcutCore RoomTuneResponse.swift
+[27/43] Compiling RoomcutCore RoomTuneRound.swift
+[28/43] Compiling RoomcutCore RoomTuneSignal.swift
+[29/43] Compiling RoomcutCore RoomTuneWorkQueue.swift
+[30/43] Compiling RoomcutCore RoomTuneWorkflow.swift
+[31/43] Compiling RoomcutCore AppPreferences.swift
+[32/43] Compiling RoomcutCore BypassOverride.swift
+[33/43] Compiling RoomcutCore BypassWriter.swift
+[34/43] Compiling RoomcutCore DeviceCommandWriter.swift
+[35/43] Compiling RoomcutCore DeviceReadCoordinator.swift
+[36/43] Compiling RoomcutCore DeviceReadback.swift
+[37/43] Compiling RoomcutCore EngineClient.swift
+[38/43] Emitting module RoomcutCore
+[39/50] Compiling RoomcutCore RoomcutMeters.swift
+[40/50] Compiling RoomcutCore RoomcutViewModel.swift
+[41/50] Compiling RoomcutCore SavedPreset.swift
+[42/50] Compiling RoomcutCore SoundComparison.swift
+[43/50] Compiling RoomcutCore SoundEditMenuController.swift
+[44/50] Compiling RoomcutCore SoundEditor.swift
+[45/50] Compiling RoomcutCore SoundSnapshot.swift
+[46/90] Emitting module Roomcut
+[47/97] Compiling Roomcut NowPlayingMonitor.swift
+[48/97] Compiling Roomcut NowPlayingView.swift
+[49/97] Compiling Roomcut ParametricEditor.swift
+[50/97] Compiling Roomcut RoomTuneAudioSession.swift
+[51/97] Compiling Roomcut RoomTuneInputScanner.swift
+[52/97] Compiling Roomcut RoomTuneMeasurement.swift
+[53/97] Compiling Roomcut RoomTuneRecorder.swift
+[54/97] Compiling Roomcut SelfTest.swift
+[55/97] Compiling Roomcut SettingsTab.swift
+[56/97] Compiling Roomcut SoundHistoryControls.swift
+[57/97] Compiling Roomcut SpaceTab.swift
+[58/97] Compiling Roomcut UIFixture.swift
+[59/97] Compiling Roomcut WindowChrome.swift
+[60/97] Compiling Roomcut main.swift
+[61/97] Compiling Roomcut RoomTuneSweep.swift
+[62/97] Compiling Roomcut RoomTuneTab.swift
+[63/97] Compiling Roomcut RoomcutApp.swift
+[64/97] Compiling Roomcut RoomcutAppCanvas.swift
+[65/97] Compiling Roomcut RoomcutBackgroundLayer.swift
+[66/97] Compiling Roomcut RoomcutGlassStyle.swift
+[67/97] Compiling Roomcut RoomcutMacroControls.swift
+[68/97] Compiling Roomcut AdvancedControls.swift
+[69/97] Compiling Roomcut AudioStatusView.swift
+[70/97] Compiling Roomcut EqMiniCurve.swift
+[71/97] Compiling Roomcut EqualizerView.swift
+[72/97] Compiling Roomcut HomeTab.swift
+[73/97] Compiling Roomcut InspectTab.swift
+[74/97] Compiling Roomcut MainWindow.swift
+[75/97] Compiling Roomcut MenuContent.swift
+[75/97] Write Objects.LinkFileList
+[76/97] Linking Roomcut
+[77/97] Applying Roomcut
+[79/97] Emitting module RoomcutTests
+[96/102] Compiling RoomcutTests RoomcutViewModelTests.swift
+[97/102] Compiling RoomcutTests SoundComparisonTests.swift
+[98/102] Compiling RoomcutTests SoundEditMenuTests.swift
+[99/102] Compiling RoomcutTests SoundEditingIntegrationTests.swift
+[100/102] Compiling RoomcutTests SoundEditorTests.swift
+[101/104] Emitting module RoomcutPackageTests
+[102/104] Compiling RoomcutPackageTests runner.swift
+[102/104] Write Objects.LinkFileList
+[103/104] Linking RoomcutPackageTests
+Build complete! (52.88s)
+Test Suite 'Selected tests' started at 2026-09-08 16:45:56.986.
+Test Suite 'RoomcutPackageTests.xctest' started at 2026-09-08 16:45:56.993.
+Test Suite 'BypassOwnershipTests' started at 2026-09-08 16:45:56.993.
+Test Case '-[RoomcutTests.BypassOwnershipTests testAlreadyCancelledOverrideDoesNotWrite]' started.
+Test Case '-[RoomcutTests.BypassOwnershipTests testAlreadyCancelledOverrideDoesNotWrite]' passed (0.011 seconds).
+Test Case '-[RoomcutTests.BypassOwnershipTests testAnOverrideCannotRestoreAnotherOwnersState]' started.
+Test Case '-[RoomcutTests.BypassOwnershipTests testAnOverrideCannotRestoreAnotherOwnersState]' passed (0.006 seconds).
+Test Case '-[RoomcutTests.BypassOwnershipTests testCurrentFailureSurvivesPollingAndOlderSuccess]' started.
+Test Case '-[RoomcutTests.BypassOwnershipTests testCurrentFailureSurvivesPollingAndOlderSuccess]' passed (0.029 seconds).
+Test Case '-[RoomcutTests.BypassOwnershipTests testDirectUserWritesCannotCompleteOutOfOrder]' started.
+Test Case '-[RoomcutTests.BypassOwnershipTests testDirectUserWritesCannotCompleteOutOfOrder]' passed (0.034 seconds).
+Test Case '-[RoomcutTests.BypassOwnershipTests testFailedAcknowledgementStillCompensatesAnAppliedTemporaryWrite]' started.
+Test Case '-[RoomcutTests.BypassOwnershipTests testFailedAcknowledgementStillCompensatesAnAppliedTemporaryWrite]' passed (0.005 seconds).
+Test Case '-[RoomcutTests.BypassOwnershipTests testNormalOverrideRestoresBothPriorStatesAndRestoresOnlyOnce]' started.
+Test Case '-[RoomcutTests.BypassOwnershipTests testNormalOverrideRestoresBothPriorStatesAndRestoresOnlyOnce]' passed (0.008 seconds).
+Test Case '-[RoomcutTests.BypassOwnershipTests testPendingManualChoiceIsNewerThanThePolledSnapshot]' started.
+Test Case '-[RoomcutTests.BypassOwnershipTests testPendingManualChoiceIsNewerThanThePolledSnapshot]' passed (0.006 seconds).
+Test Case '-[RoomcutTests.BypassOwnershipTests testRapidManualWritesKeepOnlyTheLatestPendingValue]' started.
+Test Case '-[RoomcutTests.BypassOwnershipTests testRapidManualWritesKeepOnlyTheLatestPendingValue]' passed (0.010 seconds).
+Test Case '-[RoomcutTests.BypassOwnershipTests testUserChoiceDuringCancelledMeasurementIsNotRestoredAway]' started.
+Test Case '-[RoomcutTests.BypassOwnershipTests testUserChoiceDuringCancelledMeasurementIsNotRestoredAway]' passed (0.007 seconds).
+Test Case '-[RoomcutTests.BypassOwnershipTests testUserChoiceDuringInFlightRestorationRunsLast]' started.
+Test Case '-[RoomcutTests.BypassOwnershipTests testUserChoiceDuringInFlightRestorationRunsLast]' passed (0.013 seconds).
+Test Suite 'BypassOwnershipTests' passed at 2026-09-08 16:45:57.144.
+	 Executed 10 tests, with 0 failures (0 unexpected) in 0.129 (0.151) seconds
+Test Suite 'RoomTuneRoundTests' started at 2026-09-08 16:45:57.145.
+Test Case '-[RoomcutTests.RoomTuneRoundTests testAlreadyCancelledRoundDoesNotTouchHardware]' started.
+Test Case '-[RoomcutTests.RoomTuneRoundTests testAlreadyCancelledRoundDoesNotTouchHardware]' passed (0.003 seconds).
+Test Case '-[RoomcutTests.RoomTuneRoundTests testAnalysisFailureDoesNotStopTheTransportTwice]' started.
+Test Case '-[RoomcutTests.RoomTuneRoundTests testAnalysisFailureDoesNotStopTheTransportTwice]' passed (0.002 seconds).
+Test Case '-[RoomcutTests.RoomTuneRoundTests testCancellationDuringCaptureTailDoesNotAnalyze]' started.
+Test Case '-[RoomcutTests.RoomTuneRoundTests testCancellationDuringCaptureTailDoesNotAnalyze]' passed (0.001 seconds).
+Test Case '-[RoomcutTests.RoomTuneRoundTests testCancellationDuringNativeStartNeverStartsPlayback]' started.
+Test Case '-[RoomcutTests.RoomTuneRoundTests testCancellationDuringNativeStartNeverStartsPlayback]' passed (0.002 seconds).
+Test Case '-[RoomcutTests.RoomTuneRoundTests testCancellationWhilePlayingIgnoresLateCompletion]' started.
+Test Case '-[RoomcutTests.RoomTuneRoundTests testCancellationWhilePlayingIgnoresLateCompletion]' passed (0.006 seconds).
+Test Case '-[RoomcutTests.RoomTuneRoundTests testStartPlaybackAndRecordingFailuresAlwaysCleanUp]' started.
+Test Case '-[RoomcutTests.RoomTuneRoundTests testStartPlaybackAndRecordingFailuresAlwaysCleanUp]' passed (0.003 seconds).
+Test Case '-[RoomcutTests.RoomTuneRoundTests testSuccessfulRoundStopsBeforeAnalysisAndRemovesItsRecording]' started.
+Test Case '-[RoomcutTests.RoomTuneRoundTests testSuccessfulRoundStopsBeforeAnalysisAndRemovesItsRecording]' passed (0.001 seconds).
+Test Suite 'RoomTuneRoundTests' passed at 2026-09-08 16:45:57.163.
+	 Executed 7 tests, with 0 failures (0 unexpected) in 0.017 (0.018) seconds
+Test Suite 'RoomTuneWorkflowTests' started at 2026-09-08 16:45:57.163.
+Test Case '-[RoomcutTests.RoomTuneWorkflowTests testAudioFailureAndRestoreFailureStayVisible]' started.
+Test Case '-[RoomcutTests.RoomTuneWorkflowTests testAudioFailureAndRestoreFailureStayVisible]' passed (0.007 seconds).
+Test Case '-[RoomcutTests.RoomTuneWorkflowTests testCancellationWaitsForInFlightAudioAndRestoresOnce]' started.
+Test Case '-[RoomcutTests.RoomTuneWorkflowTests testCancellationWaitsForInFlightAudioAndRestoresOnce]' passed (0.010 seconds).
+Test Case '-[RoomcutTests.RoomTuneWorkflowTests testCancelledBypassMustSettleBeforeAnotherRunStarts]' started.
+Test Case '-[RoomcutTests.RoomTuneWorkflowTests testCancelledBypassMustSettleBeforeAnotherRunStarts]' passed (0.005 seconds).
+Test Case '-[RoomcutTests.RoomTuneWorkflowTests testImmediateCancellationDoesNotRequestPermission]' started.
+Test Case '-[RoomcutTests.RoomTuneWorkflowTests testImmediateCancellationDoesNotRequestPermission]' passed (0.006 seconds).
+Test Case '-[RoomcutTests.RoomTuneWorkflowTests testLatePermissionAfterCancellationCannotStartAudio]' started.
+Test Case '-[RoomcutTests.RoomTuneWorkflowTests testLatePermissionAfterCancellationCannotStartAudio]' passed (0.006 seconds).
+Test Case '-[RoomcutTests.RoomTuneWorkflowTests testPermissionDenialDoesNotTouchAudioOrBypass]' started.
+Test Case '-[RoomcutTests.RoomTuneWorkflowTests testPermissionDenialDoesNotTouchAudioOrBypass]' passed (0.002 seconds).
+Test Case '-[RoomcutTests.RoomTuneWorkflowTests testRestorationCompletionOwnsTheRunAndIsNotCancelled]' started.
+Test Case '-[RoomcutTests.RoomTuneWorkflowTests testRestorationCompletionOwnsTheRunAndIsNotCancelled]' passed (0.006 seconds).
+Test Case '-[RoomcutTests.RoomTuneWorkflowTests testSuccessfulRoundsRestoreBeforePublishingAndAllowRestart]' started.
+Test Case '-[RoomcutTests.RoomTuneWorkflowTests testSuccessfulRoundsRestoreBeforePublishingAndAllowRestart]' passed (0.008 seconds).
+Test Case '-[RoomcutTests.RoomTuneWorkflowTests testUnconfirmedBypassStillRestoresThePriorState]' started.
+Test Case '-[RoomcutTests.RoomTuneWorkflowTests testUnconfirmedBypassStillRestoresThePriorState]' passed (0.003 seconds).
+Test Case '-[RoomcutTests.RoomTuneWorkflowTests testWorkQueueKeepsNativeStartAndCleanupOffTheMainThreadAndOrdered]' started.
+Test Case '-[RoomcutTests.RoomTuneWorkflowTests testWorkQueueKeepsNativeStartAndCleanupOffTheMainThreadAndOrdered]' passed (0.029 seconds).
+Test Suite 'RoomTuneWorkflowTests' passed at 2026-09-08 16:45:57.247.
+	 Executed 10 tests, with 0 failures (0 unexpected) in 0.081 (0.084) seconds
+Test Suite 'RoomcutViewModelTests' started at 2026-09-08 16:45:57.247.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testAwaitedBypassRejectsFailedWrite]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testAwaitedBypassRejectsFailedWrite]' passed (0.001 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testAwaitedBypassReportsAcknowledgedWrite]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testAwaitedBypassReportsAcknowledgedWrite]' passed (0.001 seconds).
+Test Suite 'RoomcutViewModelTests' passed at 2026-09-08 16:45:57.250.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 0.002 (0.003) seconds
+Test Suite 'RoomcutPackageTests.xctest' passed at 2026-09-08 16:45:57.250.
+	 Executed 29 tests, with 0 failures (0 unexpected) in 0.230 (0.257) seconds
+Test Suite 'Selected tests' passed at 2026-09-08 16:45:57.250.
+	 Executed 29 tests, with 0 failures (0 unexpected) in 0.230 (0.264) seconds
+measurement cancellation + user bypass: writes=[true, true], actual=true
+◇ Test run started.
+↳ Testing Library Version: 1902
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

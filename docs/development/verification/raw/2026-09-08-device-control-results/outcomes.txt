@@ -1,0 +1,3 @@
+real rate rejected: result=-4, physical=96000, real=48000, virtual=48000
+silent channels: result=0, left=0.00, right=0.00
+all client device command tests passed (real C/Mach, fake HAL/service lookup)

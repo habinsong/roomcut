@@ -1,0 +1,8 @@
+평가 앱: com.roomcut.boundary-qa
+최신 build/Roomcut.app 복사 후 별도 번들 ID로 로컬 서명.
+실행 인자: --ui-fixture ui-basic --ui-appearance dark
+Home: Midnight Drive / Apple Music / 1:32 / 4:03 표시.
+Inspect: Peak -9 dBFS, Limiter Safe, Dropouts 0, 상관도 +1.00, 폭 68%, 48 kHz, 32-bit, 12.0 ms, iFi USB Audio SE, 볼륨 60%, 실행 중, Preamp/Output gain 0.0 dB.
+Home 복귀 후 선택 상태와 재생 정보 유지 확인.
+메모리 fixture를 사용한 표시/전환 검사이며 실기기 수치나 청취 검사가 아닙니다.
+종료 명령 후 CUA 앱 목록에서 평가용 앱이 사라진 것을 확인했습니다.

@@ -1,0 +1,59 @@
+FAIL: non-finite source preserves last known level (76)
+FAIL: read failure preserves last known level (78)
+FAIL: short source payload is rejected (80)
+FAIL: volume preserves existing channel balance (87)
+FAIL: mute does not forget channel balance (89)
+FAIL: partial hardware write is not reported as success (92)
+FAIL: partial write restores prior levels before digital fallback (93)
+FAIL: preflight avoids partial writes to unsupported channels (95)
+=================================================================
+==70087==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x603000001d68 at pc 0x000104b1f494 bp 0x00016b2e2470 sp 0x00016b2e2468
+READ of size 4 at 0x603000001d68 thread T0
+    #0 0x000104b1f490 in roomcut::outputChannelCount(unsigned int) DeviceVolume-before.cpp:41
+    #1 0x000104b1f7a4 in roomcut::setRealDeviceVolume(unsigned int, float) DeviceVolume-before.cpp:64
+    #2 0x000104b1e0dc in main test_device_volume.cpp:99
+    #3 0x000183a5fdfc in start+0x1b4c (dyld:arm64e+0x1fdfc)
+
+0x603000001d68 is located 0 bytes after 24-byte region [0x603000001d50,0x603000001d68)
+allocated by thread T0 here:
+    #0 0x00010536bf50 in _Znwm+0x74 (libclang_rt.asan_osx_dynamic.dylib:arm64e+0x4ff50)
+    #1 0x000104b1fc28 in std::__1::vector<char, std::__1::allocator<char>>::__vallocate[abi:nqe210106](unsigned long) vector.h:574
+    #2 0x000104b1fae4 in std::__1::vector<char, std::__1::allocator<char>>::vector[abi:nqe210106](unsigned long) vector.h:150
+    #3 0x000104b1f270 in roomcut::outputChannelCount(unsigned int) DeviceVolume-before.cpp:37
+    #4 0x000104b1f7a4 in roomcut::setRealDeviceVolume(unsigned int, float) DeviceVolume-before.cpp:64
+    #5 0x000104b1e0dc in main test_device_volume.cpp:99
+    #6 0x000183a5fdfc in start+0x1b4c (dyld:arm64e+0x1fdfc)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow DeviceVolume-before.cpp:41 in roomcut::outputChannelCount(unsigned int)
+Shadow bytes around the buggy address:
+  0x603000001a80: 00 00 00 00 fa fa 00 00 00 00 fa fa 00 00 00 00
+  0x603000001b00: fa fa 00 00 00 00 fa fa 00 00 00 00 fa fa 00 00
+  0x603000001b80: 00 00 fa fa 00 00 00 00 fa fa 00 00 01 fa fa fa
+  0x603000001c00: 00 00 00 00 fa fa 00 00 00 00 fa fa fd fd fd fa
+  0x603000001c80: fa fa fd fd fd fa fa fa fd fd fd fa fa fa fd fd
+=>0x603000001d00: fd fa fa fa fd fd fd fa fa fa 00 00 00[fa]fa fa
+  0x603000001d80: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x603000001e00: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x603000001e80: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x603000001f00: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x603000001f80: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==70087==ABORTING

@@ -1,0 +1,11 @@
+평가 앱: com.roomcut.lifecycle-qa
+인자: --ui-fixture ui-roomtune --ui-appearance dark
+메모리 엔진/마이크, 우회 응답 3초 지연, 실제 권한/녹음/재생 없음.
+Tune: iPhone Mic · QA, 측정 시작/준비됨 확인.
+측정 시작 후 준비 중/시작 비활성화 확인.
+Home→Tune 이동 후 정리 중/시작 비활성화/입력 레벨 0% 확인.
+복구 완료 후 준비됨/시작 활성화 확인.
+정상 3회 완료: 측정 완료/400 Hz 완화 -5.0 dB/보정 강도 표준/Room Tune 프리셋 이름 표시.
+Settings: Roomcut 처리 켜기 toggle on 확인. Tune 복귀 시 결과 유지.
+준비 중 상태를 확인한 동일 CUA 호출에서 Cmd-Q 요청. 종료 요청 직후 앱 목록에는 실행 중으로 남아 있었음. 다음 앱 목록 조회에서 com.roomcut.lifecycle-qa가 사라짐을 확인.
+종료 확인은 앱 목록으로 수행했으며 닫힌 앱을 다시 관찰해 재실행하지 않았습니다.

@@ -1,0 +1,17 @@
+Internal ctest changing into directory: /Users/songhabin/roomcut/build
+Test project /Users/songhabin/roomcut/build
+    Start 11: client_devices
+1/1 Test #11: client_devices ...................***Failed    0.42 sec
+FAIL: a vanished selected output cannot redirect balance to another device (88)
+FAIL: unknown output state prevents uncoordinated balance writes (91)
+real rate rejected: result=-4, physical=96000, real=48000, virtual=48000
+silent channels: result=0, left=0.00, right=0.00
+
+
+0% tests passed, 1 tests failed out of 1
+
+Total Test time (real) =   0.43 sec
+
+The following tests FAILED:
+	 11 - client_devices (Failed)
+Errors while running CTest

@@ -1,0 +1,29 @@
+[  0%] Building CXX object core/tests/CMakeFiles/test_engine_commands.dir/__/__/engine/src/SoundCommands.cpp.o
+[ 33%] Building CXX object core/tests/CMakeFiles/test_engine_commands.dir/__/__/engine/src/EngineState.cpp.o
+[ 33%] Building CXX object core/tests/CMakeFiles/test_engine_commands.dir/__/__/engine/tests/test_engine_commands.cpp.o
+[ 50%] Building CXX object core/tests/CMakeFiles/test_engine_commands.dir/__/__/engine/src/EngineReplies.cpp.o
+In file included from In file included from /Users/songhabin/roomcut/engine/src/EngineReplies.cpp:2:
+In file included from /Users/songhabin/roomcut/engine/include/EngineSoundState.hpp:5:
+/Users/songhabin/roomcut/engine/tests/test_engine_commands.cpp:4:
+In file included from /Users/songhabin/roomcut/engine/include/EngineSoundState.hpp:5:
+/Users/songhabin/roomcut/core/presets/BuiltinPresets.hpp:16:10: fatal error: 'ChainParams.hpp' file not found
+/Users/songhabin/roomcut/core/presets/BuiltinPresets.hpp:16:10:    16 | #include "ChainParams.hpp"
+      |          ^~~~~~~~~~~~~~~~~
+fatal error: 'ChainParams.hpp' file not found
+   16 | #include "ChainParams.hpp"
+      |          ^~~~~~~~~~~~~~~~~
+1 error generated.
+In file included from /Users/songhabin/roomcut/engine/src/SoundCommands.cpp:2:
+In file included from /Users/songhabin/roomcut/engine/include/EngineSoundState.hpp:5:
+/Users/songhabin/roomcut/core/presets/BuiltinPresets.hpp:16:10: fatal error: 'ChainParams.hpp' file not found
+   16 | #include "ChainParams.hpp"
+      |          ^~~~~~~~~~~~~~~~~
+1 error generated.
+make[3]: *** [core/tests/CMakeFiles/test_engine_commands.dir/__/__/engine/src/EngineReplies.cpp.o] Error 1
+make[3]: *** Waiting for unfinished jobs....
+make[3]: *** [core/tests/CMakeFiles/test_engine_commands.dir/__/__/engine/src/SoundCommands.cpp.o] Error 1
+1 error generated.
+make[3]: *** [core/tests/CMakeFiles/test_engine_commands.dir/__/__/engine/tests/test_engine_commands.cpp.o] Error 1
+make[2]: *** [core/tests/CMakeFiles/test_engine_commands.dir/all] Error 2
+make[1]: *** [core/tests/CMakeFiles/test_engine_commands.dir/rule] Error 2
+make: *** [test_engine_commands] Error 2

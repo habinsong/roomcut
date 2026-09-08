@@ -1,0 +1,14 @@
+# `docs/development/verification/raw/2026-09-08-hello`
+
+| 현재 파일 | 전체 원문 | 행 | 바이트 | SHA-256 |
+|---|---|---:|---:|---|
+| [after.txt](../../../../../../../verification/raw/2026-09-08-hello/after.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-hello/after.txt.txt) | 65 | 2069 | `875a2a8cd920a2f423f51dcbff3700096298b36221fe708a3ba793a8ad59eb8a` |
+| [app-build.txt](../../../../../../../verification/raw/2026-09-08-hello/app-build.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-hello/app-build.txt.txt) | 12 | 737 | `186cc28a67fda149580bd1bbaa4d069ba2335e11166ec2b0d3e2df154006449e` |
+| [before.txt](../../../../../../../verification/raw/2026-09-08-hello/before.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-hello/before.txt.txt) | 91 | 3687 | `27369d451a87091f3a9b139f9ded2a4323cb15dac27c89fe35e438121e904a77` |
+| [cleanup-after.txt](../../../../../../../verification/raw/2026-09-08-hello/cleanup-after.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-hello/cleanup-after.txt.txt) | 4 | 215 | `b237c09a2ae4c88f12fe9476622e4a1af6bc6739ee46125c78a8848582896d68` |
+| [cleanup-before.txt](../../../../../../../verification/raw/2026-09-08-hello/cleanup-before.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-hello/cleanup-before.txt.txt) | 9 | 582 | `1c7bd4ff3857f385f3bbfb6da6f33729b7fa7de32a316f5b57e26868e48baf4f` |
+| [cleanup-sanitized.txt](../../../../../../../verification/raw/2026-09-08-hello/cleanup-sanitized.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-hello/cleanup-sanitized.txt.txt) | 4 | 215 | `b237c09a2ae4c88f12fe9476622e4a1af6bc6739ee46125c78a8848582896d68` |
+| [handshake-sanitized.txt](../../../../../../../verification/raw/2026-09-08-hello/handshake-sanitized.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-hello/handshake-sanitized.txt.txt) | 65 | 2069 | `875a2a8cd920a2f423f51dcbff3700096298b36221fe708a3ba793a8ad59eb8a` |
+| [native-build.txt](../../../../../../../verification/raw/2026-09-08-hello/native-build.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-hello/native-build.txt.txt) | 74 | 4512 | `39b4e23ee54c2734695a9192af8229f135a80f4d02b878a578962fdfb6eea147` |
+| [native-tests.txt](../../../../../../../verification/raw/2026-09-08-hello/native-tests.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-hello/native-tests.txt.txt) | 68 | 3299 | `eec44e7de7623185a25fc9405961d7900f9299133eb34bc23cf2f9f994cd5fcc` |
+| [swift-tests.txt](../../../../../../../verification/raw/2026-09-08-hello/swift-tests.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-hello/swift-tests.txt.txt) | 349 | 35653 | `f236640bb7555348b93ca2f8f2e768fa18b4f88698974074437f971fbd4f59f8` |

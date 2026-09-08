@@ -1,0 +1,38 @@
+[0/1] Planning build
+Building for production...
+[0/6] Write sources
+[2/6] Write swift-version--58304C5D6DBC2206.txt
+[4/7] Compiling RoomcutPresentationCore RoomcutMainPresentation.swift
+[5/8] Compiling RoomcutCore AppPreferences.swift
+[6/11] Compiling RoomcutTests DeviceCommandTests.swift
+[7/12] Compiling RoomcutPackageTests runner.swift
+[7/12] Write Objects.LinkFileList
+[8/12] Linking RoomcutPackageTests
+[10/12] Compiling Roomcut AdvancedControls.swift
+[10/12] Write Objects.LinkFileList
+[11/12] Linking Roomcut
+Build complete! (45.44s)
+Test Suite 'Selected tests' started at 2026-09-08 13:08:48.939.
+Test Suite 'RoomcutPackageTests.xctest' started at 2026-09-08 13:08:48.941.
+Test Suite 'DeviceCommandTests' started at 2026-09-08 13:08:48.941.
+Test Case '-[RoomcutTests.DeviceCommandTests testAuthoritativeReadbackCanRemoveOldBoost]' started.
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/DeviceCommandTests.swift:66: error: -[RoomcutTests.DeviceCommandTests testAuthoritativeReadbackCanRemoveOldBoost] : XCTAssertEqual failed: ("1.8") is not equal to ("1.0")
+Test Case '-[RoomcutTests.DeviceCommandTests testAuthoritativeReadbackCanRemoveOldBoost]' failed (0.335 seconds).
+Test Case '-[RoomcutTests.DeviceCommandTests testLatestMasterIntentWinsAcrossSuspendedAcknowledgement]' started.
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/DeviceCommandTests.swift:39: error: -[RoomcutTests.DeviceCommandTests testLatestMasterIntentWinsAcrossSuspendedAcknowledgement] : XCTAssertEqual failed: ("Optional(true)") is not equal to ("Optional(false)")
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/DeviceCommandTests.swift:40: error: -[RoomcutTests.DeviceCommandTests testLatestMasterIntentWinsAcrossSuspendedAcknowledgement] : XCTAssertFalse failed
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/DeviceCommandTests.swift:41: error: -[RoomcutTests.DeviceCommandTests testLatestMasterIntentWinsAcrossSuspendedAcknowledgement] : XCTAssertEqual failed: ("2") is not equal to ("1")
+Test Case '-[RoomcutTests.DeviceCommandTests testLatestMasterIntentWinsAcrossSuspendedAcknowledgement]' failed (0.030 seconds).
+Test Case '-[RoomcutTests.DeviceCommandTests testOlderDeviceFailureCannotOverwriteNewerSuccess]' started.
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/DeviceCommandTests.swift:55: error: -[RoomcutTests.DeviceCommandTests testOlderDeviceFailureCannotOverwriteNewerSuccess] : XCTAssertNil failed: "출력 장치를 변경하지 못했습니다"
+Test Case '-[RoomcutTests.DeviceCommandTests testOlderDeviceFailureCannotOverwriteNewerSuccess]' failed (0.059 seconds).
+Test Suite 'DeviceCommandTests' failed at 2026-09-08 13:08:49.366.
+	 Executed 3 tests, with 5 failures (0 unexpected) in 0.424 (0.425) seconds
+Test Suite 'RoomcutPackageTests.xctest' failed at 2026-09-08 13:08:49.366.
+	 Executed 3 tests, with 5 failures (0 unexpected) in 0.424 (0.425) seconds
+Test Suite 'Selected tests' failed at 2026-09-08 13:08:49.366.
+	 Executed 3 tests, with 5 failures (0 unexpected) in 0.424 (0.427) seconds
+◇ Test run started.
+↳ Testing Library Version: 1902
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

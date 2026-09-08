@@ -1,0 +1,22 @@
+Building for production...
+[0/4] Write sources
+[1/4] Write swift-version--58304C5D6DBC2206.txt
+[3/4] Compiling RoomcutTests BypassOwnershipTests.swift
+[3/5] Write Objects.LinkFileList
+[4/5] Linking RoomcutPackageTests
+Build complete! (23.11s)
+Test Suite 'Selected tests' started at 2026-09-08 17:50:14.686.
+Test Suite 'RoomcutPackageTests.xctest' started at 2026-09-08 17:50:14.688.
+Test Suite 'RoomcutViewModelTests' started at 2026-09-08 17:50:14.688.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testFailedWriteRestoresEngineParams]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testFailedWriteRestoresEngineParams]' passed (0.104 seconds).
+Test Suite 'RoomcutViewModelTests' passed at 2026-09-08 17:50:14.792.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.104 (0.105) seconds
+Test Suite 'RoomcutPackageTests.xctest' passed at 2026-09-08 17:50:14.793.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.104 (0.105) seconds
+Test Suite 'Selected tests' passed at 2026-09-08 17:50:14.793.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.104 (0.107) seconds
+◇ Test run started.
+↳ Testing Library Version: 1902
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

@@ -1,0 +1,65 @@
+import Foundation
+
+// Synchronous transport operations are called only on RoomTuneWorkQueue.
+public protocol RoomTuneTransport: AnyObject {
+    func prepare(deviceID: String, url: URL) throws
+    func play(completion: @escaping () -> Void) throws
+    func stop() -> URL?
+}
+
+public final class RoomTuneRound {
+    private let work = RoomTuneWorkQueue()
+    private let transport: RoomTuneTransport
+    private let tail: () async throws -> Void
+    private let analyze: (URL) throws -> [(freq: Double, db: Double)]
+
+    public init(transport: RoomTuneTransport) {
+        self.transport = transport
+        tail = { try await Task.sleep(nanoseconds: 1_000_000_000) }
+        analyze = { url in
+            let recording = try RoomTuneAudioFile.load(url)
+            return try RoomTuneAnalysis.bandResponse(samples: recording.samples, sampleRate: recording.sampleRate)
+        }
+    }
+    init(transport: RoomTuneTransport, tail: @escaping () async throws -> Void,
+         analyze: @escaping (URL) throws -> [(freq: Double, db: Double)]) {
+        self.transport = transport; self.tail = tail; self.analyze = analyze
+    }
+
+    // One workflow owns a round at a time. Cancellation waits for submitted
+    // native work, stops it, and removes the owned recording before returning.
+    public func measure(deviceID: String) async throws -> [(freq: Double, db: Double)] {
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("roomtune-\(UUID()).wav")
+        let transport = self.transport
+        let playback = AsyncStream<Void>.makeStream()
+        var mayOwnHardware = false
+        var stopped = false
+        do {
+            try Task.checkCancellation()
+            mayOwnHardware = true
+            try await work.perform { try transport.prepare(deviceID: deviceID, url: url) }
+            try Task.checkCancellation()
+            try await work.perform { try transport.play { playback.continuation.finish() } }
+            for await _ in playback.stream {}
+            try Task.checkCancellation()
+            try await tail()
+            let saved = try await work.perform { transport.stop() }
+            stopped = true
+            try Task.checkCancellation()
+            guard let saved else {
+                throw NSError(domain: "Roomcut.RoomTune", code: 1,
+                              userInfo: [NSLocalizedDescriptionKey: "녹음 분석 실패"])
+            }
+            let analyze = self.analyze
+            let response = try await work.perform { try analyze(saved) }
+            try Task.checkCancellation()
+            try await work.perform { try FileManager.default.removeItem(at: url) }
+            return response
+        } catch {
+            playback.continuation.finish()
+            if mayOwnHardware && !stopped { _ = try? await work.perform { transport.stop() } }
+            _ = try? await work.perform { try FileManager.default.removeItem(at: url) }
+            throw error
+        }
+    }
+}

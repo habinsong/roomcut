@@ -1,0 +1,3 @@
+FAIL: fractional DSP values survive persistence without decimal rounding (47)
+[engine] state: cannot save /tmp/roomcut-state-test.cotfUV/engine.state
+[engine] state: cannot save /tmp/roomcut-state-test.cotfUV/not-a-file

@@ -1,0 +1,8 @@
+params: before/restored byte-identical
+readback: before/restored byte-identical
+default-output: before/restored byte-identical
+final engine state/parameters: unchanged; installed PID=717 remains running after QA app quit
+processing-on: player exit=0, active observations=27, peak=0.007373, peak dBFS=-42.647115, underrun delta=0
+processing-bypassed: player exit=0, active observations=26, peak=0.01, peak dBFS=-40.000000, underrun delta=0
+/Library/Application Support/Roomcut/bin/RoomcutAudioEngine SHA256=d0cb0eb16573c73890fd6490915c6d66a30f6ba8b19a379cbe26d019ed11e523
+build/engine/RoomcutAudioEngine SHA256=b22707ee94d86c6aa15cea5808a9bcd2d7499df7b90858a79725dbb65b3f11f1

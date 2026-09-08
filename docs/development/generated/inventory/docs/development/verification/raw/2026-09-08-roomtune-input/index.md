@@ -1,0 +1,11 @@
+# `docs/development/verification/raw/2026-09-08-roomtune-input`
+
+| 현재 파일 | 전체 원문 | 행 | 바이트 | SHA-256 |
+|---|---|---:|---:|---|
+| [app-build.txt](../../../../../../../verification/raw/2026-09-08-roomtune-input/app-build.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-roomtune-input/app-build.txt.txt) | 13 | 604 | `7ea51564a738dd533bee3ee91a44b1b48a763b7a82844fb531a6b74c1dcec50b` |
+| [asan.txt](../../../../../../../verification/raw/2026-09-08-roomtune-input/asan.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-roomtune-input/asan.txt.txt) | 114 | 8902 | `b4361edee858995b97d4dfabbb17e11af6ce693a0f914a1f37bdcbdcfc4542b5` |
+| [pcm-before.txt](../../../../../../../verification/raw/2026-09-08-roomtune-input/pcm-before.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-roomtune-input/pcm-before.txt.txt) | 51 | 4925 | `b5d0853c407e8bc27c58f7729d64598bebdc9676d5c9c493542a5ac79b8976fc` |
+| [pcm-expanded.txt](../../../../../../../verification/raw/2026-09-08-roomtune-input/pcm-expanded.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-roomtune-input/pcm-expanded.txt.txt) | 87 | 6031 | `3448042faf6efcafaad9e466b90b4f79c61b3c91a633897ee847fac56848aa2b` |
+| [pcm-truncated.txt](../../../../../../../verification/raw/2026-09-08-roomtune-input/pcm-truncated.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-roomtune-input/pcm-truncated.txt.txt) | 12 | 883 | `5ad6e77be5a6d88810b564ca5de85ad84b2ac9a2852537f091dee847571d8da6` |
+| [roomtune-targeted.txt](../../../../../../../verification/raw/2026-09-08-roomtune-input/roomtune-targeted.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-roomtune-input/roomtune-targeted.txt.txt) | 110 | 8769 | `073340a7d1e53cfe942ce464afc9dd2f210f49fe5f2ed9a5ede14d3543f24797` |
+| [swift-tests.txt](../../../../../../../verification/raw/2026-09-08-roomtune-input/swift-tests.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-roomtune-input/swift-tests.txt.txt) | 501 | 49874 | `53e0fbd8854408111c5f36b8aa5c3f2fd5d0ec7a14023796bb9c969b59759ba4` |

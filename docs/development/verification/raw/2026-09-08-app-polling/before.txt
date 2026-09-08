@@ -1,0 +1,38 @@
+Building for production...
+[0/5] Write sources
+[1/5] Write swift-version--58304C5D6DBC2206.txt
+[3/8] Compiling RoomcutTests LRCLIBClientTests.swift
+[4/9] Compiling RoomcutPackageTests runner.swift
+[4/9] Write Objects.LinkFileList
+[5/9] Linking RoomcutPackageTests
+[7/9] Compiling Roomcut AdvancedControls.swift
+[7/9] Write Objects.LinkFileList
+[8/9] Linking Roomcut
+Build complete! (26.78s)
+Test Suite 'Selected tests' started at 2026-09-08 12:27:46.593.
+Test Suite 'RoomcutPackageTests.xctest' started at 2026-09-08 12:27:46.595.
+Test Suite 'PollingLifecycleTests' started at 2026-09-08 12:27:46.595.
+Test Case '-[RoomcutTests.PollingLifecycleTests testHiddenAnalyzerDoesNotRepublishLateResult]' started.
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/PollingLifecycleTests.swift:74: error: -[RoomcutTests.PollingLifecycleTests testHiddenAnalyzerDoesNotRepublishLateResult] : XCTAssertNil failed: "RoomcutAnalysisSnapshot(valid: true, sampleRate: 48000, channels: 2, framesAnalyzed: 2048, peakDb: -3.0, rmsDb: -12.0, crestFactor: 0.0, lowEnergy: 0.0, lowMidEnergy: 0.0, midEnergy: 0.0, highEnergy: 0.0, spectralCentroid: 0.0, stereoWidth: 0.0, midSideRatio: 1.0, correlation: 1.0, muddiness: 0.0, harshness: 0.0, sibilance: 0.0, voicePresence: 0.0, reverbEstimate: 0.0, dynamicRange: 0.0, spectrum: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])"
+Test Case '-[RoomcutTests.PollingLifecycleTests testHiddenAnalyzerDoesNotRepublishLateResult]' failed (0.400 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testStoppedPollCannotPublishLateConnectionError]' started.
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/PollingLifecycleTests.swift:47: error: -[RoomcutTests.PollingLifecycleTests testStoppedPollCannotPublishLateConnectionError] : XCTAssertTrue failed
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/PollingLifecycleTests.swift:48: error: -[RoomcutTests.PollingLifecycleTests testStoppedPollCannotPublishLateConnectionError] : XCTAssertNil failed: "연결 끊김"
+Test Case '-[RoomcutTests.PollingLifecycleTests testStoppedPollCannotPublishLateConnectionError]' failed (0.004 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testStoppedPollCannotPublishLateParameterError]' started.
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/PollingLifecycleTests.swift:60: error: -[RoomcutTests.PollingLifecycleTests testStoppedPollCannotPublishLateParameterError] : XCTAssertNil failed: "엔진 값을 불러오지 못했습니다"
+Test Case '-[RoomcutTests.PollingLifecycleTests testStoppedPollCannotPublishLateParameterError]' failed (0.008 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testStoppedPollCannotPublishOrClaimDefaultFromLateState]' started.
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/PollingLifecycleTests.swift:33: error: -[RoomcutTests.PollingLifecycleTests testStoppedPollCannotPublishOrClaimDefaultFromLateState] : XCTAssertFalse failed
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/PollingLifecycleTests.swift:34: error: -[RoomcutTests.PollingLifecycleTests testStoppedPollCannotPublishOrClaimDefaultFromLateState] : XCTAssertEqual failed: ("1") is not equal to ("0")
+Test Case '-[RoomcutTests.PollingLifecycleTests testStoppedPollCannotPublishOrClaimDefaultFromLateState]' failed (0.003 seconds).
+Test Suite 'PollingLifecycleTests' failed at 2026-09-08 12:27:47.011.
+	 Executed 4 tests, with 6 failures (0 unexpected) in 0.415 (0.416) seconds
+Test Suite 'RoomcutPackageTests.xctest' failed at 2026-09-08 12:27:47.011.
+	 Executed 4 tests, with 6 failures (0 unexpected) in 0.415 (0.416) seconds
+Test Suite 'Selected tests' failed at 2026-09-08 12:27:47.011.
+	 Executed 4 tests, with 6 failures (0 unexpected) in 0.415 (0.419) seconds
+◇ Test run started.
+↳ Testing Library Version: 1902
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

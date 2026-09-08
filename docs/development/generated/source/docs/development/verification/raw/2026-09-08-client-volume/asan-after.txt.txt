@@ -1,0 +1,26 @@
+Internal ctest changing into directory: /Users/songhabin/roomcut/build/client-volume-audit/asan
+UpdateCTestConfiguration  from :/Users/songhabin/roomcut/build/client-volume-audit/asan/DartConfiguration.tcl
+UpdateCTestConfiguration  from :/Users/songhabin/roomcut/build/client-volume-audit/asan/DartConfiguration.tcl
+Test project /Users/songhabin/roomcut/build/client-volume-audit/asan
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 10
+    Start 10: client_volume
+
+10: Test command: /Users/songhabin/roomcut/build/client-volume-audit/asan/core/tests/test_client_volume
+10: Working Directory: /Users/songhabin/roomcut/build/client-volume-audit/asan/core/tests
+10: Test timeout computed to be: 20
+10: rejected boost: result=7, real=0.40, virtual=0.40
+10: all client volume tests passed (real C shim/Mach, fake HAL/service lookup)
+1/1 Test #10: client_volume ....................   Passed    0.15 sec
+
+The following tests passed:
+	client_volume
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =   0.16 sec

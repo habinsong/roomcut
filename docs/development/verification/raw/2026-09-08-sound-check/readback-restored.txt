@@ -1,0 +1,11 @@
+state=0 params=0 volume=0 format=0
+output=AppleUSBAudioEngine:iFi:iFi USB Audio SE:iFi USB Audio SE:1 bypass=0 boost=1 capabilities=31
+volume=0.063488125801086426
+sampleRate=384000 bitDepth=24 latencyMs=1.84375
+preamp=-1.5264 outputGain=-1.5241 spatialMode=2 width=100
+peq[0] enabled=1 type=0 freq=200 gain=-4.8384999999999998 q=2
+peq[1] enabled=1 type=0 freq=89.0899 gain=-4.0052000000000003 q=2
+peq[2] enabled=1 type=0 freq=2262.7417 gain=-3.3915000000000002 q=2
+peq[3] enabled=1 type=0 freq=503.96839999999997 gain=-2.6926999999999999 q=2
+peq[4] enabled=0 type=0 freq=1000 gain=0 q=1
+peq[5] enabled=0 type=0 freq=1000 gain=0 q=1

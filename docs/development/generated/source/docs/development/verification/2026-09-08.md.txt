@@ -1,0 +1,87 @@
+# 2026-09-08 문서화·생존 확인 통신 검증
+
+## 기준 환경과 기존 상태
+
+- macOS 26.5 (25F71), arm64, Xcode 26.6 (17F113).
+- CMake 3.30.4, Apple Swift 6.3.3. 네이티브 빌드 설정은 Release.
+- 작업 시작 시 이미 DSP·앱 상태·연결 경계 등 다수의 미커밋 변경이 있었습니다. 기존 변경을 보존했습니다.
+- 최초 기준선: 네이티브 29/29, Release XCTest 143/143 통과.
+- `gh issue list --repo habinsong/roomcut --state open --limit 100 --json number,title,url,labels`: `[]`.
+  공개 열린 이슈 건수와 로컬 품질 문제를 구분합니다.
+
+## IPC-01 재현과 수정
+
+이전 `heartbeatProbe`와 C 드라이버 생존 확인은 본문의 타입과 순서만 검사했습니다.
+필수 상태 필드가 잘려 있어도 수신 버퍼의 Mach trailer를 본문으로 읽을 수 있었습니다.
+잘못된 헤더 ID·유효하지 않은 상태도 성공으로 취급했고, 불필요하게 운반된 권한을 해제하지 않았습니다.
+요청 수신에도 길이·ID·응답 권한 종류 확인이 부족했습니다.
+
+실제 Mach 포트와 두 스레드로 정상·구버전·잘린 응답·잘못된 ID/타입/순서·비정상 상태·추가 권한·descriptor를 전송했습니다.
+수정 전 C++ 검사에서 **16개 검증 항목이 실패**했습니다. 이는 테스트 실행 파일 16개라는 뜻이 아닙니다.
+[수정 전 원시 출력](raw/2026-09-08/heartbeat-before.txt)을 보존합니다.
+
+현재 수정:
+
+- 공통 C 호환 검증 함수가 필수 본문 크기·단순 메시지·ID·상태·순서와 요청의 send-once 권한을 확인합니다.
+- C++와 드라이버 C의 실제 함수에 같은 검증을 적용했습니다. 거부한 메시지의 권한은 `mach_msg_destroy`로 해제합니다.
+- 엔진 서비스 분기는 요청 검증을 통과한 뒤에만 마지막 생존 확인 시각을 갱신합니다.
+- 구버전 응답의 생략 가능한 rate 목록은 계속 허용하며 원래 state 필드는 필수입니다.
+- 기존 C 드라이버의 한 번의 probe를 `Roomcut_TransportProbePort`로 노출해 실제 작업 스레드와 호스트 검사가 같은 함수를 호출합니다.
+  새 IPC나 별도 동작 구현을 추가하지 않았으며 C 앱 클라이언트 ABI는 그대로입니다.
+
+9가지 응답 조건을 C++/C 각각에 실행하고 5가지 요청 조건을 검사했습니다.
+기존 정상 왕복·무응답 timeout도 유지합니다. 거부 시 출력 상태 보존과 운반된 send 권한 참조 수 0을 확인했습니다.
+[수정 후 출력](raw/2026-09-08/heartbeat-after.txt), [ASan/UBSan 출력](raw/2026-09-08/heartbeat-asan-ubsan.txt).
+
+## 이번 작업의 변경 파일
+
+- `shared/protocol/roomcut_handshake.h`: 생존 확인의 공통 유효성 검사.
+- `engine/src/Heartbeat.cpp`, `engine/src/main.cpp`: 응답·요청 경계와 상태 갱신 전 검증.
+- `driver/RoomcutHAL/src/RoomcutTransport.c`, `include/RoomcutTransport.h`: 드라이버 probe 검증과 실제 함수의 호스트 검사 경계.
+- `engine/tests/test_heartbeat.cpp`, `core/tests/CMakeLists.txt`: 실패 행렬과 C 드라이버 연동 검사.
+- `scripts/update-development-docs.py`, `scripts/tests/test_development_docs.py`: 전체 원문 갱신·누락 감지·원문 동일성 검사.
+- `docs/development/`: 책임 구조·계획·이슈·출처·증거·생성 원문.
+- `docs/ENGINEERING_PLAN.md`: 새 개발 문서 진입 링크. 이전 기록 보존.
+- 로컬 `AGENTS.md`: 저장소 설명의 자리표시자와 실제와 다른 폴더 지도를 현재 구조로 갱신.
+
+이번 작업에서 Swift 화면이나 디자인 토큰은 변경하지 않았습니다.
+
+## 실행 결과
+
+| 명령·검사 | 실제 결과 | 원시 자료 |
+|---|---|---|
+| `cmake --build build -j4` | 성공 | [빌드](raw/2026-09-08/native-build.txt) |
+| `ctest --test-dir build --output-on-failure` | 29/29 통과 | [네이티브](raw/2026-09-08/native-tests.txt) |
+| `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test -c release --jobs 4` | 143/143 통과 | [Swift](raw/2026-09-08/swift-tests.txt) |
+| `build/core/tests/test_heartbeat` | C++/C 통신 경계 검사 통과 | [생존 확인](raw/2026-09-08/heartbeat-after.txt) |
+| C/C++ 실제 경로 `-fsanitize=address,undefined` | 통과 | [계측](raw/2026-09-08/heartbeat-asan-ubsan.txt) |
+| `python3 -B -m unittest discover -s scripts/tests -v` | 5/5 통과 | [문서 생성기](raw/2026-09-08/documentation-tests.txt) |
+| `bash scripts/build-app.sh release` | 앱 번들 조립 성공 | [앱 빌드](raw/2026-09-08/app-build.txt) |
+| `codesign --verify --deep --strict build/Roomcut.app` | 로컬 서명 검증 통과 | 공증·배포 서명과 구분 |
+| `plutil -extract CFBundleExecutable raw build/Roomcut.app/Contents/Info.plist` | `Roomcut`, 실행 파일 존재·실행 권한 확인 | `build/Roomcut.app/Contents/MacOS/Roomcut` |
+| `python3 scripts/update-development-docs.py --check` | 전체 목록·원문 일치 | 모든 원본/보관본의 SHA-256·바이트 비교도 별도로 통과 |
+| `git diff --check` | 통과 | 실제 실행 확인 |
+
+문서 생성기의 검사는 임시 Git 저장소에서 실행합니다. 미추적 파일 포함, CRLF·마지막 줄바꿈 없는 원문의 바이트 보존,
+파일 추가/수정/삭제, 원문 보관본 손상, 무시된 빌드 제외, 심볼릭 링크 거부, 수동 파일 보존을 검사했습니다.
+문서의 존재나 자동 목록만으로 구현 기능의 동작을 인증하지 않습니다.
+수동 문서와 자동 생성 목록의 모든 로컬 Markdown 링크도 존재를 검사해 누락이 없었습니다.
+
+계측 검사의 재실행 명령:
+
+```bash
+mkdir -p build/development-sanitizer
+xcrun clang -std=c11 -O1 -g -fsanitize=address,undefined -I shared/protocol -I driver/RoomcutHAL/include -c driver/RoomcutHAL/src/RoomcutTransport.c -o build/development-sanitizer/transport.o
+xcrun clang++ -std=c++17 -O1 -g -fsanitize=address,undefined -I shared/protocol -I driver/RoomcutHAL/include -I engine/include engine/tests/test_heartbeat.cpp engine/src/Heartbeat.cpp build/development-sanitizer/transport.o -o build/development-sanitizer/test_heartbeat
+build/development-sanitizer/test_heartbeat
+```
+
+## 한계와 다음 행동
+
+실제 Mach와 드라이버 C 함수를 사용했지만 설치된 `coreaudiod`와의 장시간 통합 검사는 수행하지 않았습니다.
+출력 장치·시스템 기본 오디오·설정은 변경하지 않았고 녹음·청취 검사도 수행하지 않았습니다.
+이 작업은 생존 확인의 제어 경계를 수정했으며 DSP 음질·속도 개선률을 새로 측정하거나 주장하지 않습니다.
+이번 실행에서 ThreadSanitizer 전체 재검사는 수행하지 않았습니다. 이전 계측 기록과 구분합니다.
+
+전체 God object 제거, HELLO 감사, Room Tune 실기기 검증, 선택적 다이내믹 EQ, 고샘플레이트 성능과 배포는 남아 있습니다.
+다음은 [IPC-02](../issues/current.md)의 HELLO 길이·버전·권한 경계입니다. 장기 목표를 완료 처리하지 않습니다.

@@ -1,0 +1,74 @@
+[  1%] Building C object driver/RoomcutHAL/CMakeFiles/RoomcutHAL.dir/src/RoomcutTransport.c.o
+[  1%] Building CXX object engine/CMakeFiles/roomcutctl.dir/src/roomcutctl.cpp.o
+[  1%] Building CXX object engine/CMakeFiles/roomcut-driver-sim.dir/src/roomcut-driver-sim.cpp.o
+[  1%] Building CXX object engine/CMakeFiles/RoomcutAudioEngine.dir/src/main.cpp.o
+[  2%] Linking C CFBundle shared module Roomcut.driver/Contents/MacOS/Roomcut
+Code-signing Roomcut.driver (identity: -)
+/Users/songhabin/roomcut/build/driver/RoomcutHAL/Roomcut.driver: replacing existing signature
+[  4%] Built target RoomcutHAL
+[  7%] Built target roomcut-devicectl
+[  9%] Built target test_ring
+[ 11%] Built target test_ring_region
+[ 12%] Building CXX object core/tests/CMakeFiles/test_handshake.dir/__/__/engine/tests/test_handshake.cpp.o
+[ 13%] Building CXX object engine/CMakeFiles/roomcut-driver-sim.dir/src/RingRegion.cpp.o
+[ 14%] Building CXX object engine/CMakeFiles/roomcutctl.dir/src/RingRegion.cpp.o
+[ 14%] Building CXX object core/tests/CMakeFiles/test_handshake.dir/__/__/engine/src/Handshake.cpp.o
+[ 15%] Building CXX object engine/CMakeFiles/roomcut-driver-sim.dir/src/Handshake.cpp.o
+[ 16%] Building CXX object engine/CMakeFiles/roomcutctl.dir/src/Handshake.cpp.o
+[ 17%] Building C object core/tests/CMakeFiles/test_handshake.dir/__/__/driver/RoomcutHAL/src/RoomcutTransport.c.o
+[ 18%] Building CXX object engine/CMakeFiles/roomcut-driver-sim.dir/src/Heartbeat.cpp.o
+[ 19%] Building CXX object engine/CMakeFiles/roomcutctl.dir/src/Heartbeat.cpp.o
+[ 20%] Linking CXX executable test_handshake
+[ 21%] Building CXX object engine/CMakeFiles/roomcut-driver-sim.dir/src/Control.cpp.o
+[ 22%] Building CXX object engine/CMakeFiles/roomcutctl.dir/src/Control.cpp.o
+[ 23%] Built target test_handshake
+[ 24%] Building CXX object core/tests/CMakeFiles/test_handshake_validation.dir/__/__/engine/tests/test_handshake_validation.cpp.o
+[ 25%] Linking CXX executable roomcut-driver-sim
+[ 26%] Linking CXX executable roomcutctl
+[ 27%] Built target roomcut-driver-sim
+[ 28%] Built target roomcutctl
+[ 29%] Building CXX object core/tests/CMakeFiles/test_heartbeat.dir/__/__/engine/tests/test_heartbeat.cpp.o
+[ 33%] Built target test_mach_cleanup
+[ 34%] Building CXX object core/tests/CMakeFiles/test_control.dir/__/__/engine/tests/test_control.cpp.o
+[ 35%] Linking CXX executable test_handshake_validation
+[ 37%] Built target test_handshake_validation
+[ 37%] Building CXX object core/tests/CMakeFiles/test_control_validation.dir/__/__/engine/tests/test_control_validation.cpp.o
+[ 38%] Building CXX object core/tests/CMakeFiles/test_heartbeat.dir/__/__/engine/src/Heartbeat.cpp.o
+[ 39%] Building C object core/tests/CMakeFiles/test_heartbeat.dir/__/__/driver/RoomcutHAL/src/RoomcutTransport.c.o
+[ 40%] Linking CXX executable test_heartbeat
+[ 40%] Built target test_heartbeat
+[ 43%] Built target test_engine_connection
+[ 45%] Built target test_lifecycle
+[ 46%] Building CXX object engine/CMakeFiles/RoomcutAudioEngine.dir/src/RingRegion.cpp.o
+[ 48%] Built target test_resampler
+[ 50%] Built target test_resampler_quality
+[ 51%] Building CXX object engine/CMakeFiles/RoomcutAudioEngine.dir/src/Handshake.cpp.o
+[ 52%] Building CXX object core/tests/CMakeFiles/test_control_validation.dir/__/__/engine/src/Control.cpp.o
+[ 53%] Building CXX object core/tests/CMakeFiles/test_control.dir/__/__/engine/src/Control.cpp.o
+[ 54%] Building CXX object engine/CMakeFiles/RoomcutAudioEngine.dir/src/Heartbeat.cpp.o
+[ 56%] Built target test_biquad
+[ 57%] Building CXX object engine/CMakeFiles/RoomcutAudioEngine.dir/src/Control.cpp.o
+[ 58%] Linking CXX executable test_control
+[ 60%] Built target test_graphic_eq
+[ 61%] Linking CXX executable test_control_validation
+[ 63%] Built target test_limiter
+[ 63%] Built target test_control
+[ 63%] Built target test_control_validation
+[ 65%] Built target test_spatial
+[ 67%] Built target test_compressor
+[ 68%] Linking CXX executable RoomcutAudioEngine
+[ 70%] Built target test_parametric
+[ 72%] Built target test_analyzer
+[ 73%] Built target test_dsp_chain
+[ 78%] Built target RoomcutAudioEngine
+[ 80%] Built target test_dsp_transitions
+[ 81%] Built target test_comparison
+[ 82%] Built target test_presets
+[ 84%] Built target test_volume_ramp
+[ 87%] Built target test_device_policy
+[ 88%] Built target test_render_pipeline
+[ 90%] Built target test_realtime_params
+[ 92%] Built target test_render_gate
+[ 94%] Built target test_analysis_tap
+[100%] Built target test_output_device
+[100%] Built target test_engine_state

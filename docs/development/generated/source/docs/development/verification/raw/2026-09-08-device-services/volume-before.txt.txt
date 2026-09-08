@@ -1,0 +1,8 @@
+FAIL: non-finite source preserves last known level (76)
+FAIL: read failure preserves last known level (78)
+FAIL: short source payload is rejected (80)
+FAIL: volume preserves existing channel balance (87)
+FAIL: mute does not forget channel balance (89)
+FAIL: partial hardware write is not reported as success (92)
+FAIL: partial write restores prior levels before digital fallback (93)
+FAIL: preflight avoids partial writes to unsupported channels (95)

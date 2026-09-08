@@ -1,0 +1,12 @@
+# `docs/development/verification/raw/2026-09-08-device-writes`
+
+| 현재 파일 | 전체 원문 | 행 | 바이트 | SHA-256 |
+|---|---|---:|---:|---|
+| [app-build.txt](../../../../../../../verification/raw/2026-09-08-device-writes/app-build.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-device-writes/app-build.txt.txt) | 12 | 584 | `50ba955560c556090df810ebcade74598b6b571d3d8577d378bab5fb36f86492` |
+| [before.txt](../../../../../../../verification/raw/2026-09-08-device-writes/before.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-device-writes/before.txt.txt) | 38 | 3179 | `601868e3be9582ed24aba7907532744260ccf60da592c114415f811c9ea4c6a0` |
+| [feedback-before.txt](../../../../../../../verification/raw/2026-09-08-device-writes/feedback-before.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-device-writes/feedback-before.txt.txt) | 24 | 1569 | `4f34c7bd3ce515d9ec27eedd4ccad4453c0cda5832d6d15880e15b0eddbf6a44` |
+| [queue-before.txt](../../../../../../../verification/raw/2026-09-08-device-writes/queue-before.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-device-writes/queue-before.txt.txt) | 30 | 1884 | `4191f445093ad4e7dc96c81480ceca89a660cc55391fbc59bd3c50be29449dbe` |
+| [swift-tests-initial.txt](../../../../../../../verification/raw/2026-09-08-device-writes/swift-tests-initial.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-device-writes/swift-tests-initial.txt.txt) | 395 | 40931 | `aaf2b9409284e8b536d78a225a6398498bd69ac376789f5bd59997fc1b7e1f33` |
+| [swift-tests.txt](../../../../../../../verification/raw/2026-09-08-device-writes/swift-tests.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-device-writes/swift-tests.txt.txt) | 396 | 40943 | `eb35efb419a5eba8ddad125d810d8003bf27224955a135be1d72050c6460a4ce` |
+| [tsan.txt](../../../../../../../verification/raw/2026-09-08-device-writes/tsan.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-device-writes/tsan.txt.txt) | 80 | 7013 | `106989f86e58388b73254f572902d1f4d0dc0ddc3a86bf0d199ac20ac341dcbf` |
+| [ui-smoke.txt](../../../../../../../verification/raw/2026-09-08-device-writes/ui-smoke.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-device-writes/ui-smoke.txt.txt) | 17 | 851 | `dfd582cc53a28d414e845c33151a1c27cf5a8897501dd50c2ba6a7073b52c9b8` |

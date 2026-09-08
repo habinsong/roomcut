@@ -1,0 +1,42 @@
+[0/1] Planning build
+Building for production...
+[0/6] Write sources
+[1/6] Write swift-version--58304C5D6DBC2206.txt
+[3/7] Compiling RoomcutCore AppPreferences.swift
+[4/9] Compiling RoomcutTests DeviceCommandTests.swift
+[4/9] Write Objects.LinkFileList
+[5/9] Linking RoomcutPackageTests
+[7/9] Compiling Roomcut AdvancedControls.swift
+[7/9] Write Objects.LinkFileList
+[8/9] Linking Roomcut
+Build complete! (50.26s)
+Test Suite 'Selected tests' started at 2026-09-08 14:00:37.858.
+Test Suite 'RoomcutPackageTests.xctest' started at 2026-09-08 14:00:37.860.
+Test Suite 'PollingLifecycleTests' started at 2026-09-08 14:00:37.860.
+Test Case '-[RoomcutTests.PollingLifecycleTests testCancelledManualRefreshDoesNotPublish]' started.
+Test Case '-[RoomcutTests.PollingLifecycleTests testCancelledManualRefreshDoesNotPublish]' passed (0.010 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testHiddenAnalyzerDoesNotRepublishLateResult]' started.
+Test Case '-[RoomcutTests.PollingLifecycleTests testHiddenAnalyzerDoesNotRepublishLateResult]' passed (0.007 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testLiveDeviceQueueAllowsMainActorWorkDuringABlockedRead]' started.
+Test Case '-[RoomcutTests.PollingLifecycleTests testLiveDeviceQueueAllowsMainActorWorkDuringABlockedRead]' passed (0.002 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testNewPollCanFinishBeforeTheStoppedPollReturns]' started.
+Test Case '-[RoomcutTests.PollingLifecycleTests testNewPollCanFinishBeforeTheStoppedPollReturns]' passed (0.003 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testPollerCadenceAndOldCompletionIsolation]' started.
+Test Case '-[RoomcutTests.PollingLifecycleTests testPollerCadenceAndOldCompletionIsolation]' passed (0.001 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testSlowDeviceReadCannotRelabelANewerSoundEdit]' started.
+Test Case '-[RoomcutTests.PollingLifecycleTests testSlowDeviceReadCannotRelabelANewerSoundEdit]' passed (0.009 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testSlowDeviceReadDoesNotPauseStatusAndMeters]' started.
+Test Case '-[RoomcutTests.PollingLifecycleTests testSlowDeviceReadDoesNotPauseStatusAndMeters]' passed (0.258 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testStartThenStopDiscardsTheQueuedInitialPoll]' started.
+Test Case '-[RoomcutTests.PollingLifecycleTests testStartThenStopDiscardsTheQueuedInitialPoll]' passed (0.014 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testStoppedPollCannotPublishLateConnectionError]' started.
+Test Case '-[RoomcutTests.PollingLifecycleTests testStoppedPollCannotPublishLateConnectionError]' passed (0.005 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testStoppedPollCannotPublishLateParameterError]' started.
+Test Case '-[RoomcutTests.PollingLifecycleTests testStoppedPollCannotPublishLateParameterError]' passed (0.006 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testStoppedPollCannotPublishOrClaimDefaultFromLateState]' started.
+Test Case '-[RoomcutTests.PollingLifecycleTests testStoppedPollCannotPublishOrClaimDefaultFromLateState]' passed (0.003 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testVolumeEditOutlivesAnOlderDeviceReadback]' started.
+◇ Test run started.
+↳ Testing Library Version: 1902
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

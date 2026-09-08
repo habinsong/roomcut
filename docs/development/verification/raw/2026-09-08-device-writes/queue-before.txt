@@ -1,0 +1,30 @@
+[0/1] Planning build
+Building for production...
+[0/5] Write sources
+[2/5] Write swift-version--58304C5D6DBC2206.txt
+[4/6] Compiling RoomcutPresentationCore RoomcutMainPresentation.swift
+[5/7] Compiling RoomcutCore AppPreferences.swift
+[6/10] Compiling RoomcutTests DeviceCommandTests.swift
+[7/11] Compiling RoomcutPackageTests runner.swift
+[7/11] Write Objects.LinkFileList
+[8/11] Linking RoomcutPackageTests
+[10/11] Compiling Roomcut AdvancedControls.swift
+[10/12] Write Objects.LinkFileList
+[11/12] Linking Roomcut
+Build complete! (51.36s)
+Test Suite 'Selected tests' started at 2026-09-08 13:40:40.033.
+Test Suite 'RoomcutPackageTests.xctest' started at 2026-09-08 13:40:40.035.
+Test Suite 'DeviceCommandTests' started at 2026-09-08 13:40:40.035.
+Test Case '-[RoomcutTests.DeviceCommandTests testBlockedHardwareWriteDoesNotHoldTheStateRequestQueue]' started.
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/DeviceCommandTests.swift:187: error: -[RoomcutTests.DeviceCommandTests testBlockedHardwareWriteDoesNotHoldTheStateRequestQueue] : Asynchronous wait failed: Exceeded timeout of 0.5 seconds, with unfulfilled expectations: "state queue remains available".
+Test Case '-[RoomcutTests.DeviceCommandTests testBlockedHardwareWriteDoesNotHoldTheStateRequestQueue]' failed (0.775 seconds).
+Test Suite 'DeviceCommandTests' failed at 2026-09-08 13:40:40.810.
+	 Executed 1 test, with 1 failure (0 unexpected) in 0.775 (0.775) seconds
+Test Suite 'RoomcutPackageTests.xctest' failed at 2026-09-08 13:40:40.810.
+	 Executed 1 test, with 1 failure (0 unexpected) in 0.775 (0.775) seconds
+Test Suite 'Selected tests' failed at 2026-09-08 13:40:40.810.
+	 Executed 1 test, with 1 failure (0 unexpected) in 0.775 (0.777) seconds
+◇ Test run started.
+↳ Testing Library Version: 1902
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

@@ -1,0 +1,3365 @@
+{
+  "schema_version": 1,
+  "files": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "bytes": 1008,
+      "sha256": "f5540b20cc8face8fcdeb72fadf1d42759abd3c58a7bdd916b1db37d87f5e619",
+      "kind": "text",
+      "lines": 45,
+      "archive": "docs/development/generated/source/.github/workflows/ci.yml.txt"
+    },
+    {
+      "path": ".gitignore",
+      "bytes": 646,
+      "sha256": "1fe4050acd53f007da83376270bcb48a875872ed0320348ef15d91383a34506d",
+      "kind": "text",
+      "lines": 40,
+      "archive": "docs/development/generated/source/.gitignore.txt"
+    },
+    {
+      "path": "AGENTS.md",
+      "bytes": 14821,
+      "sha256": "5f410e765daa646fa953c5188cd7affc561634c01ac8cad8676ff030f11f1dbe",
+      "kind": "text",
+      "lines": 472,
+      "archive": "docs/development/generated/source/AGENTS.md.txt"
+    },
+    {
+      "path": "CMakeLists.txt",
+      "bytes": 1779,
+      "sha256": "57903674bd920a6005bbced97446dfa89a2b4767c8d27791a755ae73305b6f7a",
+      "kind": "text",
+      "lines": 49,
+      "archive": "docs/development/generated/source/CMakeLists.txt.txt"
+    },
+    {
+      "path": "LICENSE",
+      "bytes": 11351,
+      "sha256": "a2ab14df3e1b62a46ae18d2d6b4808a246cc315493dde81e48398627fe04e3c6",
+      "kind": "text",
+      "lines": 201,
+      "archive": "docs/development/generated/source/LICENSE.txt"
+    },
+    {
+      "path": "Package.swift",
+      "bytes": 10493,
+      "sha256": "654932549347c92d0448e674e8a1be159030b86f46ab0110bcce8185194f3a14",
+      "kind": "text",
+      "lines": 265,
+      "archive": "docs/development/generated/source/Package.swift.txt"
+    },
+    {
+      "path": "README.md",
+      "bytes": 16185,
+      "sha256": "1c250b70098fecd13de5fd137ec188866347a1eefeb469d02455a3d6ecba9afe",
+      "kind": "text",
+      "lines": 321,
+      "archive": "docs/development/generated/source/README.md.txt"
+    },
+    {
+      "path": "THIRD_PARTY_NOTICES.md",
+      "bytes": 4275,
+      "sha256": "8f7a6b4f2e7e759880f4100b912e6eda51436462fe6f103d7466b7bc95eb5abe",
+      "kind": "text",
+      "lines": 88,
+      "archive": "docs/development/generated/source/THIRD_PARTY_NOTICES.md.txt"
+    },
+    {
+      "path": "apps/macos/NowPlayingHelper/MediaRemote.h",
+      "bytes": 3833,
+      "sha256": "2e949cfb59a91d1cd59bbaa07096300fc64b1a216e4fcc7ccf52d9b90a0880d7",
+      "kind": "text",
+      "lines": 79,
+      "archive": "docs/development/generated/source/apps/macos/NowPlayingHelper/MediaRemote.h.txt"
+    },
+    {
+      "path": "apps/macos/NowPlayingHelper/RoomcutNowPlaying.m",
+      "bytes": 20665,
+      "sha256": "d923c0f1c580a84e6c4f95cd3d3833f9a9bc237a5125a210a88f3af97c5af35f",
+      "kind": "text",
+      "lines": 468,
+      "archive": "docs/development/generated/source/apps/macos/NowPlayingHelper/RoomcutNowPlaying.m.txt"
+    },
+    {
+      "path": "apps/macos/NowPlayingHelper/roomcut-nowplaying.pl",
+      "bytes": 1465,
+      "sha256": "76916c2afd813c916b16e5423cff562c704dd05ee17678e7482ff45fb1aa48a4",
+      "kind": "text",
+      "lines": 39,
+      "archive": "docs/development/generated/source/apps/macos/NowPlayingHelper/roomcut-nowplaying.pl.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/AdvancedControls.swift",
+      "bytes": 20000,
+      "sha256": "3050f57a7f6047b739a21edf90e45a994966d508d305f0d32f9d7968d31b68ce",
+      "kind": "text",
+      "lines": 426,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/AdvancedControls.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/AppLaunch.swift",
+      "bytes": 695,
+      "sha256": "d31f261b2018a5668c295a125aee0c21b4bc4ca64fd2f608a61451caf2ba5057",
+      "kind": "text",
+      "lines": 16,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/AppLaunch.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/AppPreferences.swift",
+      "bytes": 5556,
+      "sha256": "6505ebc2617419cdd8985d56a06adb89f6830c0911d4e582403a2cb3197add2b",
+      "kind": "text",
+      "lines": 148,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/AppPreferences.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/AudioStatusView.swift",
+      "bytes": 8650,
+      "sha256": "715880e797260df713c312480b8aa15af688342f878603208318b3a0da62ee20",
+      "kind": "text",
+      "lines": 226,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/AudioStatusView.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/BypassOverride.swift",
+      "bytes": 1697,
+      "sha256": "490f3c04c99d4e0141606a5b58d03aac1bff3706943b5d5f4588f4528543fa3e",
+      "kind": "text",
+      "lines": 37,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/BypassOverride.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/BypassWriter.swift",
+      "bytes": 3507,
+      "sha256": "44afb4509344c12465a940cafe157dbc4ae45cd22ba296a9969a097d5af2a4de",
+      "kind": "text",
+      "lines": 86,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/BypassWriter.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/DeviceCommandWriter.swift",
+      "bytes": 4858,
+      "sha256": "8fd0a8341883210ef5e73626be4985ef77f0fcd330bcc480c2c3e48456bb8a2f",
+      "kind": "text",
+      "lines": 111,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/DeviceCommandWriter.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/DeviceReadCoordinator.swift",
+      "bytes": 4499,
+      "sha256": "8aa8d66731ec199201e59bdc560b8399c25e92c016c49937757bbce62cd21ad9",
+      "kind": "text",
+      "lines": 114,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/DeviceReadCoordinator.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/DeviceReadback.swift",
+      "bytes": 1768,
+      "sha256": "719d4c1fe5e63180eb9c4e81d28a4ab86288f6f397fafd585972ef7e335fb0e8",
+      "kind": "text",
+      "lines": 39,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/DeviceReadback.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/EngineClient.swift",
+      "bytes": 24706,
+      "sha256": "ba156866b96722b9a36cfc187ae2a938894cf8a3178bfb4701c74693b1d41fa2",
+      "kind": "text",
+      "lines": 629,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/EngineClient.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/EnginePoller.swift",
+      "bytes": 2459,
+      "sha256": "3932b98a494e8302e313c21ebea9e8bf9ba6cca662323d24ec39e3de1cf056f7",
+      "kind": "text",
+      "lines": 72,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/EnginePoller.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/EqMiniCurve.swift",
+      "bytes": 6418,
+      "sha256": "c6e4295c398c2aac273e0e45def1e1bbd768336a1203b90fa72528277296b97c",
+      "kind": "text",
+      "lines": 152,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/EqMiniCurve.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/EqualizerView.swift",
+      "bytes": 7886,
+      "sha256": "a14fdde78c39c9ace37ab1d3fe17b2a8376ee0aed9abcd11f0588b9d388d7aef",
+      "kind": "text",
+      "lines": 187,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/EqualizerView.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/HomeTab.swift",
+      "bytes": 16490,
+      "sha256": "4ed9ada0dd1070b0ad54e39012a67e959ed3f49cbcaa187813aa5f260b557ca8",
+      "kind": "text",
+      "lines": 328,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/HomeTab.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/InspectTab.swift",
+      "bytes": 9160,
+      "sha256": "58fe01303992ddef7023ce9cd697ae10d5ae3bbd0a727ae7ad61d51e55d691c6",
+      "kind": "text",
+      "lines": 187,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/InspectTab.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/LRCLIBClient.swift",
+      "bytes": 20292,
+      "sha256": "f4012c96aa24eb3e9d68e75a98c28ac3d246f88dc8eb6eb2152a7a8a1a4cc577",
+      "kind": "text",
+      "lines": 619,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/LRCLIBClient.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/MainWindow.swift",
+      "bytes": 3994,
+      "sha256": "7e54e1e65444a63cd48289f13600eea909ab0eea43a147b738a5b750b0a0d8c5",
+      "kind": "text",
+      "lines": 107,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/MainWindow.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/MenuContent.swift",
+      "bytes": 8151,
+      "sha256": "410a6ba1b1b60af5dd22bc37616e94218a5b74e259d83decd4ada6d5f421cda1",
+      "kind": "text",
+      "lines": 205,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/MenuContent.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/NowPlayingMonitor.swift",
+      "bytes": 38380,
+      "sha256": "ebe62896ea6d5df0a9708c5dc587bdfd46ecb0f1f2015bd20100dae83b86fd04",
+      "kind": "text",
+      "lines": 943,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/NowPlayingMonitor.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/NowPlayingPayload.swift",
+      "bytes": 10288,
+      "sha256": "840d4571e20564ab562b370bd464e4413f0936744db1ffc1ce937c9527c5945c",
+      "kind": "text",
+      "lines": 284,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/NowPlayingPayload.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/NowPlayingView.swift",
+      "bytes": 59992,
+      "sha256": "c166703fa1e5f5cce7914981531520da4f7eaa44c5bbf6295c1dec4544e55b77",
+      "kind": "text",
+      "lines": 1443,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/NowPlayingView.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/ParameterWriter.swift",
+      "bytes": 4292,
+      "sha256": "614d474a59195a2660f2c07160a5aeae2bce324a4d82ea827d5bc88e6418482b",
+      "kind": "text",
+      "lines": 106,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/ParameterWriter.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/ParametricEditor.swift",
+      "bytes": 18675,
+      "sha256": "32c54594c682c1889c5dc5f3a54af7b3189c4995ebaf4598377a7aaf9378501a",
+      "kind": "text",
+      "lines": 405,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/ParametricEditor.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/PresetLibrary.swift",
+      "bytes": 3915,
+      "sha256": "dab49a949f4ea1e84e47ad5611a043d695c3c9397c4aa0f54ce4d17810cbc1d8",
+      "kind": "text",
+      "lines": 64,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/PresetLibrary.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/PresetStore.swift",
+      "bytes": 4043,
+      "sha256": "29ee6060e5692e254daf069a44538dc01503564c0e8fb3a8f0995bbc3f683b6c",
+      "kind": "text",
+      "lines": 107,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/PresetStore.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/RoomTuneAnalysis.swift",
+      "bytes": 4716,
+      "sha256": "38f9960826e82abfc36d8abb2b1bcb30396a3aea4267e0484c147902dabaf7b3",
+      "kind": "text",
+      "lines": 99,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/RoomTuneAnalysis.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/RoomTuneAudioFile.swift",
+      "bytes": 2516,
+      "sha256": "a4fb08a3dc93f06442c1703c8098fc5437a8992c6ec4da31cb0e3b6a4b3a50da",
+      "kind": "text",
+      "lines": 47,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/RoomTuneAudioFile.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/RoomTuneAudioSession.swift",
+      "bytes": 2555,
+      "sha256": "913e48ad98467484e67fc388f84d94cb4cca72fa5effab954d6e2cd576905736",
+      "kind": "text",
+      "lines": 62,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/RoomTuneAudioSession.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/RoomTuneInputScanner.swift",
+      "bytes": 1883,
+      "sha256": "3b5787a7262ea4dcc57f4e2e1046f7a6b74b0acff44a5efa6c1e0d63fdd545ce",
+      "kind": "text",
+      "lines": 48,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/RoomTuneInputScanner.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/RoomTuneMeasurement.swift",
+      "bytes": 386,
+      "sha256": "6edd6d1e6650b6da12310308286f0fedbeeb8b5b1b5c03c8d945e50c13efdec2",
+      "kind": "text",
+      "lines": 12,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/RoomTuneMeasurement.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/RoomTunePCM.swift",
+      "bytes": 2748,
+      "sha256": "9129e5481b69df1a5bb9d3c15d787a3dd51a37c71844235c17e1790512fbdf0b",
+      "kind": "text",
+      "lines": 41,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/RoomTunePCM.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/RoomTuneRecorder.swift",
+      "bytes": 3500,
+      "sha256": "db69d9562df50bc5e79ed47d4ffb06edacd94d45c23d23f115420a86dc2149a8",
+      "kind": "text",
+      "lines": 88,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/RoomTuneRecorder.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/RoomTuneResponse.swift",
+      "bytes": 6952,
+      "sha256": "29e3f737313eb1c0c036ab41817d3bb347df39b6aa1a67d08773a9f63dd20129",
+      "kind": "text",
+      "lines": 120,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/RoomTuneResponse.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/RoomTuneRound.swift",
+      "bytes": 2955,
+      "sha256": "23f7f48ad670c198f2c60bcc0143159fc0508efd8afcf3837c0d98f85488f538",
+      "kind": "text",
+      "lines": 65,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/RoomTuneRound.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/RoomTuneSignal.swift",
+      "bytes": 853,
+      "sha256": "4c8c653c6ef6c72b090d0046d7d2338db5179a929b3f666f79b8a93e6ebdb600",
+      "kind": "text",
+      "lines": 22,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/RoomTuneSignal.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/RoomTuneSweep.swift",
+      "bytes": 1328,
+      "sha256": "d21fea06fbddb165e73275b732629e586da3930129b2cf2261d330869283820e",
+      "kind": "text",
+      "lines": 31,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/RoomTuneSweep.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/RoomTuneTab.swift",
+      "bytes": 16514,
+      "sha256": "ec1d8f1882ded94ef173fe22992b0fcae3eb2008047840e6b22330eb5111a484",
+      "kind": "text",
+      "lines": 340,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/RoomTuneTab.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/RoomTuneWorkQueue.swift",
+      "bytes": 744,
+      "sha256": "9b79e6f952f15e2b741a6086b182a896035ac133f94d07c3ebf0e440b2722999",
+      "kind": "text",
+      "lines": 18,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/RoomTuneWorkQueue.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/RoomTuneWorkflow.swift",
+      "bytes": 4891,
+      "sha256": "e610f84228bf8f8bc58d0c77e10bb931d8dd1590da4c402a26c9929aeeca3262",
+      "kind": "text",
+      "lines": 116,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/RoomTuneWorkflow.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/RoomcutApp.swift",
+      "bytes": 23295,
+      "sha256": "9c7c844edcbe8fbc6f2f8609681397d87de927d5c70c064bc710e333073ae22a",
+      "kind": "text",
+      "lines": 568,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/RoomcutApp.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/RoomcutAppCanvas.swift",
+      "bytes": 28994,
+      "sha256": "b9e1a5209956efe59d9b06347a41ea84b3fc69752e5d23014ab7fa1c73e25f74",
+      "kind": "text",
+      "lines": 692,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/RoomcutAppCanvas.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/RoomcutBackgroundLayer.swift",
+      "bytes": 23015,
+      "sha256": "03ca05853b2ab12f9a9bf8f72e299c17a9269cee8b4f8e45462c74bd49156b9b",
+      "kind": "text",
+      "lines": 492,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/RoomcutBackgroundLayer.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/RoomcutGlassStyle.swift",
+      "bytes": 11677,
+      "sha256": "cdef9ed00dee3bffe509fffe19d564ed919b4cf392bac3e6fbe97f64e9c794d8",
+      "kind": "text",
+      "lines": 289,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/RoomcutGlassStyle.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/RoomcutMacroControls.swift",
+      "bytes": 22972,
+      "sha256": "c3d0761eb3ed61be7683e4c4a5b5ee6fb14dc9bf72ac8b4f5eb53c290219d91c",
+      "kind": "text",
+      "lines": 521,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/RoomcutMacroControls.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/RoomcutMainPresentation.swift",
+      "bytes": 14166,
+      "sha256": "9382e8fb368de5df500db6ac4efe750e9f4e3f920fcee7ba06ffe593c7e2630e",
+      "kind": "text",
+      "lines": 378,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/RoomcutMainPresentation.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/RoomcutMeters.swift",
+      "bytes": 2320,
+      "sha256": "c327492d17ddac4cec6380fa637c184f44f56576f33c0065f7171e0f244558b2",
+      "kind": "text",
+      "lines": 60,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/RoomcutMeters.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/RoomcutPresentation.swift",
+      "bytes": 8058,
+      "sha256": "bfb5fc41deda8d90841352f08558b33ff2e21bd5a9838f5388293188cd6187b5",
+      "kind": "text",
+      "lines": 237,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/RoomcutPresentation.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/RoomcutTheme.swift",
+      "bytes": 1361,
+      "sha256": "96227b81dbb641a10bad95ea2021d13463857639d07d9731e7f7cef2bdc6290b",
+      "kind": "text",
+      "lines": 50,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/RoomcutTheme.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/RoomcutViewModel.swift",
+      "bytes": 45271,
+      "sha256": "6b04957fde14142305dbc2e41dd9d94b3608c6b0ca769f734e5f21cec22159af",
+      "kind": "text",
+      "lines": 971,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/RoomcutViewModel.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/SavedPreset.swift",
+      "bytes": 4371,
+      "sha256": "c6816d1a0e004fffa05052f0102e90f7fe4f0534104fd8c784ceb38f6b389baf",
+      "kind": "text",
+      "lines": 93,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/SavedPreset.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/SelfTest.swift",
+      "bytes": 5067,
+      "sha256": "36d4f41112ecf269aad6dc88afc96c6d0dd93189aceb28f1f9eaa5e3d2e40e58",
+      "kind": "text",
+      "lines": 119,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/SelfTest.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/SettingsTab.swift",
+      "bytes": 22893,
+      "sha256": "e089bcd98ab319d44247a12f84c371f396173ec63927a3d67c79e9a22bed206d",
+      "kind": "text",
+      "lines": 469,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/SettingsTab.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/SoundComparison.swift",
+      "bytes": 5600,
+      "sha256": "a04a870f74a4efcc3ffc27bc3498af1cc8f6d11cf18a697ec92d51ae1826c0b2",
+      "kind": "text",
+      "lines": 117,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/SoundComparison.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/SoundEditMenuController.swift",
+      "bytes": 4386,
+      "sha256": "d9f916f77be46cc0583c88474611442de822e242080764f9674b4fca469c2dc6",
+      "kind": "text",
+      "lines": 105,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/SoundEditMenuController.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/SoundEditor.swift",
+      "bytes": 4500,
+      "sha256": "729013260f4e3a0fe33ee035033488e334271ea543feb4649a6be025a49945fb",
+      "kind": "text",
+      "lines": 121,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/SoundEditor.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/SoundHistoryControls.swift",
+      "bytes": 6494,
+      "sha256": "d2174ae7461b1f46984673c9ea711c864cda4100619e3adadd9656a76f7820a3",
+      "kind": "text",
+      "lines": 102,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/SoundHistoryControls.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/SoundSnapshot.swift",
+      "bytes": 4374,
+      "sha256": "13a4b186a1f06d54e2a2f2fb012dca1019f87f262988375273e2b3bf6dc3dd5b",
+      "kind": "text",
+      "lines": 84,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/SoundSnapshot.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/SpaceTab.swift",
+      "bytes": 29539,
+      "sha256": "51a90e709c8b00eb52384b2da51531ba97dc8151bcafa9db6e11c21ff4cfa09c",
+      "kind": "text",
+      "lines": 586,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/SpaceTab.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/UIFixture.swift",
+      "bytes": 10708,
+      "sha256": "adfc639a8bb043dbe6c3e617c448f24a02cec388a9a9653ff7e2b00e006b18a6",
+      "kind": "text",
+      "lines": 281,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/UIFixture.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/WindowChrome.swift",
+      "bytes": 13947,
+      "sha256": "c2b3025052e81fa6eafef560fc27fb09acadc9bbbe5b35c156badf5cc72a3a9b",
+      "kind": "text",
+      "lines": 440,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/WindowChrome.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/main.swift",
+      "bytes": 1674,
+      "sha256": "32370e37d0a668033a703e3f980fd26fce79e95ef8360526169cdbd743200d61",
+      "kind": "text",
+      "lines": 47,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/main.swift.txt"
+    },
+    {
+      "path": "apps/macos/RoomcutTests/BypassOwnershipTests.swift",
+      "bytes": 10494,
+      "sha256": "c40f05efb4084cd7bd4d447489f1cea92ed8411f7a42e2df30917041e0836f27",
+      "kind": "text",
+      "lines": 233,
+      "archive": "docs/development/generated/source/apps/macos/RoomcutTests/BypassOwnershipTests.swift.txt"
+    },
+    {
+      "path": "apps/macos/RoomcutTests/DeviceCommandTests.swift",
+      "bytes": 12621,
+      "sha256": "0f83733cccd8c6cd848c4ced5d20143500b4b70e7a96b82de99af55399ea3f6d",
+      "kind": "text",
+      "lines": 291,
+      "archive": "docs/development/generated/source/apps/macos/RoomcutTests/DeviceCommandTests.swift.txt"
+    },
+    {
+      "path": "apps/macos/RoomcutTests/DeviceReadCoordinatorTests.swift",
+      "bytes": 5851,
+      "sha256": "ea2c01c779e155ee84631fd29f357ad1bc1dd8d4fc84fbdc679bcd425c6dc886",
+      "kind": "text",
+      "lines": 129,
+      "archive": "docs/development/generated/source/apps/macos/RoomcutTests/DeviceReadCoordinatorTests.swift.txt"
+    },
+    {
+      "path": "apps/macos/RoomcutTests/LRCLIBClientTests.swift",
+      "bytes": 9608,
+      "sha256": "63a5dac67c0df4c7f9eae40dbe1e0790f2a50f8ab0f576f5a046674483f4e73a",
+      "kind": "text",
+      "lines": 281,
+      "archive": "docs/development/generated/source/apps/macos/RoomcutTests/LRCLIBClientTests.swift.txt"
+    },
+    {
+      "path": "apps/macos/RoomcutTests/LocalizationTests.swift",
+      "bytes": 2035,
+      "sha256": "507a4360b5df30f6de08a022c50982f5c9e7f231c8e2bf5bba8fe7b28560a72a",
+      "kind": "text",
+      "lines": 55,
+      "archive": "docs/development/generated/source/apps/macos/RoomcutTests/LocalizationTests.swift.txt"
+    },
+    {
+      "path": "apps/macos/RoomcutTests/LyricsParsingTests.swift",
+      "bytes": 1930,
+      "sha256": "0b3da5990702d3526468a64b7da913d07a0da2795883f7c46c365b761bd0822c",
+      "kind": "text",
+      "lines": 51,
+      "archive": "docs/development/generated/source/apps/macos/RoomcutTests/LyricsParsingTests.swift.txt"
+    },
+    {
+      "path": "apps/macos/RoomcutTests/MainPresentationTests.swift",
+      "bytes": 9911,
+      "sha256": "5906d95ef65f607d1636400c70303342bfd403b13f705008b57c1338c5735767",
+      "kind": "text",
+      "lines": 199,
+      "archive": "docs/development/generated/source/apps/macos/RoomcutTests/MainPresentationTests.swift.txt"
+    },
+    {
+      "path": "apps/macos/RoomcutTests/NowPlayingPayloadTests.swift",
+      "bytes": 9122,
+      "sha256": "3c98cb110a3b90e3333b5bb6ca661cf61d6a42ce12e573e5014708abfd41c513",
+      "kind": "text",
+      "lines": 259,
+      "archive": "docs/development/generated/source/apps/macos/RoomcutTests/NowPlayingPayloadTests.swift.txt"
+    },
+    {
+      "path": "apps/macos/RoomcutTests/PollingLifecycleTests.swift",
+      "bytes": 13644,
+      "sha256": "85c38cec92e2f64d1bf03fa43605872a71c43e77f1c6c38dff821d45bfcb2d40",
+      "kind": "text",
+      "lines": 309,
+      "archive": "docs/development/generated/source/apps/macos/RoomcutTests/PollingLifecycleTests.swift.txt"
+    },
+    {
+      "path": "apps/macos/RoomcutTests/PresentationTests.swift",
+      "bytes": 5480,
+      "sha256": "2ab5fbb3b3cb87c778dffbc86aa04e194574d2bd98b597b73f5c10eb35c8451b",
+      "kind": "text",
+      "lines": 118,
+      "archive": "docs/development/generated/source/apps/macos/RoomcutTests/PresentationTests.swift.txt"
+    },
+    {
+      "path": "apps/macos/RoomcutTests/PresetStoreTests.swift",
+      "bytes": 1959,
+      "sha256": "933e7e4c82841446960a93cde62110d813f71274ca4e4bc3f08ae15573b4d927",
+      "kind": "text",
+      "lines": 40,
+      "archive": "docs/development/generated/source/apps/macos/RoomcutTests/PresetStoreTests.swift.txt"
+    },
+    {
+      "path": "apps/macos/RoomcutTests/RoomTuneAnalysisTests.swift",
+      "bytes": 7939,
+      "sha256": "81e2622e5114a8f0e6f8a17455125166ab28f7d602e7aa6e6c8cc4436b1c45be",
+      "kind": "text",
+      "lines": 150,
+      "archive": "docs/development/generated/source/apps/macos/RoomcutTests/RoomTuneAnalysisTests.swift.txt"
+    },
+    {
+      "path": "apps/macos/RoomcutTests/RoomTuneAudioFileTests.swift",
+      "bytes": 2302,
+      "sha256": "89edbea4d395c63fca7de7d717c6fda1e8a9c379a0cea3991cbf58e5bfa2da2c",
+      "kind": "text",
+      "lines": 36,
+      "archive": "docs/development/generated/source/apps/macos/RoomcutTests/RoomTuneAudioFileTests.swift.txt"
+    },
+    {
+      "path": "apps/macos/RoomcutTests/RoomTunePCMTests.swift",
+      "bytes": 10230,
+      "sha256": "783e02aff750179eb547f84352f2947d2886b9a7a9dc31d77b6a9b6062439d1b",
+      "kind": "text",
+      "lines": 166,
+      "archive": "docs/development/generated/source/apps/macos/RoomcutTests/RoomTunePCMTests.swift.txt"
+    },
+    {
+      "path": "apps/macos/RoomcutTests/RoomTuneRoundTests.swift",
+      "bytes": 6713,
+      "sha256": "dc95857aa085b51355cf4eb8cd7f278017954bce184be63a49f2c9a7e484bf2a",
+      "kind": "text",
+      "lines": 147,
+      "archive": "docs/development/generated/source/apps/macos/RoomcutTests/RoomTuneRoundTests.swift.txt"
+    },
+    {
+      "path": "apps/macos/RoomcutTests/RoomTuneWorkflowTests.swift",
+      "bytes": 9197,
+      "sha256": "63a5733ade3d72939c8fdb7e924e004482cf766f23886605cca1fd86a02d0525",
+      "kind": "text",
+      "lines": 192,
+      "archive": "docs/development/generated/source/apps/macos/RoomcutTests/RoomTuneWorkflowTests.swift.txt"
+    },
+    {
+      "path": "apps/macos/RoomcutTests/RoomcutViewModelTests.swift",
+      "bytes": 39188,
+      "sha256": "faec26f4ae16d2e76292f733e7038c64ac159c1e9cc5c5d85ded5b57d92b77c1",
+      "kind": "text",
+      "lines": 900,
+      "archive": "docs/development/generated/source/apps/macos/RoomcutTests/RoomcutViewModelTests.swift.txt"
+    },
+    {
+      "path": "apps/macos/RoomcutTests/SoundComparisonTests.swift",
+      "bytes": 11925,
+      "sha256": "307deb5f1b8c29db09d315db6d03509bb9ced99e52f5c8c75058b8aaefe975a6",
+      "kind": "text",
+      "lines": 260,
+      "archive": "docs/development/generated/source/apps/macos/RoomcutTests/SoundComparisonTests.swift.txt"
+    },
+    {
+      "path": "apps/macos/RoomcutTests/SoundEditMenuTests.swift",
+      "bytes": 3920,
+      "sha256": "8adfee8ec51fd6cb17ef993919466483ca3e3c58037ec77a1124d82e394095b6",
+      "kind": "text",
+      "lines": 97,
+      "archive": "docs/development/generated/source/apps/macos/RoomcutTests/SoundEditMenuTests.swift.txt"
+    },
+    {
+      "path": "apps/macos/RoomcutTests/SoundEditingIntegrationTests.swift",
+      "bytes": 11999,
+      "sha256": "4a98fc04dfc65c1e20811397c61c3514bd36491740fede5d89dd69869fdf509f",
+      "kind": "text",
+      "lines": 283,
+      "archive": "docs/development/generated/source/apps/macos/RoomcutTests/SoundEditingIntegrationTests.swift.txt"
+    },
+    {
+      "path": "apps/macos/RoomcutTests/SoundEditorTests.swift",
+      "bytes": 4504,
+      "sha256": "43a3d428cfe5b7ea57b25a4b95727082d12c3ceaa26a80a69ee038069a7cbbaa",
+      "kind": "text",
+      "lines": 115,
+      "archive": "docs/development/generated/source/apps/macos/RoomcutTests/SoundEditorTests.swift.txt"
+    },
+    {
+      "path": "core/dsp/Analyzer.hpp",
+      "bytes": 8532,
+      "sha256": "5e1be8cb7ce8ca8a8d186f02f64b819516335b831d680fcfb56218b7b66e770f",
+      "kind": "text",
+      "lines": 233,
+      "archive": "docs/development/generated/source/core/dsp/Analyzer.hpp.txt"
+    },
+    {
+      "path": "core/dsp/Biquad.hpp",
+      "bytes": 6672,
+      "sha256": "48e190b350ef565c68b8d1bca158c2dd10a9564d72167a6e4efddb415fac8150",
+      "kind": "text",
+      "lines": 176,
+      "archive": "docs/development/generated/source/core/dsp/Biquad.hpp.txt"
+    },
+    {
+      "path": "core/dsp/ChainParams.hpp",
+      "bytes": 2349,
+      "sha256": "eac16143951d5daa7c093b32977dac09a4848d1005dbd9ade818c53ea8112ab6",
+      "kind": "text",
+      "lines": 52,
+      "archive": "docs/development/generated/source/core/dsp/ChainParams.hpp.txt"
+    },
+    {
+      "path": "core/dsp/ComparisonLevelMatch.hpp",
+      "bytes": 3968,
+      "sha256": "437ac79758d0887e5604052a919c692d66771fa6003bef5722973f5d979df15d",
+      "kind": "text",
+      "lines": 98,
+      "archive": "docs/development/generated/source/core/dsp/ComparisonLevelMatch.hpp.txt"
+    },
+    {
+      "path": "core/dsp/ComparisonProcessor.hpp",
+      "bytes": 4954,
+      "sha256": "bcf90a7b91a9b65b8e1ac44f9f67a25be6b3d31a238420ab75bfbac002af49f5",
+      "kind": "text",
+      "lines": 119,
+      "archive": "docs/development/generated/source/core/dsp/ComparisonProcessor.hpp.txt"
+    },
+    {
+      "path": "core/dsp/Compressor.hpp",
+      "bytes": 3570,
+      "sha256": "d6a13eccce183678477ab597bfdd6ee88d9deb91b29c75d337df8d308f26ae2d",
+      "kind": "text",
+      "lines": 99,
+      "archive": "docs/development/generated/source/core/dsp/Compressor.hpp.txt"
+    },
+    {
+      "path": "core/dsp/DSPChain.hpp",
+      "bytes": 5852,
+      "sha256": "3771f77e2154d93386f4268f22b4a1214a8024216a1bb679f3f164a16aa69244",
+      "kind": "text",
+      "lines": 150,
+      "archive": "docs/development/generated/source/core/dsp/DSPChain.hpp.txt"
+    },
+    {
+      "path": "core/dsp/DSPPath.hpp",
+      "bytes": 2408,
+      "sha256": "3f5fd326a9a068330facf97d8986005ea511d6e0d3bad80377a98dc160b4cff9",
+      "kind": "text",
+      "lines": 79,
+      "archive": "docs/development/generated/source/core/dsp/DSPPath.hpp.txt"
+    },
+    {
+      "path": "core/dsp/GainRamp.hpp",
+      "bytes": 1552,
+      "sha256": "1dd0b18142122343ecf45675c2b862e66e05938b279ebfbbf65d2e9d79e82bc8",
+      "kind": "text",
+      "lines": 56,
+      "archive": "docs/development/generated/source/core/dsp/GainRamp.hpp.txt"
+    },
+    {
+      "path": "core/dsp/GraphicEQ.hpp",
+      "bytes": 3947,
+      "sha256": "65a0b693b01b4aab962053b898cf608fc3fde6317f533d9168ec647ac9ca226d",
+      "kind": "text",
+      "lines": 115,
+      "archive": "docs/development/generated/source/core/dsp/GraphicEQ.hpp.txt"
+    },
+    {
+      "path": "core/dsp/KWeightedLevel.hpp",
+      "bytes": 2794,
+      "sha256": "c39db855616b8f81933bfb99a2fffa90721ebd33ad6dff42678c8e1a0ce34b97",
+      "kind": "text",
+      "lines": 73,
+      "archive": "docs/development/generated/source/core/dsp/KWeightedLevel.hpp.txt"
+    },
+    {
+      "path": "core/dsp/Limiter.hpp",
+      "bytes": 7532,
+      "sha256": "1ac1e7b6fd4da62e1c7b9ddb0ce6c41c2401c81818045bab8f23e4bc246db842",
+      "kind": "text",
+      "lines": 193,
+      "archive": "docs/development/generated/source/core/dsp/Limiter.hpp.txt"
+    },
+    {
+      "path": "core/dsp/ParametricEQ.hpp",
+      "bytes": 3698,
+      "sha256": "16e1fc3c205510e60f8d77b6a5ab9415d348906b966c18d40bd4e1a0a5138bbf",
+      "kind": "text",
+      "lines": 111,
+      "archive": "docs/development/generated/source/core/dsp/ParametricEQ.hpp.txt"
+    },
+    {
+      "path": "core/dsp/Spatial.hpp",
+      "bytes": 29621,
+      "sha256": "36d332411da485306f88438d156ec7a05ca2773cc648dc05eaf3d08b1bf89a59",
+      "kind": "text",
+      "lines": 494,
+      "archive": "docs/development/generated/source/core/dsp/Spatial.hpp.txt"
+    },
+    {
+      "path": "core/presets/BuiltinPresets.hpp",
+      "bytes": 4892,
+      "sha256": "1c30ac33ee037bbadd170408443ca3af9f76060a0f72eaa1a398e95eb449f480",
+      "kind": "text",
+      "lines": 144,
+      "archive": "docs/development/generated/source/core/presets/BuiltinPresets.hpp.txt"
+    },
+    {
+      "path": "core/presets/PresetValidator.hpp",
+      "bytes": 8586,
+      "sha256": "5fe950061856d209c2595d8ae725e555b51da2f361e3a6e889cba14d595e2132",
+      "kind": "text",
+      "lines": 148,
+      "archive": "docs/development/generated/source/core/presets/PresetValidator.hpp.txt"
+    },
+    {
+      "path": "core/tests/CMakeLists.txt",
+      "bytes": 17636,
+      "sha256": "18347ba07f8e6490ac55e125cf89830006345cc38c5f1ddb3dbf49518b25f9e6",
+      "kind": "text",
+      "lines": 344,
+      "archive": "docs/development/generated/source/core/tests/CMakeLists.txt.txt"
+    },
+    {
+      "path": "core/tests/test_analyzer.cpp",
+      "bytes": 2197,
+      "sha256": "e3b1be21bf394f48399f0b19a391d4128d8c9b6594bc5be75cc0f4c5fee39ede",
+      "kind": "text",
+      "lines": 68,
+      "archive": "docs/development/generated/source/core/tests/test_analyzer.cpp.txt"
+    },
+    {
+      "path": "core/tests/test_biquad.cpp",
+      "bytes": 6268,
+      "sha256": "c7c3cf0c85de3504bb0090d7ef72c2c7937139c82bac5ec4a5e2fb17e50dfcaa",
+      "kind": "text",
+      "lines": 153,
+      "archive": "docs/development/generated/source/core/tests/test_biquad.cpp.txt"
+    },
+    {
+      "path": "core/tests/test_comparison.cpp",
+      "bytes": 10716,
+      "sha256": "f0ef350b25bdbfba02581ca68c747f0f733926a3b1fc3411c2a33ff969944abb",
+      "kind": "text",
+      "lines": 221,
+      "archive": "docs/development/generated/source/core/tests/test_comparison.cpp.txt"
+    },
+    {
+      "path": "core/tests/test_compressor.cpp",
+      "bytes": 3257,
+      "sha256": "8a9bc729e7db58b77a989ff2f8ad171afe40fe621bd006021237a6651a7d02ce",
+      "kind": "text",
+      "lines": 85,
+      "archive": "docs/development/generated/source/core/tests/test_compressor.cpp.txt"
+    },
+    {
+      "path": "core/tests/test_dsp_chain.cpp",
+      "bytes": 11846,
+      "sha256": "c00cb5622aa946bd85788e066b3e4d02a8a1a79a5b968d062e36d58c13a72a3f",
+      "kind": "text",
+      "lines": 307,
+      "archive": "docs/development/generated/source/core/tests/test_dsp_chain.cpp.txt"
+    },
+    {
+      "path": "core/tests/test_dsp_transitions.cpp",
+      "bytes": 10426,
+      "sha256": "69b0dbe9f1e3b1de5a93e01b7913c69ec173736ca292cfe5160737b26938053a",
+      "kind": "text",
+      "lines": 234,
+      "archive": "docs/development/generated/source/core/tests/test_dsp_transitions.cpp.txt"
+    },
+    {
+      "path": "core/tests/test_graphic_eq.cpp",
+      "bytes": 4839,
+      "sha256": "5d315bed95ea85e2ace0872613bb2f6bf39c49ff75f15f49ed83b493927152fd",
+      "kind": "text",
+      "lines": 134,
+      "archive": "docs/development/generated/source/core/tests/test_graphic_eq.cpp.txt"
+    },
+    {
+      "path": "core/tests/test_limiter.cpp",
+      "bytes": 5102,
+      "sha256": "0cd5774b23894e2f9602ec243be4f42cbea5db980c258c386a08ddfb72c8663b",
+      "kind": "text",
+      "lines": 132,
+      "archive": "docs/development/generated/source/core/tests/test_limiter.cpp.txt"
+    },
+    {
+      "path": "core/tests/test_parametric.cpp",
+      "bytes": 2695,
+      "sha256": "3fc12278bcaec817719bb38d1fd111e2b00bd891061520731e0bb690bbb75043",
+      "kind": "text",
+      "lines": 76,
+      "archive": "docs/development/generated/source/core/tests/test_parametric.cpp.txt"
+    },
+    {
+      "path": "core/tests/test_presets.cpp",
+      "bytes": 4788,
+      "sha256": "74d93ed539f39786e1ae214678297c5ee92a2cd096aaf7d22e84c60f9c3136e8",
+      "kind": "text",
+      "lines": 121,
+      "archive": "docs/development/generated/source/core/tests/test_presets.cpp.txt"
+    },
+    {
+      "path": "core/tests/test_ring.c",
+      "bytes": 8922,
+      "sha256": "9d985d4beb079686b61b0e850dc5267fb1805bb16b23f0b0bf3748e81f4a5854",
+      "kind": "text",
+      "lines": 251,
+      "archive": "docs/development/generated/source/core/tests/test_ring.c.txt"
+    },
+    {
+      "path": "core/tests/test_spatial.cpp",
+      "bytes": 20325,
+      "sha256": "585732e502661ceb4e838e480b2710b93e66c55ae7a7082c25b833fec31f8af1",
+      "kind": "text",
+      "lines": 421,
+      "archive": "docs/development/generated/source/core/tests/test_spatial.cpp.txt"
+    },
+    {
+      "path": "docs/ENGINEERING_PLAN.md",
+      "bytes": 29728,
+      "sha256": "639a8a7a0297912a836d7e1a1ec7e6a79defb019480880c713d243f1d5ad7f19",
+      "kind": "text",
+      "lines": 394,
+      "archive": "docs/development/generated/source/docs/ENGINEERING_PLAN.md.txt"
+    },
+    {
+      "path": "docs/README.de.md",
+      "bytes": 18336,
+      "sha256": "81e2a73f4b0a5b5b161664dceffd6ce3a586a027ba11aa5a97777fe7cb1b455d",
+      "kind": "text",
+      "lines": 224,
+      "archive": "docs/development/generated/source/docs/README.de.md.txt"
+    },
+    {
+      "path": "docs/README.fr.md",
+      "bytes": 19354,
+      "sha256": "3b8107b57fa336a522dcd0c087b6fda023cb17a6c4d582aef3902b74353d918d",
+      "kind": "text",
+      "lines": 224,
+      "archive": "docs/development/generated/source/docs/README.fr.md.txt"
+    },
+    {
+      "path": "docs/README.ja.md",
+      "bytes": 21828,
+      "sha256": "4a2e857e9b0cd6adb36d72dfed293e2c9cdc4e185389873c9a7956695bf30a01",
+      "kind": "text",
+      "lines": 224,
+      "archive": "docs/development/generated/source/docs/README.ja.md.txt"
+    },
+    {
+      "path": "docs/README.ko.md",
+      "bytes": 19776,
+      "sha256": "770ace7798d2996d4a8da37b4a4e3a13d4ca05bdf7dac506a6a3b87191cc087b",
+      "kind": "text",
+      "lines": 251,
+      "archive": "docs/development/generated/source/docs/README.ko.md.txt"
+    },
+    {
+      "path": "docs/development/README.md",
+      "bytes": 6571,
+      "sha256": "021ca9d9a9aa7fb801b980e4e72bd154b372a41c905b13ebee9af88d67048539",
+      "kind": "text",
+      "lines": 71,
+      "archive": "docs/development/generated/source/docs/development/README.md.txt"
+    },
+    {
+      "path": "docs/development/architecture/current.md",
+      "bytes": 10390,
+      "sha256": "71cdbb3276cec1f917999e2cc66b8111784802d7207463cfbc4b32871713ecc4",
+      "kind": "text",
+      "lines": 76,
+      "archive": "docs/development/generated/source/docs/development/architecture/current.md.txt"
+    },
+    {
+      "path": "docs/development/continuation.md",
+      "bytes": 5868,
+      "sha256": "fb00c8ecd7fb2da83de6f0f54ae5ace8e79c4a183e461fbaeacf28162a5adde9",
+      "kind": "text",
+      "lines": 43,
+      "archive": "docs/development/generated/source/docs/development/continuation.md.txt"
+    },
+    {
+      "path": "docs/development/issues/current.md",
+      "bytes": 8505,
+      "sha256": "2646a15a8d11564ea2279f3532301f477a5f6953a3ffbef4b6cf99549737bbc4",
+      "kind": "text",
+      "lines": 35,
+      "archive": "docs/development/generated/source/docs/development/issues/current.md.txt"
+    },
+    {
+      "path": "docs/development/plan/roadmap.md",
+      "bytes": 9423,
+      "sha256": "37ea4f645bba0b770578a1eaca6c45bed6e8d2047780c303454f838f329afc88",
+      "kind": "text",
+      "lines": 97,
+      "archive": "docs/development/generated/source/docs/development/plan/roadmap.md.txt"
+    },
+    {
+      "path": "docs/development/references/catalog.md",
+      "bytes": 11352,
+      "sha256": "9cf9238f67df68dd5701718574e3e9addccfadb1ee8a6f5de708edbbf3e78b00",
+      "kind": "text",
+      "lines": 70,
+      "archive": "docs/development/generated/source/docs/development/references/catalog.md.txt"
+    },
+    {
+      "path": "docs/development/verification/2026-09-08-app-polling.md",
+      "bytes": 6146,
+      "sha256": "43bd9bcca3e8261719976741952adb2b27753cc9728083955db2d11a641c9929",
+      "kind": "text",
+      "lines": 71,
+      "archive": "docs/development/generated/source/docs/development/verification/2026-09-08-app-polling.md.txt"
+    },
+    {
+      "path": "docs/development/verification/2026-09-08-bypass-ownership.md",
+      "bytes": 7582,
+      "sha256": "c03e4bb478bea4525828262b05895fa757b440e2009f5caa70d802e15f470842",
+      "kind": "text",
+      "lines": 93,
+      "archive": "docs/development/generated/source/docs/development/verification/2026-09-08-bypass-ownership.md.txt"
+    },
+    {
+      "path": "docs/development/verification/2026-09-08-client-boundary.md",
+      "bytes": 6818,
+      "sha256": "725e2864345d79413ac88e820137738d1915430558d44d3ca13756c97b6217ae",
+      "kind": "text",
+      "lines": 83,
+      "archive": "docs/development/generated/source/docs/development/verification/2026-09-08-client-boundary.md.txt"
+    },
+    {
+      "path": "docs/development/verification/2026-09-08-client-volume.md",
+      "bytes": 6588,
+      "sha256": "8134342589f0041e8f8e7cd36fe661868ff1c3f9c277c44c809c51000fa46a9f",
+      "kind": "text",
+      "lines": 82,
+      "archive": "docs/development/generated/source/docs/development/verification/2026-09-08-client-volume.md.txt"
+    },
+    {
+      "path": "docs/development/verification/2026-09-08-device-control-results.md",
+      "bytes": 7415,
+      "sha256": "77aadea9f80e45fb79ee0fba6959e2a11e42f8bb7a76be24fb49439676b7313f",
+      "kind": "text",
+      "lines": 85,
+      "archive": "docs/development/generated/source/docs/development/verification/2026-09-08-device-control-results.md.txt"
+    },
+    {
+      "path": "docs/development/verification/2026-09-08-device-services.md",
+      "bytes": 8065,
+      "sha256": "a8842a36d62c9503f94b1ecf7924d13be53c63bca47e6902758900c19537a921",
+      "kind": "text",
+      "lines": 91,
+      "archive": "docs/development/generated/source/docs/development/verification/2026-09-08-device-services.md.txt"
+    },
+    {
+      "path": "docs/development/verification/2026-09-08-device-writes.md",
+      "bytes": 6933,
+      "sha256": "217c195ed479bebe87bfad0caef082de9fc9e2481810481168dc6547ecd6b10f",
+      "kind": "text",
+      "lines": 79,
+      "archive": "docs/development/generated/source/docs/development/verification/2026-09-08-device-writes.md.txt"
+    },
+    {
+      "path": "docs/development/verification/2026-09-08-engine-commands.md",
+      "bytes": 6385,
+      "sha256": "393ebaf8a9f287cee437f0af37fc64446488dfb60c0e0d4f1bd5613933d2d1c0",
+      "kind": "text",
+      "lines": 75,
+      "archive": "docs/development/generated/source/docs/development/verification/2026-09-08-engine-commands.md.txt"
+    },
+    {
+      "path": "docs/development/verification/2026-09-08-hello.md",
+      "bytes": 8050,
+      "sha256": "0a458f8a0febb1bf2205f6716147b677ecb70e8fae85fae0fdf903e2ac690984",
+      "kind": "text",
+      "lines": 85,
+      "archive": "docs/development/generated/source/docs/development/verification/2026-09-08-hello.md.txt"
+    },
+    {
+      "path": "docs/development/verification/2026-09-08-meter-polling.md",
+      "bytes": 5849,
+      "sha256": "d84c0a1b5adb7f516982d5954f8e5d5e6d9742ea767121e433bb144be8f5f66e",
+      "kind": "text",
+      "lines": 73,
+      "archive": "docs/development/generated/source/docs/development/verification/2026-09-08-meter-polling.md.txt"
+    },
+    {
+      "path": "docs/development/verification/2026-09-08-output-recovery.md",
+      "bytes": 6850,
+      "sha256": "9654ca194bdaa687bcfafd2e3a4d78c0e2a3802262f0bb3d9b17950d9a4a2e35",
+      "kind": "text",
+      "lines": 84,
+      "archive": "docs/development/generated/source/docs/development/verification/2026-09-08-output-recovery.md.txt"
+    },
+    {
+      "path": "docs/development/verification/2026-09-08-roomtune-input.md",
+      "bytes": 7568,
+      "sha256": "40f64b35e48688cfded09b4c45651177797fba2e3d2f3dab6c60fd99a278b775",
+      "kind": "text",
+      "lines": 105,
+      "archive": "docs/development/generated/source/docs/development/verification/2026-09-08-roomtune-input.md.txt"
+    },
+    {
+      "path": "docs/development/verification/2026-09-08-roomtune-lifecycle.md",
+      "bytes": 8210,
+      "sha256": "6b022fe972c08c274ad2f81f92b2d19e1e46b528b28cdfb4822bd7d52b93f9b6",
+      "kind": "text",
+      "lines": 97,
+      "archive": "docs/development/generated/source/docs/development/verification/2026-09-08-roomtune-lifecycle.md.txt"
+    },
+    {
+      "path": "docs/development/verification/2026-09-08-sound-check.md",
+      "bytes": 6134,
+      "sha256": "c6ff3fd395c424eae37c1a7cdc33e2f2fa5db5ac799ff9e5107bb8319730bc57",
+      "kind": "text",
+      "lines": 87,
+      "archive": "docs/development/generated/source/docs/development/verification/2026-09-08-sound-check.md.txt"
+    },
+    {
+      "path": "docs/development/verification/2026-09-08.md",
+      "bytes": 7123,
+      "sha256": "66e9c07d43b4d0a9da13f098533b4ad8a600ebb2f3675d87e4888f2f9569ea81",
+      "kind": "text",
+      "lines": 87,
+      "archive": "docs/development/generated/source/docs/development/verification/2026-09-08.md.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08/app-build.txt",
+      "bytes": 584,
+      "sha256": "1c078cd7edc182b657dd21ab8b96d8aaa05c4c11e6fad4b76d2ea2e867617063",
+      "kind": "text",
+      "lines": 12,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08/app-build.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08/baseline-native.txt",
+      "bytes": 3089,
+      "sha256": "6f53ea915f20d6af305a8cdac2da4c1f86bad9a114e00d0261c0875a3a009019",
+      "kind": "text",
+      "lines": 64,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08/baseline-native.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08/baseline-swift.txt",
+      "bytes": 35245,
+      "sha256": "30f76395d48d26273e25bbd4be5e043d8e28d4b5d2f854adc59c399db12d0b07",
+      "kind": "text",
+      "lines": 339,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08/baseline-swift.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08/documentation-tests.txt",
+      "bytes": 850,
+      "sha256": "01ad71d8922dde9604d43c45d7c55486fa75464ec712efe6ddc576e3fad7facd",
+      "kind": "text",
+      "lines": 10,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08/documentation-tests.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08/heartbeat-after.txt",
+      "bytes": 27,
+      "sha256": "6b01eeae22ded2f490a8cd7b9339278c1d9acd483a78e9c9043214edc38e67ea",
+      "kind": "text",
+      "lines": 1,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08/heartbeat-after.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08/heartbeat-asan-ubsan.txt",
+      "bytes": 27,
+      "sha256": "6b01eeae22ded2f490a8cd7b9339278c1d9acd483a78e9c9043214edc38e67ea",
+      "kind": "text",
+      "lines": 1,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08/heartbeat-asan-ubsan.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08/heartbeat-before.txt",
+      "bytes": 1902,
+      "sha256": "4c67c0dfc46a172f0fd00b55495a97fb4c15adff15058f79ddbb36ecbad0059c",
+      "kind": "text",
+      "lines": 17,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08/heartbeat-before.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08/native-build.txt",
+      "bytes": 3792,
+      "sha256": "bfa1d899dc7862e7f592e26dce94150d3fa64bc8880f8d2a20281fa632bc7021",
+      "kind": "text",
+      "lines": 65,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08/native-build.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08/native-tests.txt",
+      "bytes": 3089,
+      "sha256": "b4e4fa4ddbc25972bb61c6637d2fd256703ec0fea3d7dc7410a112d83b38299d",
+      "kind": "text",
+      "lines": 64,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08/native-tests.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08/swift-tests.txt",
+      "bytes": 35502,
+      "sha256": "8fd5e6237d9b3dea84b2025acb43419bc33ed2a71bb3dbb0ddce68383b68547f",
+      "kind": "text",
+      "lines": 346,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08/swift-tests.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-app-polling/app-build.txt",
+      "bytes": 584,
+      "sha256": "a0bcaa438a1ec0fd8c3aa8bb65a1c364dcaa070455a0bafd571f2f8cf1f21b59",
+      "kind": "text",
+      "lines": 12,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-app-polling/app-build.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-app-polling/before.txt",
+      "bytes": 3939,
+      "sha256": "8526cb1b3f08221e2c7444ae5d465e59a1d6ad7f55b3049b91e5a7a94b46e67b",
+      "kind": "text",
+      "lines": 38,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-app-polling/before.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-app-polling/edit-before.txt",
+      "bytes": 1764,
+      "sha256": "dc216f24cbbed78654696e1fac99f10eabf5668ca13643ab4d39bcc1884d1407",
+      "kind": "text",
+      "lines": 25,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-app-polling/edit-before.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-app-polling/live-readback.txt",
+      "bytes": 106,
+      "sha256": "0a23971e815a1fecc4888b201533a02fdca5f3a8f560289507ddb96255eb3608",
+      "kind": "text",
+      "lines": 1,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-app-polling/live-readback.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-app-polling/swift-tests.txt",
+      "bytes": 38241,
+      "sha256": "e71343dfb44920d4b25cbae51470542a72c796b3fc583f22ace0012d7a15c09f",
+      "kind": "text",
+      "lines": 371,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-app-polling/swift-tests.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-app-polling/tsan.txt",
+      "bytes": 6838,
+      "sha256": "ff8b5a4751dbff12dfb9013807283230e384703a4773ce54e5a57ec9b5ce88ad",
+      "kind": "text",
+      "lines": 110,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-app-polling/tsan.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-app-polling/ui-smoke.txt",
+      "bytes": 890,
+      "sha256": "792e5aa9a716b6819ad4efaa3d0410fa9365566684c4b6ebf55da097a7a5ed2e",
+      "kind": "text",
+      "lines": 27,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-app-polling/ui-smoke.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-bypass-ownership/before.txt",
+      "bytes": 2959,
+      "sha256": "12a01b654c16768090fca7515b6b519fd7d81c4251309a731f7ef44ceba34d99",
+      "kind": "text",
+      "lines": 36,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-bypass-ownership/before.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-bypass-ownership/expanded-after.txt",
+      "bytes": 3521,
+      "sha256": "d506d91557acbd2ec775f4c47f38646d38d7f9a9c96420fbebb494104e3e3351",
+      "kind": "text",
+      "lines": 42,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-bypass-ownership/expanded-after.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-bypass-ownership/expanded-before.txt",
+      "bytes": 8153,
+      "sha256": "487ca2acf12e689f5c87e6c3b437d1a01460622da3ad867de52d6968866e7a47",
+      "kind": "text",
+      "lines": 127,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-bypass-ownership/expanded-before.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-bypass-ownership/swift-tests.txt",
+      "bytes": 56475,
+      "sha256": "f36ece402465569eac3bf37c129bc98986623fcefaff9c8d5335148b930bba70",
+      "kind": "text",
+      "lines": 554,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-bypass-ownership/swift-tests.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-bypass-ownership/targeted.txt",
+      "bytes": 2406,
+      "sha256": "84c519c2c9a905eca250b5559509dabf7f2cbb67f122e666aa26bed8a860e9c1",
+      "kind": "text",
+      "lines": 37,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-bypass-ownership/targeted.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-bypass-ownership/tsan.txt",
+      "bytes": 12444,
+      "sha256": "acd4a41c0ff8c7846cce796946905190304fff226fbd4319240f26411a9cd3e6",
+      "kind": "text",
+      "lines": 168,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-bypass-ownership/tsan.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-bypass-ownership/ui-trace-3s.txt",
+      "bytes": 609,
+      "sha256": "ee6d2128e9b913fa21ac914b78d6767b1c27e446d503091a9109147348b5e26f",
+      "kind": "text",
+      "lines": 11,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-bypass-ownership/ui-trace-3s.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-bypass-ownership/ui-trace-5s.txt",
+      "bytes": 1087,
+      "sha256": "50e311fd64e4350779887178d5d36d5d3a68871c84af93bcc488a54e2d440f98",
+      "kind": "text",
+      "lines": 20,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-bypass-ownership/ui-trace-5s.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-client-boundary/after.txt",
+      "bytes": 1554,
+      "sha256": "ac2d3acbc2000422b16690735ea2f9fe32f481d20bd2aca7ba5b296e8e95005c",
+      "kind": "text",
+      "lines": 37,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-client-boundary/after.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-client-boundary/app-build.txt",
+      "bytes": 584,
+      "sha256": "deff621a73edc6345ce08ac444c0171f6251b285bfd1b6ebd427e81115910165",
+      "kind": "text",
+      "lines": 12,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-client-boundary/app-build.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-client-boundary/asan-test.txt",
+      "bytes": 1770,
+      "sha256": "9bf88f75c2cf01510538f171f6ff8afc22e8150ecff3813c9d1fdadc43a1fdb3",
+      "kind": "text",
+      "lines": 37,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-client-boundary/asan-test.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-client-boundary/audit.py.txt",
+      "bytes": 4236,
+      "sha256": "d53ae5b7eb3811b082de0002d208851f3d81792437fd41cebc8352e15e3142f8",
+      "kind": "text",
+      "lines": 71,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-client-boundary/audit.py.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-client-boundary/before.txt",
+      "bytes": 1554,
+      "sha256": "be5b9c4a5b22b57ddc992177c2efe460f66fcc0975fd9308f37b5e24cb573018",
+      "kind": "text",
+      "lines": 37,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-client-boundary/before.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-client-boundary/boundary-audit.txt",
+      "bytes": 442,
+      "sha256": "51778f27de26ae2a1d6b71cb708edbb3fd0d12203a0b30676915301a17a27f22",
+      "kind": "text",
+      "lines": 8,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-client-boundary/boundary-audit.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-client-boundary/ctest.txt",
+      "bytes": 3918,
+      "sha256": "3204ece1d74009b3cf8f9e6a90bacee912b0cb7656cc9d1a2b914c3ab548b45a",
+      "kind": "text",
+      "lines": 80,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-client-boundary/ctest.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-client-boundary/native-build.txt",
+      "bytes": 1568,
+      "sha256": "cf1c2171ab5c1086e518f514b53d9e890ad9526afbb4dd40a4aa175d2626963e",
+      "kind": "text",
+      "lines": 42,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-client-boundary/native-build.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-client-boundary/swift-tests.txt",
+      "bytes": 43731,
+      "sha256": "49f63f2944146bb1e2d53ab829d6d3be4632d88107d1ced40f464eb112235122",
+      "kind": "text",
+      "lines": 423,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-client-boundary/swift-tests.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-client-boundary/ui-smoke.txt",
+      "bytes": 655,
+      "sha256": "5345ed6108de4587ea4e4e48a341db4d8bd55699e5d9b5503a3aa8370d4951da",
+      "kind": "text",
+      "lines": 8,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-client-boundary/ui-smoke.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-client-volume/app-build.txt",
+      "bytes": 584,
+      "sha256": "5f556478109b4cadde4a0a6ba0a4ce847785031d2f2125ee05dbf4805ab42da0",
+      "kind": "text",
+      "lines": 12,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-client-volume/app-build.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-client-volume/asan-after.txt",
+      "bytes": 1187,
+      "sha256": "2403a9a94564036890ff87448381b0db7b068071f9961cd34d623815433c85ec",
+      "kind": "text",
+      "lines": 26,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-client-volume/asan-after.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-client-volume/asan-test.txt",
+      "bytes": 1404,
+      "sha256": "abafb33d882343a2ae009496e53c81fd4f1bf13560cb0d0a31321f9f073489c9",
+      "kind": "text",
+      "lines": 28,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-client-volume/asan-test.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-client-volume/before.txt",
+      "bytes": 1327,
+      "sha256": "3c7233dd9e2ccab6b5ed3b5a2ae585d4806f8734dd31a10afbe03d5fe78cd384",
+      "kind": "text",
+      "lines": 27,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-client-volume/before.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-client-volume/ctest.txt",
+      "bytes": 3815,
+      "sha256": "e67ef96fc4bbc9a35b56f47b95e7d6e25b31801a2759faf99c14f0e4282ee2ba",
+      "kind": "text",
+      "lines": 78,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-client-volume/ctest.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-client-volume/fallback-before.txt",
+      "bytes": 504,
+      "sha256": "5d46d105066677f3dd441422b68d42cd4822698bea0a93decbb000afc3b8e2e5",
+      "kind": "text",
+      "lines": 15,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-client-volume/fallback-before.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-client-volume/linked-frameworks.txt",
+      "bytes": 340,
+      "sha256": "2289e94054f50c83edeb85c3696aee1b7bfedd9ad0af3f438721d7fe2cfb176d",
+      "kind": "text",
+      "lines": 4,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-client-volume/linked-frameworks.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-client-volume/native-build.txt",
+      "bytes": 1686,
+      "sha256": "3b2ec011c86d1e7648872e1392448fd194ddb29ac3303fb5535556fb3e56bcd9",
+      "kind": "text",
+      "lines": 43,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-client-volume/native-build.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-client-volume/outcomes.txt",
+      "bytes": 125,
+      "sha256": "54217fad481b203a210e25b5d8ae990e748713b3b3a8d35fcf3e0a9f59b4712d",
+      "kind": "text",
+      "lines": 2,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-client-volume/outcomes.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-client-volume/swift-tests.txt",
+      "bytes": 43026,
+      "sha256": "27bc898ad6b68db1b76da9f1e852e8fb5f3e275f23749456ce25055227eb864a",
+      "kind": "text",
+      "lines": 416,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-client-volume/swift-tests.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-device-control-results/app-build.txt",
+      "bytes": 584,
+      "sha256": "66d21cd3ea28d82d9263464059031e057768f6e9ec907120fde20ae2afb3ab55",
+      "kind": "text",
+      "lines": 12,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-device-control-results/app-build.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-device-control-results/asan-test.txt",
+      "bytes": 1754,
+      "sha256": "1003d037eecc289234c465d528184457af066a864091c59915827f5c2608fea0",
+      "kind": "text",
+      "lines": 37,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-device-control-results/asan-test.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-device-control-results/ctest.txt",
+      "bytes": 3918,
+      "sha256": "d942a5a4ea8222eb58e2e9d192ae9a0cf570e71319ad98155d0b67ee93b5ba8a",
+      "kind": "text",
+      "lines": 80,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-device-control-results/ctest.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-device-control-results/linked-frameworks.txt",
+      "bytes": 341,
+      "sha256": "5b92a9e8fbf1b1427a42eb1ffeb8c53f214c90f6c53d25610d0ca29fe3186596",
+      "kind": "text",
+      "lines": 4,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-device-control-results/linked-frameworks.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-device-control-results/native-before.txt",
+      "bytes": 1495,
+      "sha256": "3de065c5ae426fa08e9da13ff99804912e7a40ec57becbe8cd93b383841474da",
+      "kind": "text",
+      "lines": 33,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-device-control-results/native-before.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-device-control-results/native-build.txt",
+      "bytes": 2120,
+      "sha256": "eb200a782ac5057b8d6b6165d2550fc04cd7cdbb918c2a957b4018a71462fddc",
+      "kind": "text",
+      "lines": 48,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-device-control-results/native-build.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-device-control-results/outcomes.txt",
+      "bytes": 200,
+      "sha256": "5fdeea55638d081621079cf604dfb748051021393719d8d24cbd22bc4142ea5c",
+      "kind": "text",
+      "lines": 3,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-device-control-results/outcomes.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-device-control-results/selection-before.txt",
+      "bytes": 653,
+      "sha256": "809e38df23a59c684f564813a69969d1114ffb8c6540d0748541bfd25b6b432e",
+      "kind": "text",
+      "lines": 17,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-device-control-results/selection-before.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-device-control-results/swift-before.txt",
+      "bytes": 2725,
+      "sha256": "20a1b05a53a5acf2a4e9414ed7c503156fa9499af23fdef14c32dc53e0f1c0de",
+      "kind": "text",
+      "lines": 36,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-device-control-results/swift-before.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-device-control-results/swift-targeted.txt",
+      "bytes": 4356,
+      "sha256": "dbaefa239ce203da5175c939981d695926672cfbe89750b51bd605c733313382",
+      "kind": "text",
+      "lines": 53,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-device-control-results/swift-targeted.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-device-control-results/swift-tests.txt",
+      "bytes": 43542,
+      "sha256": "f9e4a08a05503c304762bd92970d6eec9cc400134e97518f1dcd2fd5a3e7433a",
+      "kind": "text",
+      "lines": 419,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-device-control-results/swift-tests.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-device-services/disconnect-before.txt",
+      "bytes": 888,
+      "sha256": "182a94d38e8ddeed4966d80332af5d83810ad896e2cf5cd1ae532b31c27c3770",
+      "kind": "text",
+      "lines": 23,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-device-services/disconnect-before.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-device-services/native-build.txt",
+      "bytes": 2074,
+      "sha256": "8ce2d51cbd2bd53318767e200717add2561b1e40e3aebaba9fccd134e376ba56",
+      "kind": "text",
+      "lines": 46,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-device-services/native-build.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-device-services/native-tests.txt",
+      "bytes": 3505,
+      "sha256": "3cd499072620c30257a0f48911ba72a89ebfaad11c5597d675bbbf87e8dca188",
+      "kind": "text",
+      "lines": 72,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-device-services/native-tests.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-device-services/real-listener.txt",
+      "bytes": 295,
+      "sha256": "34ea9cd37781b05a65943cef73653ee182700e0d62660c92eeffd107c30d4752",
+      "kind": "text",
+      "lines": 7,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-device-services/real-listener.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-device-services/services-sanitized.txt",
+      "bytes": 232,
+      "sha256": "198d6de5ead23dede74b93a447855630a85f8332430c0e02a5188f7922ac6ad4",
+      "kind": "text",
+      "lines": 4,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-device-services/services-sanitized.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-device-services/services-tsan.txt",
+      "bytes": 232,
+      "sha256": "198d6de5ead23dede74b93a447855630a85f8332430c0e02a5188f7922ac6ad4",
+      "kind": "text",
+      "lines": 4,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-device-services/services-tsan.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-device-services/volume-before-sanitized.txt",
+      "bytes": 3312,
+      "sha256": "ec9a3b268abb67abee21b277eb8281448e3be6b7e1768aa333ffeb2bad46c5d7",
+      "kind": "text",
+      "lines": 59,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-device-services/volume-before-sanitized.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-device-services/volume-before.txt",
+      "bytes": 451,
+      "sha256": "dc72199ee3ce0f5569bd63f272782143873fa9e5b98b92c6bbda2427f66a84e1",
+      "kind": "text",
+      "lines": 8,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-device-services/volume-before.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-device-services/volume-sanitized.txt",
+      "bytes": 42,
+      "sha256": "dd905e75e283a7ae5aaeed082ae29228b129baa7623831c44799182a1ee331b6",
+      "kind": "text",
+      "lines": 1,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-device-services/volume-sanitized.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-device-writes/app-build.txt",
+      "bytes": 584,
+      "sha256": "50ba955560c556090df810ebcade74598b6b571d3d8577d378bab5fb36f86492",
+      "kind": "text",
+      "lines": 12,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-device-writes/app-build.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-device-writes/before.txt",
+      "bytes": 3179,
+      "sha256": "601868e3be9582ed24aba7907532744260ccf60da592c114415f811c9ea4c6a0",
+      "kind": "text",
+      "lines": 38,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-device-writes/before.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-device-writes/feedback-before.txt",
+      "bytes": 1569,
+      "sha256": "4f34c7bd3ce515d9ec27eedd4ccad4453c0cda5832d6d15880e15b0eddbf6a44",
+      "kind": "text",
+      "lines": 24,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-device-writes/feedback-before.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-device-writes/queue-before.txt",
+      "bytes": 1884,
+      "sha256": "4191f445093ad4e7dc96c81480ceca89a660cc55391fbc59bd3c50be29449dbe",
+      "kind": "text",
+      "lines": 30,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-device-writes/queue-before.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-device-writes/swift-tests-initial.txt",
+      "bytes": 40931,
+      "sha256": "aaf2b9409284e8b536d78a225a6398498bd69ac376789f5bd59997fc1b7e1f33",
+      "kind": "text",
+      "lines": 395,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-device-writes/swift-tests-initial.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-device-writes/swift-tests.txt",
+      "bytes": 40943,
+      "sha256": "eb35efb419a5eba8ddad125d810d8003bf27224955a135be1d72050c6460a4ce",
+      "kind": "text",
+      "lines": 396,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-device-writes/swift-tests.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-device-writes/tsan.txt",
+      "bytes": 7013,
+      "sha256": "106989f86e58388b73254f572902d1f4d0dc0ddc3a86bf0d199ac20ac341dcbf",
+      "kind": "text",
+      "lines": 80,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-device-writes/tsan.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-device-writes/ui-smoke.txt",
+      "bytes": 851,
+      "sha256": "dfd582cc53a28d414e845c33151a1c27cf5a8897501dd50c2ba6a7073b52c9b8",
+      "kind": "text",
+      "lines": 17,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-device-writes/ui-smoke.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-engine-commands/commands-sanitized.txt",
+      "bytes": 147,
+      "sha256": "cad8d65af247368270490e42f0b708ccc93e9f2e573f1018a316fa64e274e19f",
+      "kind": "text",
+      "lines": 2,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-engine-commands/commands-sanitized.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-engine-commands/commands-tsan.txt",
+      "bytes": 147,
+      "sha256": "063fd39b43e0f52512ddd253ab8db05f9b4f27b7506e4979227875ce702819df",
+      "kind": "text",
+      "lines": 2,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-engine-commands/commands-tsan.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-engine-commands/native-build-initial.txt",
+      "bytes": 2445,
+      "sha256": "1133465f8681631802191a74ecfc0fc9b4b91d4919b7c96ec2ab84fba508a44d",
+      "kind": "text",
+      "lines": 52,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-engine-commands/native-build-initial.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-engine-commands/native-build.txt",
+      "bytes": 1628,
+      "sha256": "ce2f2b222e42ab32a3da11c254e26b08a935c97e11f22b34e165f63ac25e55ff",
+      "kind": "text",
+      "lines": 42,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-engine-commands/native-build.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-engine-commands/native-tests.txt",
+      "bytes": 3713,
+      "sha256": "f4634af00a3a8cb492c2e19de7e7277c3541403b6436f6fa86e1f0087f0476d8",
+      "kind": "text",
+      "lines": 76,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-engine-commands/native-tests.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-engine-commands/precision-after.txt",
+      "bytes": 393,
+      "sha256": "f3edda844434705303a160484a3333504c04c274944ac401e283ad5c1fcd3a6d",
+      "kind": "text",
+      "lines": 10,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-engine-commands/precision-after.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-engine-commands/precision-before.txt",
+      "bytes": 220,
+      "sha256": "2cf85bc4d1d61c56b5f688806b06d3321d02a9022d43116f87446e1c6d04ccee",
+      "kind": "text",
+      "lines": 3,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-engine-commands/precision-before.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-engine-commands/reply-equivalence.txt",
+      "bytes": 44,
+      "sha256": "b524e02322c767316af23c48b234fa1db09bc725bff4f5c495e2f91b87b50da6",
+      "kind": "text",
+      "lines": 1,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-engine-commands/reply-equivalence.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-engine-commands/test-build-initial.txt",
+      "bytes": 2117,
+      "sha256": "0796ca5ab4e219da9655ab024aa099ed9fd64271a819a79b5cf398a8a53b7a71",
+      "kind": "text",
+      "lines": 29,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-engine-commands/test-build-initial.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-engine-commands/test.txt",
+      "bytes": 147,
+      "sha256": "3d82f020eee0de7a8175d4401b4e5756da366892b51dc6a3bf1a957d4602796f",
+      "kind": "text",
+      "lines": 2,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-engine-commands/test.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-hello/after.txt",
+      "bytes": 2069,
+      "sha256": "875a2a8cd920a2f423f51dcbff3700096298b36221fe708a3ba793a8ad59eb8a",
+      "kind": "text",
+      "lines": 65,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-hello/after.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-hello/app-build.txt",
+      "bytes": 737,
+      "sha256": "186cc28a67fda149580bd1bbaa4d069ba2335e11166ec2b0d3e2df154006449e",
+      "kind": "text",
+      "lines": 12,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-hello/app-build.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-hello/before.txt",
+      "bytes": 3687,
+      "sha256": "27369d451a87091f3a9b139f9ded2a4323cb15dac27c89fe35e438121e904a77",
+      "kind": "text",
+      "lines": 91,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-hello/before.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-hello/cleanup-after.txt",
+      "bytes": 215,
+      "sha256": "b237c09a2ae4c88f12fe9476622e4a1af6bc6739ee46125c78a8848582896d68",
+      "kind": "text",
+      "lines": 4,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-hello/cleanup-after.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-hello/cleanup-before.txt",
+      "bytes": 582,
+      "sha256": "1c7bd4ff3857f385f3bbfb6da6f33729b7fa7de32a316f5b57e26868e48baf4f",
+      "kind": "text",
+      "lines": 9,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-hello/cleanup-before.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-hello/cleanup-sanitized.txt",
+      "bytes": 215,
+      "sha256": "b237c09a2ae4c88f12fe9476622e4a1af6bc6739ee46125c78a8848582896d68",
+      "kind": "text",
+      "lines": 4,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-hello/cleanup-sanitized.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-hello/handshake-sanitized.txt",
+      "bytes": 2069,
+      "sha256": "875a2a8cd920a2f423f51dcbff3700096298b36221fe708a3ba793a8ad59eb8a",
+      "kind": "text",
+      "lines": 65,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-hello/handshake-sanitized.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-hello/native-build.txt",
+      "bytes": 4512,
+      "sha256": "39b4e23ee54c2734695a9192af8229f135a80f4d02b878a578962fdfb6eea147",
+      "kind": "text",
+      "lines": 74,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-hello/native-build.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-hello/native-tests.txt",
+      "bytes": 3299,
+      "sha256": "eec44e7de7623185a25fc9405961d7900f9299133eb34bc23cf2f9f994cd5fcc",
+      "kind": "text",
+      "lines": 68,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-hello/native-tests.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-hello/swift-tests.txt",
+      "bytes": 35653,
+      "sha256": "f236640bb7555348b93ca2f8f2e768fa18b4f88698974074437f971fbd4f59f8",
+      "kind": "text",
+      "lines": 349,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-hello/swift-tests.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-meter-polling/app-build.txt",
+      "bytes": 584,
+      "sha256": "9e19d6230291bda02f29e81c0178236d4d34764a7550ec91a72697d74d62596d",
+      "kind": "text",
+      "lines": 12,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-meter-polling/app-build.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-meter-polling/before.txt",
+      "bytes": 2064,
+      "sha256": "0ffee5f83b883762c3b673231f5ba184e831fe0a40a96fa0f4df543930d85eb8",
+      "kind": "text",
+      "lines": 31,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-meter-polling/before.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-meter-polling/hung-test.sample.txt",
+      "bytes": 136738,
+      "sha256": "785afa2a3e285378e3bfc8ead42d1a4644e19c7d43895dfa2fc34227c2e4fde2",
+      "kind": "text",
+      "lines": 757,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-meter-polling/hung-test.sample.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-meter-polling/swift-tests.txt",
+      "bytes": 42974,
+      "sha256": "4b93f00f4d50ad3aa2bea42a2f6e98bb3091d553075cc1aaed5f85704fa098e4",
+      "kind": "text",
+      "lines": 415,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-meter-polling/swift-tests.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-meter-polling/targeted-interrupted.txt",
+      "bytes": 3404,
+      "sha256": "91b4e47192763db7bbe6d705180ae7d78342ba8c01e54a7474c52922371f6148",
+      "kind": "text",
+      "lines": 42,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-meter-polling/targeted-interrupted.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-meter-polling/targeted.txt",
+      "bytes": 5117,
+      "sha256": "34ba7ef8e2a0d443661dcd0805d6d0fad9eb11f5a44df7d7779f2a2dbd5b324c",
+      "kind": "text",
+      "lines": 58,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-meter-polling/targeted.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-meter-polling/tsan.txt",
+      "bytes": 11909,
+      "sha256": "a8495a6dcef032270cbaa69c61541f09073533f9c5245bd37c8c4a8486b614cc",
+      "kind": "text",
+      "lines": 156,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-meter-polling/tsan.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-meter-polling/ui-smoke.txt",
+      "bytes": 680,
+      "sha256": "bf1944d4b0359e86d7cf589c2a0198eed9ba8ede76a71cf58e2c6a5a93973764",
+      "kind": "text",
+      "lines": 16,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-meter-polling/ui-smoke.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-output-recovery/after.txt",
+      "bytes": 780,
+      "sha256": "9d0819fea19715358b1c74e8e92f6377b64e8c88d3cf0678d5a931b911fd0898",
+      "kind": "text",
+      "lines": 15,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-output-recovery/after.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-output-recovery/before.txt",
+      "bytes": 2278,
+      "sha256": "fcd83f433c392983b993f45b51f0c8dcef5de7de9b0e0669230604a96425d091",
+      "kind": "text",
+      "lines": 36,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-output-recovery/before.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-output-recovery/native-build.txt",
+      "bytes": 1580,
+      "sha256": "12355e9145b2969ac7475d5708bf4fe56ed7432016073e2887c7b94100bb93c3",
+      "kind": "text",
+      "lines": 41,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-output-recovery/native-build.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-output-recovery/native-tests.txt",
+      "bytes": 3609,
+      "sha256": "7cad5adda3b27a970e89a1da0d39a5beda054c3b9e0662745f9347c04afdfa48",
+      "kind": "text",
+      "lines": 74,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-output-recovery/native-tests.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-output-recovery/policy-sanitized.txt",
+      "bytes": 53,
+      "sha256": "e9095fd9f048e353953c6eef6095255b733bf6d0479f4903505596088a67aea0",
+      "kind": "text",
+      "lines": 1,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-output-recovery/policy-sanitized.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-output-recovery/recovery-sanitized.txt",
+      "bytes": 780,
+      "sha256": "9d0819fea19715358b1c74e8e92f6377b64e8c88d3cf0678d5a931b911fd0898",
+      "kind": "text",
+      "lines": 15,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-output-recovery/recovery-sanitized.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-output-recovery/targeted-tests.txt",
+      "bytes": 394,
+      "sha256": "525d180f0d068d15953d4cca02bdd7f81b202e7d5780ccb42770876f30180eaa",
+      "kind": "text",
+      "lines": 10,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-output-recovery/targeted-tests.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-roomtune-input/app-build.txt",
+      "bytes": 604,
+      "sha256": "7ea51564a738dd533bee3ee91a44b1b48a763b7a82844fb531a6b74c1dcec50b",
+      "kind": "text",
+      "lines": 13,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-roomtune-input/app-build.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-roomtune-input/asan.txt",
+      "bytes": 8902,
+      "sha256": "b4361edee858995b97d4dfabbb17e11af6ce693a0f914a1f37bdcbdcfc4542b5",
+      "kind": "text",
+      "lines": 114,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-roomtune-input/asan.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-roomtune-input/pcm-before.txt",
+      "bytes": 4925,
+      "sha256": "b5d0853c407e8bc27c58f7729d64598bebdc9676d5c9c493542a5ac79b8976fc",
+      "kind": "text",
+      "lines": 51,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-roomtune-input/pcm-before.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-roomtune-input/pcm-expanded.txt",
+      "bytes": 6031,
+      "sha256": "3448042faf6efcafaad9e466b90b4f79c61b3c91a633897ee847fac56848aa2b",
+      "kind": "text",
+      "lines": 87,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-roomtune-input/pcm-expanded.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-roomtune-input/pcm-truncated.txt",
+      "bytes": 883,
+      "sha256": "5ad6e77be5a6d88810b564ca5de85ad84b2ac9a2852537f091dee847571d8da6",
+      "kind": "text",
+      "lines": 12,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-roomtune-input/pcm-truncated.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-roomtune-input/roomtune-targeted.txt",
+      "bytes": 8769,
+      "sha256": "073340a7d1e53cfe942ce464afc9dd2f210f49fe5f2ed9a5ede14d3543f24797",
+      "kind": "text",
+      "lines": 110,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-roomtune-input/roomtune-targeted.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-roomtune-input/swift-tests.txt",
+      "bytes": 49874,
+      "sha256": "53e0fbd8854408111c5f36b8aa5c3f2fd5d0ec7a14023796bb9c969b59759ba4",
+      "kind": "text",
+      "lines": 501,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-roomtune-input/swift-tests.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-roomtune-lifecycle/app-build.txt",
+      "bytes": 584,
+      "sha256": "57cafc26e28a253c8ffbbc4467294c1d4788f666dddd081db2af29e53c9411f6",
+      "kind": "text",
+      "lines": 12,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-roomtune-lifecycle/app-build.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-roomtune-lifecycle/build-before.txt",
+      "bytes": 3423,
+      "sha256": "7c0e1fa35f6cf0b42410b6c1e24f6a2d063f986e9e7dc9c8a20d6d788a18c0ea",
+      "kind": "text",
+      "lines": 37,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-roomtune-lifecycle/build-before.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-roomtune-lifecycle/swift-tests.txt",
+      "bytes": 54137,
+      "sha256": "1031e0f017138c1c9243c1f09e2c3ec61e40c1f01cca1ac974da1d4c96287ce8",
+      "kind": "text",
+      "lines": 538,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-roomtune-lifecycle/swift-tests.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-roomtune-lifecycle/tsan.txt",
+      "bytes": 7100,
+      "sha256": "0a12b8243eb61b6d514c3c151e23ea636763811e74fbd162ecbfe22c425f2db6",
+      "kind": "text",
+      "lines": 98,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-roomtune-lifecycle/tsan.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-roomtune-lifecycle/ui-smoke.txt",
+      "bytes": 956,
+      "sha256": "7af955f81b7d79d6f460d713f4c69268d51bbeff0a5e22c6ac7c6677c628e0f1",
+      "kind": "text",
+      "lines": 11,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-roomtune-lifecycle/ui-smoke.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-roomtune-lifecycle/workflow-before.txt",
+      "bytes": 4151,
+      "sha256": "481b1500080892cf2f5e7c39b6e107723d30be896ceb2054277a6620acff6fbd",
+      "kind": "text",
+      "lines": 40,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-roomtune-lifecycle/workflow-before.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-sound-check/app-build.txt",
+      "bytes": 485,
+      "sha256": "aa8125c41248d8b30cfac4dd040a4b40c93c9fac6a7e54072d15fa250a79611f",
+      "kind": "text",
+      "lines": 11,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-sound-check/app-build.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-sound-check/default-output-before.txt",
+      "bytes": 26,
+      "sha256": "7bbb0580f0d5193399e327051b0a93641ee68d0fa1b1e29277e1095311c2cbae",
+      "kind": "text",
+      "lines": 1,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-sound-check/default-output-before.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-sound-check/default-output-restored.txt",
+      "bytes": 26,
+      "sha256": "7bbb0580f0d5193399e327051b0a93641ee68d0fa1b1e29277e1095311c2cbae",
+      "kind": "text",
+      "lines": 1,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-sound-check/default-output-restored.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-sound-check/measure.py.txt",
+      "bytes": 1445,
+      "sha256": "f488009fbe71992d03455a08e80ae6813fb80e88056e7f766d171ff8334c542f",
+      "kind": "text",
+      "lines": 22,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-sound-check/measure.py.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-sound-check/params-before.json",
+      "bytes": 341,
+      "sha256": "d936a655b05192aba834cdd2e2ed897ca3dec9817d0ffa51548615389c337f74",
+      "kind": "text",
+      "lines": 1,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-sound-check/params-before.json.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-sound-check/params-restored.json",
+      "bytes": 341,
+      "sha256": "d936a655b05192aba834cdd2e2ed897ca3dec9817d0ffa51548615389c337f74",
+      "kind": "text",
+      "lines": 1,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-sound-check/params-restored.json.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-sound-check/processing-bypassed.json",
+      "bytes": 50448,
+      "sha256": "323577af92a2cfe0bde344763bb3b1c20ccbed992b63d2711863662a085fe792",
+      "kind": "text",
+      "lines": 2182,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-sound-check/processing-bypassed.json.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-sound-check/processing-on.json",
+      "bytes": 50678,
+      "sha256": "40a5c50fe88951dfed61146689d6d964b3c2122b6c2d264becfb34b1a6685f90",
+      "kind": "text",
+      "lines": 2182,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-sound-check/processing-on.json.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-sound-check/readback-before.txt",
+      "bytes": 632,
+      "sha256": "2f75cd3a294ef8f28064c4fab5472fed77c912c56b32e485c46229f0c9648045",
+      "kind": "text",
+      "lines": 11,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-sound-check/readback-before.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-sound-check/readback-restored.txt",
+      "bytes": 632,
+      "sha256": "2f75cd3a294ef8f28064c4fab5472fed77c912c56b32e485c46229f0c9648045",
+      "kind": "text",
+      "lines": 11,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-sound-check/readback-restored.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-sound-check/readback.cpp.txt",
+      "bytes": 1335,
+      "sha256": "495a4ee412b4d55648904066608746594be43dedb6baebfa452cd44fe022b4cb",
+      "kind": "text",
+      "lines": 24,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-sound-check/readback.cpp.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-sound-check/restore-wait-after.txt",
+      "bytes": 1258,
+      "sha256": "44bbbcdd5c9b9eea4f4e6389137f35953517aa17b0196f1c95f7292ea03c8117",
+      "kind": "text",
+      "lines": 22,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-sound-check/restore-wait-after.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-sound-check/restore-wait-before.txt",
+      "bytes": 1795,
+      "sha256": "bf9e97e8fe49108620345885707757e16fcee6804a36071ad5bf103dacc72be6",
+      "kind": "text",
+      "lines": 25,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-sound-check/restore-wait-before.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-sound-check/service-after-attach.txt",
+      "bytes": 133,
+      "sha256": "c705934878a73704112faf5d43494c3b96c2657e716ed5fc6cc0c9f5b6978ad2",
+      "kind": "text",
+      "lines": 5,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-sound-check/service-after-attach.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-sound-check/service-after-quit.txt",
+      "bytes": 133,
+      "sha256": "c705934878a73704112faf5d43494c3b96c2657e716ed5fc6cc0c9f5b6978ad2",
+      "kind": "text",
+      "lines": 5,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-sound-check/service-after-quit.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-sound-check/status-after-quit.json",
+      "bytes": 332,
+      "sha256": "2a328e0424787ee74ff6ea3da1a284339040ecaf6491e5a647102ae450f53c8a",
+      "kind": "text",
+      "lines": 1,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-sound-check/status-after-quit.json.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-sound-check/status-before.json",
+      "bytes": 332,
+      "sha256": "0932ec124b76b12d17528b063d17819f4b1be5c08ec6b0a674b6a1fe2ba43810",
+      "kind": "text",
+      "lines": 1,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-sound-check/status-before.json.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-sound-check/status-bypassed.json",
+      "bytes": 330,
+      "sha256": "42123c9f3ff905e629a2ca6328f8cdd8d7b79df4089f248dfbdb2e90f1acea30",
+      "kind": "text",
+      "lines": 1,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-sound-check/status-bypassed.json.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-sound-check/status-restored.json",
+      "bytes": 332,
+      "sha256": "5ac414b8aab624b4e6414561fd6362d1c7f67e012bb09e16f35226a85984c56c",
+      "kind": "text",
+      "lines": 1,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-sound-check/status-restored.json.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-sound-check/swift-tests-before.txt",
+      "bytes": 57334,
+      "sha256": "599ac22a0a154a0c184b6dea3c25854fd90f57d9cce4c3f9d4780a1e5648b88a",
+      "kind": "text",
+      "lines": 565,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-sound-check/swift-tests-before.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-sound-check/swift-tests-final.txt",
+      "bytes": 56475,
+      "sha256": "db1cdef9fa8a15d3d111a69f89a234ea44e0e524cb48e3014e7e653cbfcb271a",
+      "kind": "text",
+      "lines": 554,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-sound-check/swift-tests-final.txt.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-08-sound-check/validation.txt",
+      "bytes": 675,
+      "sha256": "8760e900e4b73761efac8bd73833c55d1719dc897bfd80888a14f43a0e48ac86",
+      "kind": "text",
+      "lines": 8,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-sound-check/validation.txt.txt"
+    },
+    {
+      "path": "driver/RoomcutHAL/CMakeLists.txt",
+      "bytes": 2233,
+      "sha256": "201deaee9faca803e44b674cbee1c9dde6ad1c279ad2f3bdc663daa8e0f8647c",
+      "kind": "text",
+      "lines": 52,
+      "archive": "docs/development/generated/source/driver/RoomcutHAL/CMakeLists.txt.txt"
+    },
+    {
+      "path": "driver/RoomcutHAL/Info.plist",
+      "bytes": 1529,
+      "sha256": "39adaed3ae4a3906d2ef027197efd1a1631bac687a279ca8066dd68fb2f309cd",
+      "kind": "text",
+      "lines": 48,
+      "archive": "docs/development/generated/source/driver/RoomcutHAL/Info.plist.txt"
+    },
+    {
+      "path": "driver/RoomcutHAL/include/RoomcutDriver.h",
+      "bytes": 6516,
+      "sha256": "ff24a00f2480e85cc3edbd1245ad07a77f39134f486c2bae8220c73cf0c53042",
+      "kind": "text",
+      "lines": 106,
+      "archive": "docs/development/generated/source/driver/RoomcutHAL/include/RoomcutDriver.h.txt"
+    },
+    {
+      "path": "driver/RoomcutHAL/include/RoomcutTransport.h",
+      "bytes": 3479,
+      "sha256": "5aad75e22596c92fbd124e9fbea8e4da1527e22d667a734bd00bb0cf4d95b2f6",
+      "kind": "text",
+      "lines": 91,
+      "archive": "docs/development/generated/source/driver/RoomcutHAL/include/RoomcutTransport.h.txt"
+    },
+    {
+      "path": "driver/RoomcutHAL/src/RoomcutIO.c",
+      "bytes": 8701,
+      "sha256": "7a484ec84c33c013edca35e4ea0144ba8b28db03fae486a41054576a94b2454e",
+      "kind": "text",
+      "lines": 209,
+      "archive": "docs/development/generated/source/driver/RoomcutHAL/src/RoomcutIO.c.txt"
+    },
+    {
+      "path": "driver/RoomcutHAL/src/RoomcutPlugIn.c",
+      "bytes": 11964,
+      "sha256": "e3ff68b46046dd984808e1c40d7db79132b9e95a2cf8d348c36a911f223d642c",
+      "kind": "text",
+      "lines": 298,
+      "archive": "docs/development/generated/source/driver/RoomcutHAL/src/RoomcutPlugIn.c.txt"
+    },
+    {
+      "path": "driver/RoomcutHAL/src/RoomcutProperties.c",
+      "bytes": 46494,
+      "sha256": "84f0cabae6f77112ceb36988b4cccd7e00013863325c1584dadd0cb8025cf505",
+      "kind": "text",
+      "lines": 853,
+      "archive": "docs/development/generated/source/driver/RoomcutHAL/src/RoomcutProperties.c.txt"
+    },
+    {
+      "path": "driver/RoomcutHAL/src/RoomcutTransport.c",
+      "bytes": 15934,
+      "sha256": "2f750efeed344b3cae0b8a9e216e82af903a1afb1129232a2944144a61823b51",
+      "kind": "text",
+      "lines": 454,
+      "archive": "docs/development/generated/source/driver/RoomcutHAL/src/RoomcutTransport.c.txt"
+    },
+    {
+      "path": "engine/CMakeLists.txt",
+      "bytes": 4302,
+      "sha256": "0dceb5d01204e66d79cf6174bec8d635ded8aaea9bfd531e7e6742218e7c719c",
+      "kind": "text",
+      "lines": 90,
+      "archive": "docs/development/generated/source/engine/CMakeLists.txt.txt"
+    },
+    {
+      "path": "engine/client/ClientShim.cpp",
+      "bytes": 16248,
+      "sha256": "b5685b0b5e0ce2c7d959f6088731c6010db867d7c1a31135c56917176f619fa2",
+      "kind": "text",
+      "lines": 432,
+      "archive": "docs/development/generated/source/engine/client/ClientShim.cpp.txt"
+    },
+    {
+      "path": "engine/client/CoreAudioDevices.cpp",
+      "bytes": 19655,
+      "sha256": "8dbd17300b0fa50d340a9bdb7c7a5ac09fcce55032bd1a484cf2ec103f61082f",
+      "kind": "text",
+      "lines": 458,
+      "archive": "docs/development/generated/source/engine/client/CoreAudioDevices.cpp.txt"
+    },
+    {
+      "path": "engine/client/CoreAudioDevices.hpp",
+      "bytes": 1334,
+      "sha256": "6c95c377815dc4a4939a633aad22baa6169670e8a2b621961db17a20f5181688",
+      "kind": "text",
+      "lines": 35,
+      "archive": "docs/development/generated/source/engine/client/CoreAudioDevices.hpp.txt"
+    },
+    {
+      "path": "engine/client/EngineConnection.cpp",
+      "bytes": 1655,
+      "sha256": "0b35fd3df24458539b8589eb09a2277d00951c96f1ab6a513f443d695b3beba1",
+      "kind": "text",
+      "lines": 45,
+      "archive": "docs/development/generated/source/engine/client/EngineConnection.cpp.txt"
+    },
+    {
+      "path": "engine/client/EngineConnection.hpp",
+      "bytes": 2016,
+      "sha256": "84d409f9c48d799e601a85ec1a5a1a614381d0f7d809d75ed6b0b801cf336f59",
+      "kind": "text",
+      "lines": 62,
+      "archive": "docs/development/generated/source/engine/client/EngineConnection.hpp.txt"
+    },
+    {
+      "path": "engine/client/include/roomcut_client.h",
+      "bytes": 10789,
+      "sha256": "0d49318231ad10de59133da66aaa9ab0b2046e891823eb48d57e262f3a73de25",
+      "kind": "text",
+      "lines": 250,
+      "archive": "docs/development/generated/source/engine/client/include/roomcut_client.h.txt"
+    },
+    {
+      "path": "engine/include/AnalysisTap.hpp",
+      "bytes": 2231,
+      "sha256": "519cb9ebe4b86d479f08b472cfb1f67f98b2e0f74f9430a2092a9512d8b053b9",
+      "kind": "text",
+      "lines": 67,
+      "archive": "docs/development/generated/source/engine/include/AnalysisTap.hpp.txt"
+    },
+    {
+      "path": "engine/include/AnalysisWorker.hpp",
+      "bytes": 1056,
+      "sha256": "f94d3e2f58b8323e7fcf317b44a2d063677cd9df5d57c4a2bcff7b16ce47b345",
+      "kind": "text",
+      "lines": 39,
+      "archive": "docs/development/generated/source/engine/include/AnalysisWorker.hpp.txt"
+    },
+    {
+      "path": "engine/include/AudioPropertyListener.hpp",
+      "bytes": 1196,
+      "sha256": "6c0a03d1db6ed6126bf440facdf56326f0894410f3c705b988bb9fcf47af10ca",
+      "kind": "text",
+      "lines": 33,
+      "archive": "docs/development/generated/source/engine/include/AudioPropertyListener.hpp.txt"
+    },
+    {
+      "path": "engine/include/Control.hpp",
+      "bytes": 4479,
+      "sha256": "9ea450bf76b049ec8a32bcdf306db00977e1842df1d0a7dae5d528454092e4a7",
+      "kind": "text",
+      "lines": 99,
+      "archive": "docs/development/generated/source/engine/include/Control.hpp.txt"
+    },
+    {
+      "path": "engine/include/ControlValidation.hpp",
+      "bytes": 6012,
+      "sha256": "25fbb67860a4b4212e1dda721ee83c51ac8658466d8374469339d628a407223e",
+      "kind": "text",
+      "lines": 106,
+      "archive": "docs/development/generated/source/engine/include/ControlValidation.hpp.txt"
+    },
+    {
+      "path": "engine/include/CubicResampler.hpp",
+      "bytes": 5675,
+      "sha256": "4837ca4ee9811cd45cc91d47cf5fb4f980b116730a52956212fdbbb39ef9086f",
+      "kind": "text",
+      "lines": 148,
+      "archive": "docs/development/generated/source/engine/include/CubicResampler.hpp.txt"
+    },
+    {
+      "path": "engine/include/DeviceSelection.hpp",
+      "bytes": 2789,
+      "sha256": "987b65a812d7070a908b7660dd0d31b2e4967c53c3e6ae7e0cd14cbb9f43aa1b",
+      "kind": "text",
+      "lines": 68,
+      "archive": "docs/development/generated/source/engine/include/DeviceSelection.hpp.txt"
+    },
+    {
+      "path": "engine/include/DeviceVolume.hpp",
+      "bytes": 664,
+      "sha256": "c5b2e28a8e6a441c63018562b6804cb4f6e26654ffcff98fd4ed0a87e6459480",
+      "kind": "text",
+      "lines": 25,
+      "archive": "docs/development/generated/source/engine/include/DeviceVolume.hpp.txt"
+    },
+    {
+      "path": "engine/include/DeviceWatcher.hpp",
+      "bytes": 657,
+      "sha256": "274177ee59f1c85fba3a3abff2a86b7366ef8482d95e8311b8fc4785deb79df8",
+      "kind": "text",
+      "lines": 20,
+      "archive": "docs/development/generated/source/engine/include/DeviceWatcher.hpp.txt"
+    },
+    {
+      "path": "engine/include/EngineReplies.hpp",
+      "bytes": 1310,
+      "sha256": "9e67ada0b2842c9391d7f5a4b8623cefc6784df3318b2b6a218e6d34e1db228a",
+      "kind": "text",
+      "lines": 31,
+      "archive": "docs/development/generated/source/engine/include/EngineReplies.hpp.txt"
+    },
+    {
+      "path": "engine/include/EngineSoundState.hpp",
+      "bytes": 2286,
+      "sha256": "a73862077bb2e078ab4c9a0ce9a29f8b5978ad3f54c05db8fb5b16fc953fd031",
+      "kind": "text",
+      "lines": 55,
+      "archive": "docs/development/generated/source/engine/include/EngineSoundState.hpp.txt"
+    },
+    {
+      "path": "engine/include/EngineState.hpp",
+      "bytes": 823,
+      "sha256": "369934b4c450b5c9caf4b1fc3433b34d6555efbce9218f5110ee1f9499372d90",
+      "kind": "text",
+      "lines": 27,
+      "archive": "docs/development/generated/source/engine/include/EngineState.hpp.txt"
+    },
+    {
+      "path": "engine/include/EngineStateStore.hpp",
+      "bytes": 607,
+      "sha256": "396f9ea635d7b80ecf0fa5617dc4dd9c9ad7957dc80a971f2bc321d6cfb8b35d",
+      "kind": "text",
+      "lines": 22,
+      "archive": "docs/development/generated/source/engine/include/EngineStateStore.hpp.txt"
+    },
+    {
+      "path": "engine/include/Handshake.hpp",
+      "bytes": 3107,
+      "sha256": "c568ab31f656c25d613558b726c8fadbe6975daacb025e8c98c394b4e75b7d9c",
+      "kind": "text",
+      "lines": 62,
+      "archive": "docs/development/generated/source/engine/include/Handshake.hpp.txt"
+    },
+    {
+      "path": "engine/include/Heartbeat.hpp",
+      "bytes": 2232,
+      "sha256": "d2a758e3ab44c0ead2adf3f404359aba98614cfd2a072d03b7b007bec849b9c1",
+      "kind": "text",
+      "lines": 52,
+      "archive": "docs/development/generated/source/engine/include/Heartbeat.hpp.txt"
+    },
+    {
+      "path": "engine/include/Lifecycle.hpp",
+      "bytes": 3610,
+      "sha256": "c9190d2714a1c7b802cae4cea0f81a83a404698be62230c7e3e85dbf9778d87c",
+      "kind": "text",
+      "lines": 76,
+      "archive": "docs/development/generated/source/engine/include/Lifecycle.hpp.txt"
+    },
+    {
+      "path": "engine/include/LinearResampler.hpp",
+      "bytes": 5160,
+      "sha256": "bfac8791e32348782145e844194b897b5eda06ae97bd9302b06cace727e5172f",
+      "kind": "text",
+      "lines": 124,
+      "archive": "docs/development/generated/source/engine/include/LinearResampler.hpp.txt"
+    },
+    {
+      "path": "engine/include/OutputDevice.hpp",
+      "bytes": 3983,
+      "sha256": "ab4dbf92728d65f4fcdce617019b319f9b5c3639b0887d79892bb864473b1ee4",
+      "kind": "text",
+      "lines": 95,
+      "archive": "docs/development/generated/source/engine/include/OutputDevice.hpp.txt"
+    },
+    {
+      "path": "engine/include/OutputRecovery.hpp",
+      "bytes": 2918,
+      "sha256": "3ab0a61b6b8bd4e3d9a3c8099a8d6ab4a7755cea7afbb59941fc2edc151bd90c",
+      "kind": "text",
+      "lines": 77,
+      "archive": "docs/development/generated/source/engine/include/OutputRecovery.hpp.txt"
+    },
+    {
+      "path": "engine/include/ParameterCodec.hpp",
+      "bytes": 2227,
+      "sha256": "5b88af40b9153b50688bf1bb1713b0cf4b4832fe5e80a0ea93a3db443850458c",
+      "kind": "text",
+      "lines": 52,
+      "archive": "docs/development/generated/source/engine/include/ParameterCodec.hpp.txt"
+    },
+    {
+      "path": "engine/include/PublishedRing.hpp",
+      "bytes": 2131,
+      "sha256": "af1f2cf91bbe99bd0a7694c166a31cee6b500e33631190217ec95da970dc7fa3",
+      "kind": "text",
+      "lines": 62,
+      "archive": "docs/development/generated/source/engine/include/PublishedRing.hpp.txt"
+    },
+    {
+      "path": "engine/include/RealtimeMailbox.hpp",
+      "bytes": 1310,
+      "sha256": "4f482347a77ac92ea91bc4a99e11d4cd85cd383f5daafd84782dc7f5c29b4ba7",
+      "kind": "text",
+      "lines": 48,
+      "archive": "docs/development/generated/source/engine/include/RealtimeMailbox.hpp.txt"
+    },
+    {
+      "path": "engine/include/RealtimeParams.hpp",
+      "bytes": 256,
+      "sha256": "1f1ea3aadc87c025cebb62ddcc71011f8197daeb0cdeb813f802274641d00e6b",
+      "kind": "text",
+      "lines": 12,
+      "archive": "docs/development/generated/source/engine/include/RealtimeParams.hpp.txt"
+    },
+    {
+      "path": "engine/include/RenderCallbackGate.hpp",
+      "bytes": 2993,
+      "sha256": "36ee9fa76a23641850fb410b33eec38661add1c2550209ea483e8f54eea9ae76",
+      "kind": "text",
+      "lines": 75,
+      "archive": "docs/development/generated/source/engine/include/RenderCallbackGate.hpp.txt"
+    },
+    {
+      "path": "engine/include/RenderPipeline.hpp",
+      "bytes": 5656,
+      "sha256": "1321f40646ab3f46b5f6f563dcf0a26af8a945dc3a737f064a48307b8afba19b",
+      "kind": "text",
+      "lines": 134,
+      "archive": "docs/development/generated/source/engine/include/RenderPipeline.hpp.txt"
+    },
+    {
+      "path": "engine/include/RenderProgressWatchdog.hpp",
+      "bytes": 1876,
+      "sha256": "eec5b10bc2b23e067eba286fb8ad2454fcd2c1fe2de9f3036132837d74dc5c56",
+      "kind": "text",
+      "lines": 44,
+      "archive": "docs/development/generated/source/engine/include/RenderProgressWatchdog.hpp.txt"
+    },
+    {
+      "path": "engine/include/RingRegion.hpp",
+      "bytes": 2940,
+      "sha256": "49b6a3e0e29539b0cc000cebd3117ff5bcc51e47886f6b5b921af7a2c29b9dab",
+      "kind": "text",
+      "lines": 78,
+      "archive": "docs/development/generated/source/engine/include/RingRegion.hpp.txt"
+    },
+    {
+      "path": "engine/include/SincResampler.hpp",
+      "bytes": 8892,
+      "sha256": "5d08a7b815eb28509c0c928e4c05fbce9f7a075de8e4c3e2a5fa95ee395f578c",
+      "kind": "text",
+      "lines": 208,
+      "archive": "docs/development/generated/source/engine/include/SincResampler.hpp.txt"
+    },
+    {
+      "path": "engine/include/SoundCommands.hpp",
+      "bytes": 498,
+      "sha256": "f0682d4a33a5cc47033820c82b4b03725ff8e0270b42aaa0a907ad8260694fa9",
+      "kind": "text",
+      "lines": 15,
+      "archive": "docs/development/generated/source/engine/include/SoundCommands.hpp.txt"
+    },
+    {
+      "path": "engine/include/VolumeController.hpp",
+      "bytes": 1002,
+      "sha256": "6724f3e1393024ea6223573fe0ec3f940bc395fa92fe6ebdf49d37920a14b24f",
+      "kind": "text",
+      "lines": 33,
+      "archive": "docs/development/generated/source/engine/include/VolumeController.hpp.txt"
+    },
+    {
+      "path": "engine/src/AnalysisWorker.cpp",
+      "bytes": 4186,
+      "sha256": "1686e6a5a900fed881a490ae2bd67337b3566d2cb2f074d654e211f8d6b581e8",
+      "kind": "text",
+      "lines": 99,
+      "archive": "docs/development/generated/source/engine/src/AnalysisWorker.cpp.txt"
+    },
+    {
+      "path": "engine/src/AudioPropertyListener.cpp",
+      "bytes": 2020,
+      "sha256": "0ff59a8fd8a99694f1f2b9d01f5917126a31354641e050f1aa7a59c9131a0575",
+      "kind": "text",
+      "lines": 52,
+      "archive": "docs/development/generated/source/engine/src/AudioPropertyListener.cpp.txt"
+    },
+    {
+      "path": "engine/src/Control.cpp",
+      "bytes": 15009,
+      "sha256": "47c59d3b78079f28e98081796d1bceb0717b8c22e6dafb5b180189b58906a46b",
+      "kind": "text",
+      "lines": 383,
+      "archive": "docs/development/generated/source/engine/src/Control.cpp.txt"
+    },
+    {
+      "path": "engine/src/DeviceSelection.cpp",
+      "bytes": 5475,
+      "sha256": "e508f5022a821810c61080e2dedc533ae61219382f323df19c04c88d3828feba",
+      "kind": "text",
+      "lines": 165,
+      "archive": "docs/development/generated/source/engine/src/DeviceSelection.cpp.txt"
+    },
+    {
+      "path": "engine/src/DeviceVolume.cpp",
+      "bytes": 4466,
+      "sha256": "fc783d72a0814d3d8fc13e38b8f4213e58ce5d374d8c219fcb99f1b1fff2c195",
+      "kind": "text",
+      "lines": 95,
+      "archive": "docs/development/generated/source/engine/src/DeviceVolume.cpp.txt"
+    },
+    {
+      "path": "engine/src/DeviceWatcher.cpp",
+      "bytes": 1329,
+      "sha256": "401d493b3c8ec06825ae90ea0664504c89debb945599301791a9d128d160b75a",
+      "kind": "text",
+      "lines": 25,
+      "archive": "docs/development/generated/source/engine/src/DeviceWatcher.cpp.txt"
+    },
+    {
+      "path": "engine/src/EngineReplies.cpp",
+      "bytes": 4321,
+      "sha256": "857858567be3f567a5992dabde12cf39d55bc41d85c8ecd80635241b13f6a6a8",
+      "kind": "text",
+      "lines": 94,
+      "archive": "docs/development/generated/source/engine/src/EngineReplies.cpp.txt"
+    },
+    {
+      "path": "engine/src/EngineState.cpp",
+      "bytes": 3485,
+      "sha256": "f0daa5e13f874257e4470a0fcd7fd2da4b26d0589b647de426ff269a8b21334e",
+      "kind": "text",
+      "lines": 89,
+      "archive": "docs/development/generated/source/engine/src/EngineState.cpp.txt"
+    },
+    {
+      "path": "engine/src/EngineStateStore.cpp",
+      "bytes": 3525,
+      "sha256": "5ec559c7994058bd506956075089c87a2f831bd8b7649776575c0bbba1d812f7",
+      "kind": "text",
+      "lines": 82,
+      "archive": "docs/development/generated/source/engine/src/EngineStateStore.cpp.txt"
+    },
+    {
+      "path": "engine/src/Handshake.cpp",
+      "bytes": 7011,
+      "sha256": "2bc3a2c4e53a424913b98eefb2c1314aff6f997e654e9c366dad2d7591896700",
+      "kind": "text",
+      "lines": 162,
+      "archive": "docs/development/generated/source/engine/src/Handshake.cpp.txt"
+    },
+    {
+      "path": "engine/src/Heartbeat.cpp",
+      "bytes": 4455,
+      "sha256": "80251c914e604d570f07be42dc1a26e90b306c5b8ecfd8afa7c18b91bdec61a7",
+      "kind": "text",
+      "lines": 117,
+      "archive": "docs/development/generated/source/engine/src/Heartbeat.cpp.txt"
+    },
+    {
+      "path": "engine/src/Lifecycle.cpp",
+      "bytes": 6992,
+      "sha256": "36e7dd18cfa7515f180b4a75e773bce6636cb48838d1b6d8ff26b3665c34a4fe",
+      "kind": "text",
+      "lines": 154,
+      "archive": "docs/development/generated/source/engine/src/Lifecycle.cpp.txt"
+    },
+    {
+      "path": "engine/src/OutputDevice.cpp",
+      "bytes": 13691,
+      "sha256": "3bdc5d7a576550caaabe12bb65bcd76d06a01e59e202a6277667e391e323d8a4",
+      "kind": "text",
+      "lines": 331,
+      "archive": "docs/development/generated/source/engine/src/OutputDevice.cpp.txt"
+    },
+    {
+      "path": "engine/src/RingRegion.cpp",
+      "bytes": 5981,
+      "sha256": "6221afa5a7b4b2cee22565a71835cecfa02a97cd7d7cbc56036e6850ec52c309",
+      "kind": "text",
+      "lines": 177,
+      "archive": "docs/development/generated/source/engine/src/RingRegion.cpp.txt"
+    },
+    {
+      "path": "engine/src/SoundCommands.cpp",
+      "bytes": 958,
+      "sha256": "582c8a57162854e107f19cd805ae605ee1f058d8132113e9fd77fd31d707138e",
+      "kind": "text",
+      "lines": 25,
+      "archive": "docs/development/generated/source/engine/src/SoundCommands.cpp.txt"
+    },
+    {
+      "path": "engine/src/VolumeController.cpp",
+      "bytes": 3282,
+      "sha256": "2e45413c1adc0f708476afa9402257b5cfa2d4497271207d33a1a817f9b2c2af",
+      "kind": "text",
+      "lines": 80,
+      "archive": "docs/development/generated/source/engine/src/VolumeController.cpp.txt"
+    },
+    {
+      "path": "engine/src/main.cpp",
+      "bytes": 55363,
+      "sha256": "96787ad81bcd592489c7b46b6d61b259414e5094717be2ff8063cc82d1fe68c7",
+      "kind": "text",
+      "lines": 1126,
+      "archive": "docs/development/generated/source/engine/src/main.cpp.txt"
+    },
+    {
+      "path": "engine/src/roomcut-devicectl.cpp",
+      "bytes": 1991,
+      "sha256": "6465ba456d565a28c47814f133a5caeab013b7bdf5512b1a80c753a85a0d1860",
+      "kind": "text",
+      "lines": 58,
+      "archive": "docs/development/generated/source/engine/src/roomcut-devicectl.cpp.txt"
+    },
+    {
+      "path": "engine/src/roomcut-driver-sim.cpp",
+      "bytes": 8709,
+      "sha256": "cd95528fe77d86e49aa95c4668009417923cc2f19caf5ce4d4808eedf1275bc0",
+      "kind": "text",
+      "lines": 205,
+      "archive": "docs/development/generated/source/engine/src/roomcut-driver-sim.cpp.txt"
+    },
+    {
+      "path": "engine/src/roomcutctl.cpp",
+      "bytes": 17532,
+      "sha256": "e18b8ea5f8b26af196d004fdb29572f0d8c617f33373da47b1071f134f70739c",
+      "kind": "text",
+      "lines": 377,
+      "archive": "docs/development/generated/source/engine/src/roomcutctl.cpp.txt"
+    },
+    {
+      "path": "engine/tests/ClientDeviceFixture.hpp",
+      "bytes": 12827,
+      "sha256": "944c62d0e41f27b4b63117a0f1941e5d4a2264e62fd37fefd16b47ae84ffe834",
+      "kind": "text",
+      "lines": 265,
+      "archive": "docs/development/generated/source/engine/tests/ClientDeviceFixture.hpp.txt"
+    },
+    {
+      "path": "engine/tests/test_analysis_tap.cpp",
+      "bytes": 4921,
+      "sha256": "a8e9bd0af7b1bc677736ada45196107cf9886017ea940c495918429130a1dc59",
+      "kind": "text",
+      "lines": 119,
+      "archive": "docs/development/generated/source/engine/tests/test_analysis_tap.cpp.txt"
+    },
+    {
+      "path": "engine/tests/test_client_devices.cpp",
+      "bytes": 9461,
+      "sha256": "1666940260db619af30ce3d195c5b05afbf17e37acfd4a7aea809de0610d7ae4",
+      "kind": "text",
+      "lines": 141,
+      "archive": "docs/development/generated/source/engine/tests/test_client_devices.cpp.txt"
+    },
+    {
+      "path": "engine/tests/test_client_volume.cpp",
+      "bytes": 4685,
+      "sha256": "fafa03b3be8f15c2309e111a4b9bf6a827e6e078ffa93d949819aba4b84f88f8",
+      "kind": "text",
+      "lines": 72,
+      "archive": "docs/development/generated/source/engine/tests/test_client_volume.cpp.txt"
+    },
+    {
+      "path": "engine/tests/test_control.cpp",
+      "bytes": 14516,
+      "sha256": "fdf81e553d55b2eaf7edb43ee1b12a24ea17d27839b6b1e9fa70e1f3698cfee9",
+      "kind": "text",
+      "lines": 294,
+      "archive": "docs/development/generated/source/engine/tests/test_control.cpp.txt"
+    },
+    {
+      "path": "engine/tests/test_control_validation.cpp",
+      "bytes": 5071,
+      "sha256": "e698a9d24df36e31d8871324e947db5101f32d34005a916b24cef5ef6e2f8a35",
+      "kind": "text",
+      "lines": 86,
+      "archive": "docs/development/generated/source/engine/tests/test_control_validation.cpp.txt"
+    },
+    {
+      "path": "engine/tests/test_device_policy.cpp",
+      "bytes": 3767,
+      "sha256": "e6a7db3851052233496570f77ea55891545913dbdfcb6a2df5941570e24b4bb9",
+      "kind": "text",
+      "lines": 111,
+      "archive": "docs/development/generated/source/engine/tests/test_device_policy.cpp.txt"
+    },
+    {
+      "path": "engine/tests/test_device_services.cpp",
+      "bytes": 11476,
+      "sha256": "1766c23fc8ae6c65739fa405ff337d588c8aa24a3aecdb9a38ef035b89c57386",
+      "kind": "text",
+      "lines": 235,
+      "archive": "docs/development/generated/source/engine/tests/test_device_services.cpp.txt"
+    },
+    {
+      "path": "engine/tests/test_device_volume.cpp",
+      "bytes": 4929,
+      "sha256": "5d48a6eced46e38f6c918d0ff01651678a219e0437e96749de9217b4e0c8e2ef",
+      "kind": "text",
+      "lines": 104,
+      "archive": "docs/development/generated/source/engine/tests/test_device_volume.cpp.txt"
+    },
+    {
+      "path": "engine/tests/test_engine_commands.cpp",
+      "bytes": 14923,
+      "sha256": "df0c077a4f76dfbd33f0065f879cde4519f195aa2c92ebad98c076179db90267",
+      "kind": "text",
+      "lines": 238,
+      "archive": "docs/development/generated/source/engine/tests/test_engine_commands.cpp.txt"
+    },
+    {
+      "path": "engine/tests/test_engine_connection.cpp",
+      "bytes": 11020,
+      "sha256": "eb902e737cceaa504d4d311f3bae7a53fad49444a2fe43437cc7a6b53e35da42",
+      "kind": "text",
+      "lines": 247,
+      "archive": "docs/development/generated/source/engine/tests/test_engine_connection.cpp.txt"
+    },
+    {
+      "path": "engine/tests/test_engine_state.cpp",
+      "bytes": 6663,
+      "sha256": "f288232c4ab8af1781ee17ee2633634d2792574bfb7b79e973e3fd34620b84f7",
+      "kind": "text",
+      "lines": 142,
+      "archive": "docs/development/generated/source/engine/tests/test_engine_state.cpp.txt"
+    },
+    {
+      "path": "engine/tests/test_handshake.cpp",
+      "bytes": 8423,
+      "sha256": "33f94abd2eb3aab1b01774873816e9ee3850ef9e07bc6b87a041fb8ad559de1d",
+      "kind": "text",
+      "lines": 198,
+      "archive": "docs/development/generated/source/engine/tests/test_handshake.cpp.txt"
+    },
+    {
+      "path": "engine/tests/test_handshake_validation.cpp",
+      "bytes": 19154,
+      "sha256": "a42f0115c7d48bd43515a86426035825a25f28b094bf50d190dbe07b8b91d272",
+      "kind": "text",
+      "lines": 321,
+      "archive": "docs/development/generated/source/engine/tests/test_handshake_validation.cpp.txt"
+    },
+    {
+      "path": "engine/tests/test_heartbeat.cpp",
+      "bytes": 10592,
+      "sha256": "5c9b582b3f8a7e4dd12ce31c9de2ba87beebd38a5182fb4e9643af6d273a009f",
+      "kind": "text",
+      "lines": 211,
+      "archive": "docs/development/generated/source/engine/tests/test_heartbeat.cpp.txt"
+    },
+    {
+      "path": "engine/tests/test_lifecycle.cpp",
+      "bytes": 8590,
+      "sha256": "02092bfd509f695cf57bcb0eba82cb6de23f31b42168fc6eca2823756021bb1b",
+      "kind": "text",
+      "lines": 151,
+      "archive": "docs/development/generated/source/engine/tests/test_lifecycle.cpp.txt"
+    },
+    {
+      "path": "engine/tests/test_mach_cleanup.cpp",
+      "bytes": 3406,
+      "sha256": "c3166d45b96c455ba85ed6af4822fce7cbe8145ef9cbe787ad23bb323d1a3568",
+      "kind": "text",
+      "lines": 60,
+      "archive": "docs/development/generated/source/engine/tests/test_mach_cleanup.cpp.txt"
+    },
+    {
+      "path": "engine/tests/test_output_device.cpp",
+      "bytes": 10252,
+      "sha256": "9c73d9b90f8acfbf07a5d183f809476e72fa283a70fd5c8abd3fcc98898243a6",
+      "kind": "text",
+      "lines": 203,
+      "archive": "docs/development/generated/source/engine/tests/test_output_device.cpp.txt"
+    },
+    {
+      "path": "engine/tests/test_output_recovery.cpp",
+      "bytes": 5984,
+      "sha256": "e68eb80cedc1deee9afc55bd70ade610456e3944400be5f50f2fe6eb0669d1f3",
+      "kind": "text",
+      "lines": 100,
+      "archive": "docs/development/generated/source/engine/tests/test_output_recovery.cpp.txt"
+    },
+    {
+      "path": "engine/tests/test_realtime_params.cpp",
+      "bytes": 2430,
+      "sha256": "77e05105180b1909f7f3948ede888522c70b3f35673bfad4d9112406fad44423",
+      "kind": "text",
+      "lines": 67,
+      "archive": "docs/development/generated/source/engine/tests/test_realtime_params.cpp.txt"
+    },
+    {
+      "path": "engine/tests/test_render_gate.cpp",
+      "bytes": 6726,
+      "sha256": "682ecc65fbc98c7c8cbd1fa617c0f9b10b1922252c7dd0882136e86065be5c9b",
+      "kind": "text",
+      "lines": 149,
+      "archive": "docs/development/generated/source/engine/tests/test_render_gate.cpp.txt"
+    },
+    {
+      "path": "engine/tests/test_render_pipeline.cpp",
+      "bytes": 12835,
+      "sha256": "b23fe5d8f4d306dec1ae216028fb018c5511976562cdb0df9a98568a3003ff4e",
+      "kind": "text",
+      "lines": 276,
+      "archive": "docs/development/generated/source/engine/tests/test_render_pipeline.cpp.txt"
+    },
+    {
+      "path": "engine/tests/test_resampler.cpp",
+      "bytes": 11095,
+      "sha256": "c2ce466bf408f7c56aa3e66c6db5bfd637fcb3fcba7e11ddd617d6eb010341ea",
+      "kind": "text",
+      "lines": 256,
+      "archive": "docs/development/generated/source/engine/tests/test_resampler.cpp.txt"
+    },
+    {
+      "path": "engine/tests/test_resampler_quality.cpp",
+      "bytes": 6675,
+      "sha256": "d3250cf02cd1b7017a7c0c7f3db70b7982c6e73f7e96acb81cc87b8179f9953b",
+      "kind": "text",
+      "lines": 132,
+      "archive": "docs/development/generated/source/engine/tests/test_resampler_quality.cpp.txt"
+    },
+    {
+      "path": "engine/tests/test_ring_region.cpp",
+      "bytes": 4061,
+      "sha256": "70f449d64020ddcb9644ff1c1ca5cda15b4e09a48f4b355c7477907833dcc4b8",
+      "kind": "text",
+      "lines": 91,
+      "archive": "docs/development/generated/source/engine/tests/test_ring_region.cpp.txt"
+    },
+    {
+      "path": "engine/tests/test_volume_ramp.cpp",
+      "bytes": 8600,
+      "sha256": "ddf27d557cc384edac068c50903dd9f3f063207a0de21bc7a60cb5d5dd68b46d",
+      "kind": "text",
+      "lines": 249,
+      "archive": "docs/development/generated/source/engine/tests/test_volume_ramp.cpp.txt"
+    },
+    {
+      "path": "icon/app/compact_mode.png",
+      "bytes": 65277,
+      "sha256": "28fb5140e989c265d552067e30a2fbab1ff778c2a194c8a3f3b8715280adc282",
+      "kind": "binary"
+    },
+    {
+      "path": "icon/app/main_home.png",
+      "bytes": 597388,
+      "sha256": "2e2b7d41e2b7ccb6c594eb12212e1fffec4d44df28ec56dac37da6e1535c30d1",
+      "kind": "binary"
+    },
+    {
+      "path": "icon/app/main_home_advanced.png",
+      "bytes": 391273,
+      "sha256": "1bc64113c214bdfabe47132a535481f210fbed8652bb277370c82fcc6f198179",
+      "kind": "binary"
+    },
+    {
+      "path": "icon/app/main_home_basic.png",
+      "bytes": 420219,
+      "sha256": "37f91bea7f6033cfa1f6bbeb95a877febeff9409a8365753d8423766446475df",
+      "kind": "binary"
+    },
+    {
+      "path": "icon/app/main_inspect.png",
+      "bytes": 636691,
+      "sha256": "2be26e6aca9aecb251dc0bf18e654b7a0357c58578a7aaf8b7afb766c082d0b0",
+      "kind": "binary"
+    },
+    {
+      "path": "icon/app/main_settings.png",
+      "bytes": 669764,
+      "sha256": "d9122d31b7dcc7bc72566a06a472c5afd52ae5425f84aedea884daf050dca453",
+      "kind": "binary"
+    },
+    {
+      "path": "icon/app/main_space.png",
+      "bytes": 857909,
+      "sha256": "f76a006936500b9c6313e6b5d26600b6e9c99db8d332e2fb1139f89af50d9d88",
+      "kind": "binary"
+    },
+    {
+      "path": "icon/app/main_tune_measuring.png",
+      "bytes": 364518,
+      "sha256": "ac028345c7687bea31393c5cad418c8ad5ed461b342ed3303d99853fc75e22e1",
+      "kind": "binary"
+    },
+    {
+      "path": "icon/app/main_tune_result.png",
+      "bytes": 545075,
+      "sha256": "bff448769f805ab261fd8ff7b93b4e94387d74edb576d20c5c70f4894f6d8a4a",
+      "kind": "binary"
+    },
+    {
+      "path": "icon/app/main_tune_start.png",
+      "bytes": 419915,
+      "sha256": "b51ff6f9ae6967f5b08e1ccb78983dcd1b37e85376a3dffdd5d98674875d2df2",
+      "kind": "binary"
+    },
+    {
+      "path": "icon/app/menubar.png",
+      "bytes": 158513,
+      "sha256": "94d1ea5c32f755a1732964ce6a5f6cc5518261ec66880a5d2a5b3c69786f40ec",
+      "kind": "binary"
+    },
+    {
+      "path": "icon/roomcut_icon.png",
+      "bytes": 762429,
+      "sha256": "8bcc412bf7cedcefbf9ba6d511baedfd1e44dac2c1d41fa98d96cbcbb28b3228",
+      "kind": "binary"
+    },
+    {
+      "path": "scripts/analyze-dump.py",
+      "bytes": 13612,
+      "sha256": "b3b58b09fe087d0c43c7dc263c129ead7aaf197078c2b5927abe6c4b8425ccc9",
+      "kind": "text",
+      "lines": 329,
+      "archive": "docs/development/generated/source/scripts/analyze-dump.py.txt"
+    },
+    {
+      "path": "scripts/benchmark-dsp.cpp",
+      "bytes": 4342,
+      "sha256": "a10b5c0c3ed0251f43b155955c5d03bb30451e18c62ab839c727a864af6c6a18",
+      "kind": "text",
+      "lines": 113,
+      "archive": "docs/development/generated/source/scripts/benchmark-dsp.cpp.txt"
+    },
+    {
+      "path": "scripts/benchmark-resampler.cpp",
+      "bytes": 3449,
+      "sha256": "4a6c0bca6883c0feb85ca20ee6e4815ad8d5aeaa5c38c1a3bfa51e37e09b3b2d",
+      "kind": "text",
+      "lines": 81,
+      "archive": "docs/development/generated/source/scripts/benchmark-resampler.cpp.txt"
+    },
+    {
+      "path": "scripts/build-app.sh",
+      "bytes": 4562,
+      "sha256": "f787e9b38fd41051815abddd990fdb6f4c5708c73bce35afecf328089df8ff2b",
+      "kind": "text",
+      "lines": 106,
+      "archive": "docs/development/generated/source/scripts/build-app.sh.txt"
+    },
+    {
+      "path": "scripts/collect-logs.sh",
+      "bytes": 805,
+      "sha256": "1cc0175195be3387020a9e9e8f3856a14f21ce1f23d7a1bac3f4d8732eefa8a7",
+      "kind": "text",
+      "lines": 23,
+      "archive": "docs/development/generated/source/scripts/collect-logs.sh.txt"
+    },
+    {
+      "path": "scripts/com.roomcut.engine.plist",
+      "bytes": 1612,
+      "sha256": "6ceee6e0f9855434d5a03b819f44cf13196384d09fd0051cddf7f7ae07d5197d",
+      "kind": "text",
+      "lines": 55,
+      "archive": "docs/development/generated/source/scripts/com.roomcut.engine.plist.txt"
+    },
+    {
+      "path": "scripts/install-driver.sh",
+      "bytes": 1859,
+      "sha256": "72d1db3a1c7ed56dce0b5f377135cc4fbae9bb9ea549111ab52489bfbb8cac38",
+      "kind": "text",
+      "lines": 49,
+      "archive": "docs/development/generated/source/scripts/install-driver.sh.txt"
+    },
+    {
+      "path": "scripts/install-engine.sh",
+      "bytes": 13309,
+      "sha256": "3e34b84289bc816aec22908de51e64a8b6ba4fdb5157130407b62ec35150ea6f",
+      "kind": "text",
+      "lines": 373,
+      "archive": "docs/development/generated/source/scripts/install-engine.sh.txt"
+    },
+    {
+      "path": "scripts/package-release.sh",
+      "bytes": 7148,
+      "sha256": "6ca9637d21e0e8ef0fb5eafa7193bdfc003d92d83701a6ab1452442f35c7ab5c",
+      "kind": "text",
+      "lines": 162,
+      "archive": "docs/development/generated/source/scripts/package-release.sh.txt"
+    },
+    {
+      "path": "scripts/release/README.txt",
+      "bytes": 1405,
+      "sha256": "9f3b4f6dbd9f27bb753196d55d5576fda1e7a2730ad44fb52cad1d479bc7ee52",
+      "kind": "text",
+      "lines": 35,
+      "archive": "docs/development/generated/source/scripts/release/README.txt.txt"
+    },
+    {
+      "path": "scripts/release/install.sh",
+      "bytes": 3977,
+      "sha256": "aa4fc7acc053dd47bd2e958935e5c873832baf9c08f7d82fc6dad3e050dc52e1",
+      "kind": "text",
+      "lines": 110,
+      "archive": "docs/development/generated/source/scripts/release/install.sh.txt"
+    },
+    {
+      "path": "scripts/release/postinstall",
+      "bytes": 2140,
+      "sha256": "dca48044b0a8e5352e4fe7547c6e90b8aba7c9e73ff5b2904afb6d68431770f4",
+      "kind": "text",
+      "lines": 50,
+      "archive": "docs/development/generated/source/scripts/release/postinstall.txt"
+    },
+    {
+      "path": "scripts/release/uninstall.sh",
+      "bytes": 1367,
+      "sha256": "677118ef4697a201c00fc85c3cfef30f06ca61ab04db39ffc2536c439fb841b4",
+      "kind": "text",
+      "lines": 39,
+      "archive": "docs/development/generated/source/scripts/release/uninstall.sh.txt"
+    },
+    {
+      "path": "scripts/reset-audio-output.sh",
+      "bytes": 468,
+      "sha256": "9a67151f50d5ef563fdef95dcdc92fdf89920b6a7c9f1701d9c26207b7f5712b",
+      "kind": "text",
+      "lines": 10,
+      "archive": "docs/development/generated/source/scripts/reset-audio-output.sh.txt"
+    },
+    {
+      "path": "scripts/restart-coreaudiod.sh",
+      "bytes": 488,
+      "sha256": "d624ec10f28bdce2e89a6ab1a658b7ee73be3cd19b17ba2afe074193ba28e85f",
+      "kind": "text",
+      "lines": 15,
+      "archive": "docs/development/generated/source/scripts/restart-coreaudiod.sh.txt"
+    },
+    {
+      "path": "scripts/tests/test_development_docs.py",
+      "bytes": 4088,
+      "sha256": "f818984ea88b68e9e63cfd7332dcecff7a04834782f5c968791e3b9bd2de7a06",
+      "kind": "text",
+      "lines": 92,
+      "archive": "docs/development/generated/source/scripts/tests/test_development_docs.py.txt"
+    },
+    {
+      "path": "scripts/uninstall-driver.sh",
+      "bytes": 761,
+      "sha256": "81591983e9e15054df8c1b09d5c021b13942e78fe45436905b44205904ce6bd7",
+      "kind": "text",
+      "lines": 27,
+      "archive": "docs/development/generated/source/scripts/uninstall-driver.sh.txt"
+    },
+    {
+      "path": "scripts/uninstall-engine.sh",
+      "bytes": 983,
+      "sha256": "b4dca3eb3752959e881823fdb8a587167ce4ec2033a52718d7f86ad0cc476008",
+      "kind": "text",
+      "lines": 27,
+      "archive": "docs/development/generated/source/scripts/uninstall-engine.sh.txt"
+    },
+    {
+      "path": "scripts/update-development-docs.py",
+      "bytes": 7939,
+      "sha256": "fd4cb94d50c6021db3011aca6a2d584775a75326ad13d9c6d471e082f41e05f6",
+      "kind": "text",
+      "lines": 156,
+      "archive": "docs/development/generated/source/scripts/update-development-docs.py.txt"
+    },
+    {
+      "path": "scripts/verify-transfer.sh",
+      "bytes": 2580,
+      "sha256": "6882f19083d02709901bc5f9090800361521fd4c5c366024221a6822d31cefcd",
+      "kind": "text",
+      "lines": 83,
+      "archive": "docs/development/generated/source/scripts/verify-transfer.sh.txt"
+    },
+    {
+      "path": "shared/protocol/roomcut_audio_format.h",
+      "bytes": 1842,
+      "sha256": "bc1345729a7cf5b23cc21ceab6e3aef29d67f1eb5fc9f74fcde8c20cf28aa04f",
+      "kind": "text",
+      "lines": 46,
+      "archive": "docs/development/generated/source/shared/protocol/roomcut_audio_format.h.txt"
+    },
+    {
+      "path": "shared/protocol/roomcut_handshake.h",
+      "bytes": 17526,
+      "sha256": "0424fcecec3ad38afa3459dea902c8f78a2d919c1958cc666355efd6e5cc63a1",
+      "kind": "text",
+      "lines": 418,
+      "archive": "docs/development/generated/source/shared/protocol/roomcut_handshake.h.txt"
+    },
+    {
+      "path": "shared/protocol/roomcut_ipc.h",
+      "bytes": 8238,
+      "sha256": "cdd08aecffe24f153c19b05316236f836bfbb207b388ec5845b8a4098d857367",
+      "kind": "text",
+      "lines": 178,
+      "archive": "docs/development/generated/source/shared/protocol/roomcut_ipc.h.txt"
+    },
+    {
+      "path": "shared/protocol/roomcut_mach_cleanup.h",
+      "bytes": 1031,
+      "sha256": "e13b225fa5a416d250032ec641de8fcb5fefb54cfb1e13514cb22af483359e0a",
+      "kind": "text",
+      "lines": 22,
+      "archive": "docs/development/generated/source/shared/protocol/roomcut_mach_cleanup.h.txt"
+    },
+    {
+      "path": "shared/protocol/roomcut_ring.h",
+      "bytes": 7458,
+      "sha256": "10e0f43394b71c29996280b42e502b867c6e7bbd5838bafac50bd5b00bb21e4c",
+      "kind": "text",
+      "lines": 191,
+      "archive": "docs/development/generated/source/shared/protocol/roomcut_ring.h.txt"
+    },
+    {
+      "path": "shared/schemas/ai_proposal.schema.json",
+      "bytes": 2114,
+      "sha256": "f5b88a9a648cd8b196be1220768872d29a0516f33c5dcb02ecd537e9d2e0108c",
+      "kind": "text",
+      "lines": 53,
+      "archive": "docs/development/generated/source/shared/schemas/ai_proposal.schema.json.txt"
+    },
+    {
+      "path": "shared/schemas/analysis.schema.json",
+      "bytes": 2699,
+      "sha256": "fc5f956dc935a83025c9c1a4afe786ddb7930b02787943c5feb266d1c40fb2f9",
+      "kind": "text",
+      "lines": 71,
+      "archive": "docs/development/generated/source/shared/schemas/analysis.schema.json.txt"
+    },
+    {
+      "path": "shared/schemas/device.schema.json",
+      "bytes": 1120,
+      "sha256": "a40fb93379ffd98c3231554a67d6b88997b6994ccbce3078dbf240c6e583c924",
+      "kind": "text",
+      "lines": 32,
+      "archive": "docs/development/generated/source/shared/schemas/device.schema.json.txt"
+    },
+    {
+      "path": "shared/schemas/preset.schema.json",
+      "bytes": 3050,
+      "sha256": "9415f80c0f3e368eb1db375e2aae3a776334a25f0d7999bbeed7e0c895e8dcba",
+      "kind": "text",
+      "lines": 79,
+      "archive": "docs/development/generated/source/shared/schemas/preset.schema.json.txt"
+    }
+  ]
+}

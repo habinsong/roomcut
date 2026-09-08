@@ -1,0 +1,7 @@
+real HAL registration 0: status=0 active=1
+real HAL registration 1: status=0 active=1
+real HAL registration 2: status=0 active=1
+real HAL removal 0: status=0
+real HAL removal 1: status=0
+real HAL removal 2: status=0
+real CoreAudio read-only listener smoke passed; no output property was changed

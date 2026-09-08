@@ -1,0 +1,22 @@
+from pathlib import Path
+import json,subprocess,time,sys
+root=Path('/Users/songhabin/roomcut');base=root/'build/sound-check-audit'
+name=sys.argv[1]
+start=time.monotonic();records=[]
+player=subprocess.Popen(['/usr/bin/afplay','-v','1',str(base/'tone-1k-low.wav')],stdout=subprocess.DEVNULL,stderr=subprocess.PIPE)
+try:
+ while time.monotonic()-start < 7:
+  entry={'elapsed':time.monotonic()-start}
+  for command in ['status','analysis']:
+   result=subprocess.run([str(root/'build/engine/roomcutctl'),command,'--json'],capture_output=True,text=True,timeout=3)
+   entry[command]=json.loads(result.stdout) if result.returncode==0 else {'error':result.stderr,'exit':result.returncode}
+  records.append(entry)
+  if player.poll() is not None and time.monotonic()-start>6.5: break
+  time.sleep(0.2)
+finally:
+ if player.poll() is None: player.terminate()
+ _,error=player.communicate(timeout=3)
+result={'playerExit':player.returncode,'playerError':error.decode(),'records':records}
+(base/(name+'.json')).write_text(json.dumps(result,indent=2))
+active=[x['status'] for x in records if x['status'].get('peak',0)>0.00001]
+print(json.dumps({'capture':name,'playerExit':player.returncode,'samples':len(records),'activeSamples':len(active),'maxPeak':max((x.get('peak',0) for x in active),default=0),'activeUnderrunDelta':active[-1]['underruns']-active[0]['underruns'] if active else None,'validAnalysis':sum(x['analysis'].get('valid',False) for x in records)}))

@@ -1,0 +1,17 @@
+2026-09-08 메모리 기반 평가용 앱 조작 기록
+식별자: com.roomcut.device-writes-qa
+실행 인자: --ui-fixture ui-basic --ui-appearance dark
+
+Settings 접근성 트리: volume slider 0.6, 표시 60%.
+직접 AX setValue는 지원되지 않아 Increment/Decrement로 조작.
+Increment 1회: slider 0.8, 표시 80%.
+Increment 3회 추가: slider 1.4, 표시 140%.
+Space 이동 후 Balance C, slider 0 확인.
+Balance Increment 1회: slider 0.2, 표시 R20.
+Balance Decrement 1회 후 Settings 복귀: 볼륨 140% 유지.
+Volume Decrement 4회: slider 0.6000000000000001, 표시 60%.
+Space 재확인: Balance C, slider 0.
+종료 후 앱 목록에서 com.roomcut.device-writes-qa가 없음을 확인.
+
+위 값은 메모리 fixture의 UI/읽기 결과입니다.
+실제 시스템 볼륨 또는 하드웨어 청취 검사 결과가 아닙니다.

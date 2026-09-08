@@ -1,0 +1,501 @@
+[0/1] Planning build
+Building for production...
+[0/4] Write sources
+[1/4] Write swift-version--58304C5D6DBC2206.txt
+[3/5] Compiling RoomcutPresentationCore RoomcutMainPresentation.swift
+[4/6] Compiling RoomcutCore AppPreferences.swift
+[5/9] Compiling RoomcutTests DeviceCommandTests.swift
+[6/10] Compiling RoomcutPackageTests runner.swift
+[6/10] Write Objects.LinkFileList
+[7/10] Linking RoomcutPackageTests
+[9/10] Compiling Roomcut AdvancedControls.swift
+[9/11] Write Objects.LinkFileList
+[10/11] Linking Roomcut
+Build complete! (89.34s)
+Test Suite 'All tests' started at 2026-09-08 15:16:50.830.
+Test Suite 'RoomcutPackageTests.xctest' started at 2026-09-08 15:16:50.831.
+Test Suite 'DeviceCommandTests' started at 2026-09-08 15:16:50.831.
+Test Case '-[RoomcutTests.DeviceCommandTests testAlreadySelectedOutputDoesNotCreateAClaimError]' started.
+Test Case '-[RoomcutTests.DeviceCommandTests testAlreadySelectedOutputDoesNotCreateAClaimError]' passed (0.005 seconds).
+Test Case '-[RoomcutTests.DeviceCommandTests testAuthoritativeReadbackCanRemoveOldBoost]' started.
+Test Case '-[RoomcutTests.DeviceCommandTests testAuthoritativeReadbackCanRemoveOldBoost]' passed (0.005 seconds).
+Test Case '-[RoomcutTests.DeviceCommandTests testAutomaticClaimCannotHideManualFailure]' started.
+Test Case '-[RoomcutTests.DeviceCommandTests testAutomaticClaimCannotHideManualFailure]' passed (0.003 seconds).
+Test Case '-[RoomcutTests.DeviceCommandTests testBlockedHardwareWriteDoesNotHoldTheStateRequestQueue]' started.
+Test Case '-[RoomcutTests.DeviceCommandTests testBlockedHardwareWriteDoesNotHoldTheStateRequestQueue]' passed (0.001 seconds).
+Test Case '-[RoomcutTests.DeviceCommandTests testCancelDropsPendingWritesAndUnsentCompoundStep]' started.
+Test Case '-[RoomcutTests.DeviceCommandTests testCancelDropsPendingWritesAndUnsentCompoundStep]' passed (0.008 seconds).
+Test Case '-[RoomcutTests.DeviceCommandTests testContinuousVolumeWritesCoalesceWithoutLosingBalance]' started.
+Test Case '-[RoomcutTests.DeviceCommandTests testContinuousVolumeWritesCoalesceWithoutLosingBalance]' passed (0.007 seconds).
+Test Case '-[RoomcutTests.DeviceCommandTests testCurrentFailureSurvivesPollingUntilNewSuccess]' started.
+Test Case '-[RoomcutTests.DeviceCommandTests testCurrentFailureSurvivesPollingUntilNewSuccess]' passed (0.006 seconds).
+Test Case '-[RoomcutTests.DeviceCommandTests testExplicitOffPreventsStartupFromTurningOnLater]' started.
+Test Case '-[RoomcutTests.DeviceCommandTests testExplicitOffPreventsStartupFromTurningOnLater]' passed (0.005 seconds).
+Test Case '-[RoomcutTests.DeviceCommandTests testFormatAndOutputRemainOrderedWhileFormatsCoalesce]' started.
+Test Case '-[RoomcutTests.DeviceCommandTests testFormatAndOutputRemainOrderedWhileFormatsCoalesce]' passed (0.005 seconds).
+Test Case '-[RoomcutTests.DeviceCommandTests testLatestMasterIntentWinsAcrossSuspendedAcknowledgement]' started.
+Test Case '-[RoomcutTests.DeviceCommandTests testLatestMasterIntentWinsAcrossSuspendedAcknowledgement]' passed (0.031 seconds).
+Test Case '-[RoomcutTests.DeviceCommandTests testLiveDefaultOutputAcceptsChangedAndAlreadySelected]' started.
+Test Case '-[RoomcutTests.DeviceCommandTests testLiveDefaultOutputAcceptsChangedAndAlreadySelected]' passed (0.002 seconds).
+Test Case '-[RoomcutTests.DeviceCommandTests testLiveDefaultOutputPreservesFailures]' started.
+Test Case '-[RoomcutTests.DeviceCommandTests testLiveDefaultOutputPreservesFailures]' passed (0.001 seconds).
+Test Case '-[RoomcutTests.DeviceCommandTests testLiveWriteQueueAllowsMainActorProgress]' started.
+Test Case '-[RoomcutTests.DeviceCommandTests testLiveWriteQueueAllowsMainActorProgress]' passed (0.001 seconds).
+Test Case '-[RoomcutTests.DeviceCommandTests testOlderDeviceFailureCannotOverwriteNewerSuccess]' started.
+Test Case '-[RoomcutTests.DeviceCommandTests testOlderDeviceFailureCannotOverwriteNewerSuccess]' passed (0.050 seconds).
+Test Suite 'DeviceCommandTests' passed at 2026-09-08 15:16:50.962.
+	 Executed 14 tests, with 0 failures (0 unexpected) in 0.128 (0.131) seconds
+Test Suite 'DeviceReadCoordinatorTests' started at 2026-09-08 15:16:50.962.
+Test Case '-[RoomcutTests.DeviceReadCoordinatorTests testAdditionalSectionsMergeIntoOnePendingRead]' started.
+Test Case '-[RoomcutTests.DeviceReadCoordinatorTests testAdditionalSectionsMergeIntoOnePendingRead]' passed (0.002 seconds).
+Test Case '-[RoomcutTests.DeviceReadCoordinatorTests testCancelledWaitersFinishAndNativeCompletionIsIgnored]' started.
+Test Case '-[RoomcutTests.DeviceReadCoordinatorTests testCancelledWaitersFinishAndNativeCompletionIsIgnored]' passed (0.006 seconds).
+Test Case '-[RoomcutTests.DeviceReadCoordinatorTests testRepeatedPollsShareOneReadAndOnlyLatestDeviceWaits]' started.
+Test Case '-[RoomcutTests.DeviceReadCoordinatorTests testRepeatedPollsShareOneReadAndOnlyLatestDeviceWaits]' passed (0.004 seconds).
+Test Case '-[RoomcutTests.DeviceReadCoordinatorTests testStopAndRestartDoNotOverlapTheNativeReads]' started.
+Test Case '-[RoomcutTests.DeviceReadCoordinatorTests testStopAndRestartDoNotOverlapTheNativeReads]' passed (0.004 seconds).
+Test Suite 'DeviceReadCoordinatorTests' passed at 2026-09-08 15:16:50.980.
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.017 (0.018) seconds
+Test Suite 'LRCLIBClientTests' started at 2026-09-08 15:16:50.980.
+Test Case '-[RoomcutTests.LRCLIBClientTests testAdjacentLyricsPrefetchRunsPreviousAndNextConcurrently]' started.
+Test Case '-[RoomcutTests.LRCLIBClientTests testAdjacentLyricsPrefetchRunsPreviousAndNextConcurrently]' passed (0.313 seconds).
+Test Case '-[RoomcutTests.LRCLIBClientTests testCacheKeyUsesStableTrackIdentity]' started.
+Test Case '-[RoomcutTests.LRCLIBClientTests testCacheKeyUsesStableTrackIdentity]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.LRCLIBClientTests testClearEmptiesCacheAndDeletesFile]' started.
+Test Case '-[RoomcutTests.LRCLIBClientTests testClearEmptiesCacheAndDeletesFile]' passed (0.003 seconds).
+Test Case '-[RoomcutTests.LRCLIBClientTests testDefaultRetryPolicyUsesThreeAttemptsAndTwoSecondDelay]' started.
+Test Case '-[RoomcutTests.LRCLIBClientTests testDefaultRetryPolicyUsesThreeAttemptsAndTwoSecondDelay]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.LRCLIBClientTests testLookupUsesOfficialExactMetadataRequest]' started.
+Test Case '-[RoomcutTests.LRCLIBClientTests testLookupUsesOfficialExactMetadataRequest]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.LRCLIBClientTests testPersistentCacheEvictsOldestEntryAfterOneThousandTracks]' started.
+Test Case '-[RoomcutTests.LRCLIBClientTests testPersistentCacheEvictsOldestEntryAfterOneThousandTracks]' passed (1.876 seconds).
+Test Case '-[RoomcutTests.LRCLIBClientTests testPersistentCacheFindsLegacyAlbumKey]' started.
+Test Case '-[RoomcutTests.LRCLIBClientTests testPersistentCacheFindsLegacyAlbumKey]' passed (0.002 seconds).
+Test Case '-[RoomcutTests.LRCLIBClientTests testPersistentCacheFindsUnknownDurationEntryForKnownDuration]' started.
+Test Case '-[RoomcutTests.LRCLIBClientTests testPersistentCacheFindsUnknownDurationEntryForKnownDuration]' passed (0.001 seconds).
+Test Case '-[RoomcutTests.LRCLIBClientTests testPersistentCacheRejectsDifferentDurationVersion]' started.
+Test Case '-[RoomcutTests.LRCLIBClientTests testPersistentCacheRejectsDifferentDurationVersion]' passed (0.001 seconds).
+Test Case '-[RoomcutTests.LRCLIBClientTests testPersistentCacheSurvivesClientRestart]' started.
+Test Case '-[RoomcutTests.LRCLIBClientTests testPersistentCacheSurvivesClientRestart]' passed (0.001 seconds).
+Test Case '-[RoomcutTests.LRCLIBClientTests testSearchResultPrefersMatchingDuration]' started.
+Test Case '-[RoomcutTests.LRCLIBClientTests testSearchResultPrefersMatchingDuration]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.LRCLIBClientTests testSecondAttemptStartsBeforeSlowFirstAttemptTimesOut]' started.
+Test Case '-[RoomcutTests.LRCLIBClientTests testSecondAttemptStartsBeforeSlowFirstAttemptTimesOut]' passed (0.012 seconds).
+Test Case '-[RoomcutTests.LRCLIBClientTests testTransientFailureRetriesUntilThirdAttemptSucceeds]' started.
+Test Case '-[RoomcutTests.LRCLIBClientTests testTransientFailureRetriesUntilThirdAttemptSucceeds]' passed (0.000 seconds).
+Test Suite 'LRCLIBClientTests' passed at 2026-09-08 15:16:53.192.
+	 Executed 13 tests, with 0 failures (0 unexpected) in 2.211 (2.212) seconds
+Test Suite 'LocalizationTests' started at 2026-09-08 15:16:53.192.
+Test Case '-[RoomcutTests.LocalizationTests testEffectiveFollowsSystemWhenAuto]' started.
+Test Case '-[RoomcutTests.LocalizationTests testEffectiveFollowsSystemWhenAuto]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.LocalizationTests testLResolvesPerEffectiveLanguage]' started.
+Test Case '-[RoomcutTests.LocalizationTests testLResolvesPerEffectiveLanguage]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.LocalizationTests testSetLanguageUpdatesPreferenceAndPersists]' started.
+Test Case '-[RoomcutTests.LocalizationTests testSetLanguageUpdatesPreferenceAndPersists]' passed (0.002 seconds).
+Test Suite 'LocalizationTests' passed at 2026-09-08 15:16:53.194.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.002 (0.002) seconds
+Test Suite 'LyricsParsingTests' started at 2026-09-08 15:16:53.194.
+Test Case '-[RoomcutTests.LyricsParsingTests testEmptyStampedLineClearsDisplay]' started.
+Test Case '-[RoomcutTests.LyricsParsingTests testEmptyStampedLineClearsDisplay]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.LyricsParsingTests testLineAtTimePicksLastStampAtOrBeforeTime]' started.
+Test Case '-[RoomcutTests.LyricsParsingTests testLineAtTimePicksLastStampAtOrBeforeTime]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.LyricsParsingTests testLyricLinesReturnsCurrentAndNextLine]' started.
+Test Case '-[RoomcutTests.LyricsParsingTests testLyricLinesReturnsCurrentAndNextLine]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.LyricsParsingTests testParsesSyncedLinesSortedAndSkipsMetadata]' started.
+Test Case '-[RoomcutTests.LyricsParsingTests testParsesSyncedLinesSortedAndSkipsMetadata]' passed (0.000 seconds).
+Test Suite 'LyricsParsingTests' passed at 2026-09-08 15:16:53.195.
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.001 (0.001) seconds
+Test Suite 'MainPresentationTests' started at 2026-09-08 15:16:53.195.
+Test Case '-[RoomcutTests.MainPresentationTests testAudioFormatLabelUsesBitDepthSampleRateAndLatency]' started.
+Test Case '-[RoomcutTests.MainPresentationTests testAudioFormatLabelUsesBitDepthSampleRateAndLatency]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.MainPresentationTests testBassMacroBoostsLowBandsOnly]' started.
+Test Case '-[RoomcutTests.MainPresentationTests testBassMacroBoostsLowBandsOnly]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.MainPresentationTests testEveryMacroHasOnlyKnownBandIndices]' started.
+Test Case '-[RoomcutTests.MainPresentationTests testEveryMacroHasOnlyKnownBandIndices]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.MainPresentationTests testFallbackLabels]' started.
+Test Case '-[RoomcutTests.MainPresentationTests testFallbackLabels]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.MainPresentationTests testFallbackSignalActiveOnlyWhenRunningWithPeak]' started.
+Test Case '-[RoomcutTests.MainPresentationTests testFallbackSignalActiveOnlyWhenRunningWithPeak]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.MainPresentationTests testFixtureDisplayShowsSampleAndEnablesControls]' started.
+Test Case '-[RoomcutTests.MainPresentationTests testFixtureDisplayShowsSampleAndEnablesControls]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.MainPresentationTests testHealthDegradedOnBypassLimiterOrUnderrun]' started.
+Test Case '-[RoomcutTests.MainPresentationTests testHealthDegradedOnBypassLimiterOrUnderrun]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.MainPresentationTests testHealthNormalWhenRunningAndClean]' started.
+Test Case '-[RoomcutTests.MainPresentationTests testHealthNormalWhenRunningAndClean]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.MainPresentationTests testHealthStoppedWhenUnreachableOrStopped]' started.
+Test Case '-[RoomcutTests.MainPresentationTests testHealthStoppedWhenUnreachableOrStopped]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.MainPresentationTests testLaunchDefaultsAreCollapsedHome]' started.
+Test Case '-[RoomcutTests.MainPresentationTests testLaunchDefaultsAreCollapsedHome]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.MainPresentationTests testMacroClampsToGainRange]' started.
+Test Case '-[RoomcutTests.MainPresentationTests testMacroClampsToGainRange]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.MainPresentationTests testMacroPreservesUnrelatedBands]' started.
+Test Case '-[RoomcutTests.MainPresentationTests testMacroPreservesUnrelatedBands]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.MainPresentationTests testMacroValueIsClampedToInputRange]' started.
+Test Case '-[RoomcutTests.MainPresentationTests testMacroValueIsClampedToInputRange]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.MainPresentationTests testMetadataUnavailableDoesNotDegradeHealth]' started.
+Test Case '-[RoomcutTests.MainPresentationTests testMetadataUnavailableDoesNotDegradeHealth]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.MainPresentationTests testRoomcutEnabledIsInverseOfManualBypass]' started.
+Test Case '-[RoomcutTests.MainPresentationTests testRoomcutEnabledIsInverseOfManualBypass]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.MainPresentationTests testSheetStepsThroughCollapsedBasicAdvanced]' started.
+Test Case '-[RoomcutTests.MainPresentationTests testSheetStepsThroughCollapsedBasicAdvanced]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.MainPresentationTests testSoundControlsLevelStepsThroughMinimizedControlsExpanded]' started.
+Test Case '-[RoomcutTests.MainPresentationTests testSoundControlsLevelStepsThroughMinimizedControlsExpanded]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.MainPresentationTests testStatusDotCarriesNonColorLabel]' started.
+Test Case '-[RoomcutTests.MainPresentationTests testStatusDotCarriesNonColorLabel]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.MainPresentationTests testWindowWidthClampsToFortyAndOneHundredFortyPercent]' started.
+Test Case '-[RoomcutTests.MainPresentationTests testWindowWidthClampsToFortyAndOneHundredFortyPercent]' passed (0.000 seconds).
+Test Suite 'MainPresentationTests' passed at 2026-09-08 15:16:53.199.
+	 Executed 19 tests, with 0 failures (0 unexpected) in 0.002 (0.004) seconds
+Test Suite 'NowPlayingPayloadTests' started at 2026-09-08 15:16:53.199.
+Test Case '-[RoomcutTests.NowPlayingPayloadTests testAllBlackWideCanvasKeepsAUsableCore]' started.
+Test Case '-[RoomcutTests.NowPlayingPayloadTests testAllBlackWideCanvasKeepsAUsableCore]' passed (0.002 seconds).
+Test Case '-[RoomcutTests.NowPlayingPayloadTests testArtworkDecodePreservesValidNoArtworkResponse]' started.
+Test Case '-[RoomcutTests.NowPlayingPayloadTests testArtworkDecodePreservesValidNoArtworkResponse]' passed (0.002 seconds).
+Test Case '-[RoomcutTests.NowPlayingPayloadTests testArtworkDecodeReturnsTrackScopedBytes]' started.
+Test Case '-[RoomcutTests.NowPlayingPayloadTests testArtworkDecodeReturnsTrackScopedBytes]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.NowPlayingPayloadTests testFullBleedWideContentIsNotTrimmed]' started.
+Test Case '-[RoomcutTests.NowPlayingPayloadTests testFullBleedWideContentIsNotTrimmed]' passed (0.002 seconds).
+Test Case '-[RoomcutTests.NowPlayingPayloadTests testFullPayloadUsesSameStableIdentityForMetadataAndArtwork]' started.
+Test Case '-[RoomcutTests.NowPlayingPayloadTests testFullPayloadUsesSameStableIdentityForMetadataAndArtwork]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.NowPlayingPayloadTests testMetadataDecodeDoesNotRequireArtworkData]' started.
+Test Case '-[RoomcutTests.NowPlayingPayloadTests testMetadataDecodeDoesNotRequireArtworkData]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.NowPlayingPayloadTests testObservedTransitionsLearnPreviousAndNextForQueueLessPlayers]' started.
+Test Case '-[RoomcutTests.NowPlayingPayloadTests testObservedTransitionsLearnPreviousAndNextForQueueLessPlayers]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.NowPlayingPayloadTests testQueueDecodeReturnsOnlyAdjacentTracks]' started.
+Test Case '-[RoomcutTests.NowPlayingPayloadTests testQueueDecodeReturnsOnlyAdjacentTracks]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.NowPlayingPayloadTests testSquareCanvasIsNeverTrimmed]' started.
+Test Case '-[RoomcutTests.NowPlayingPayloadTests testSquareCanvasIsNeverTrimmed]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.NowPlayingPayloadTests testTrackIdentityDoesNotChangeWhenAlbumArrivesLater]' started.
+Test Case '-[RoomcutTests.NowPlayingPayloadTests testTrackIdentityDoesNotChangeWhenAlbumArrivesLater]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.NowPlayingPayloadTests testTrackIdentityTreatsMissingDurationAsSameTrack]' started.
+Test Case '-[RoomcutTests.NowPlayingPayloadTests testTrackIdentityTreatsMissingDurationAsSameTrack]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.NowPlayingPayloadTests testTrimsLetterboxBarsFromTallCanvas]' started.
+Test Case '-[RoomcutTests.NowPlayingPayloadTests testTrimsLetterboxBarsFromTallCanvas]' passed (0.001 seconds).
+Test Case '-[RoomcutTests.NowPlayingPayloadTests testTrimsPillarboxBarsFromWideCanvas]' started.
+Test Case '-[RoomcutTests.NowPlayingPayloadTests testTrimsPillarboxBarsFromWideCanvas]' passed (0.001 seconds).
+Test Suite 'NowPlayingPayloadTests' passed at 2026-09-08 15:16:53.209.
+	 Executed 13 tests, with 0 failures (0 unexpected) in 0.009 (0.010) seconds
+Test Suite 'PollingLifecycleTests' started at 2026-09-08 15:16:53.209.
+Test Case '-[RoomcutTests.PollingLifecycleTests testCancelledManualRefreshDoesNotPublish]' started.
+Test Case '-[RoomcutTests.PollingLifecycleTests testCancelledManualRefreshDoesNotPublish]' passed (0.005 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testDeviceSwitchRejectsOldReadbackBeforeApplyingNewValues]' started.
+Test Case '-[RoomcutTests.PollingLifecycleTests testDeviceSwitchRejectsOldReadbackBeforeApplyingNewValues]' passed (0.003 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testDisconnectPreventsHeldDeviceDataFromRestoringTheUI]' started.
+Test Case '-[RoomcutTests.PollingLifecycleTests testDisconnectPreventsHeldDeviceDataFromRestoringTheUI]' passed (0.008 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testHiddenAnalyzerDoesNotRepublishLateResult]' started.
+Test Case '-[RoomcutTests.PollingLifecycleTests testHiddenAnalyzerDoesNotRepublishLateResult]' passed (0.004 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testLiveDeviceQueueAllowsMainActorWorkDuringABlockedRead]' started.
+Test Case '-[RoomcutTests.PollingLifecycleTests testLiveDeviceQueueAllowsMainActorWorkDuringABlockedRead]' passed (0.001 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testNewPollCanFinishBeforeTheStoppedPollReturns]' started.
+Test Case '-[RoomcutTests.PollingLifecycleTests testNewPollCanFinishBeforeTheStoppedPollReturns]' passed (0.004 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testPollerCadenceAndOldCompletionIsolation]' started.
+Test Case '-[RoomcutTests.PollingLifecycleTests testPollerCadenceAndOldCompletionIsolation]' passed (0.001 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testSlowDeviceReadCannotRelabelANewerSoundEdit]' started.
+Test Case '-[RoomcutTests.PollingLifecycleTests testSlowDeviceReadCannotRelabelANewerSoundEdit]' passed (0.010 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testSlowDeviceReadDoesNotPauseStatusAndMeters]' started.
+Test Case '-[RoomcutTests.PollingLifecycleTests testSlowDeviceReadDoesNotPauseStatusAndMeters]' passed (0.258 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testStartThenStopDiscardsTheQueuedInitialPoll]' started.
+Test Case '-[RoomcutTests.PollingLifecycleTests testStartThenStopDiscardsTheQueuedInitialPoll]' passed (0.016 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testStoppedPollCannotPublishLateConnectionError]' started.
+Test Case '-[RoomcutTests.PollingLifecycleTests testStoppedPollCannotPublishLateConnectionError]' passed (0.005 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testStoppedPollCannotPublishLateParameterError]' started.
+Test Case '-[RoomcutTests.PollingLifecycleTests testStoppedPollCannotPublishLateParameterError]' passed (0.004 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testStoppedPollCannotPublishOrClaimDefaultFromLateState]' started.
+Test Case '-[RoomcutTests.PollingLifecycleTests testStoppedPollCannotPublishOrClaimDefaultFromLateState]' passed (0.003 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testVolumeEditOutlivesAnOlderDeviceReadback]' started.
+Test Case '-[RoomcutTests.PollingLifecycleTests testVolumeEditOutlivesAnOlderDeviceReadback]' passed (0.005 seconds).
+Test Suite 'PollingLifecycleTests' passed at 2026-09-08 15:16:53.537.
+	 Executed 14 tests, with 0 failures (0 unexpected) in 0.325 (0.328) seconds
+Test Suite 'PresentationTests' started at 2026-09-08 15:16:53.537.
+Test Case '-[RoomcutTests.PresentationTests testAllEngineStatesHaveLabelAndSymbol]' started.
+Test Case '-[RoomcutTests.PresentationTests testAllEngineStatesHaveLabelAndSymbol]' passed (0.001 seconds).
+Test Case '-[RoomcutTests.PresentationTests testAnalyzerMetricLabelsAreRoundedForStableReading]' started.
+Test Case '-[RoomcutTests.PresentationTests testAnalyzerMetricLabelsAreRoundedForStableReading]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.PresentationTests testEqControlCurveUsesLogFrequencyOrder]' started.
+Test Case '-[RoomcutTests.PresentationTests testEqControlCurveUsesLogFrequencyOrder]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.PresentationTests testEqGainToNormalizedYCentersZero]' started.
+Test Case '-[RoomcutTests.PresentationTests testEqGainToNormalizedYCentersZero]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.PresentationTests testLimiterVisibilityRule]' started.
+Test Case '-[RoomcutTests.PresentationTests testLimiterVisibilityRule]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.PresentationTests testMeterRoleUsesSignalMeaningNotColorNames]' started.
+Test Case '-[RoomcutTests.PresentationTests testMeterRoleUsesSignalMeaningNotColorNames]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.PresentationTests testPeakDbConversionClampsToMeterRange]' started.
+Test Case '-[RoomcutTests.PresentationTests testPeakDbConversionClampsToMeterRange]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.PresentationTests testPhase7PresetListIncludesSpatialModes]' started.
+Test Case '-[RoomcutTests.PresentationTests testPhase7PresetListIncludesSpatialModes]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.PresentationTests testStatusIsDistinguishableWithoutColor]' started.
+Test Case '-[RoomcutTests.PresentationTests testStatusIsDistinguishableWithoutColor]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.PresentationTests testThemeLayoutMatchesPhase6Bounds]' started.
+Test Case '-[RoomcutTests.PresentationTests testThemeLayoutMatchesPhase6Bounds]' passed (0.000 seconds).
+Test Suite 'PresentationTests' passed at 2026-09-08 15:16:53.540.
+	 Executed 10 tests, with 0 failures (0 unexpected) in 0.002 (0.003) seconds
+Test Suite 'PresetStoreTests' started at 2026-09-08 15:16:53.540.
+Test Case '-[RoomcutTests.PresetStoreTests testImportNormalizesArraysAndDeleteRemovesCaseVariantMappings]' started.
+Test Case '-[RoomcutTests.PresetStoreTests testImportNormalizesArraysAndDeleteRemovesCaseVariantMappings]' passed (0.005 seconds).
+Test Case '-[RoomcutTests.PresetStoreTests testUnsupportedArchiveCannotPartiallyImport]' started.
+Test Case '-[RoomcutTests.PresetStoreTests testUnsupportedArchiveCannotPartiallyImport]' passed (0.002 seconds).
+Test Suite 'PresetStoreTests' passed at 2026-09-08 15:16:53.546.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 0.007 (0.007) seconds
+Test Suite 'RoomTuneAnalysisTests' started at 2026-09-08 15:16:53.546.
+Test Case '-[RoomcutTests.RoomTuneAnalysisTests testAudioFileConvertsLowRateMicrophoneRecordings]' started.
+Test Case '-[RoomcutTests.RoomTuneAnalysisTests testAudioFileConvertsLowRateMicrophoneRecordings]' passed (0.020 seconds).
+Test Case '-[RoomcutTests.RoomTuneAnalysisTests testClockAndNoiseMatrixPreservesFlatResponse]' started.
+Test Case '-[RoomcutTests.RoomTuneAnalysisTests testClockAndNoiseMatrixPreservesFlatResponse]' passed (0.297 seconds).
+Test Case '-[RoomcutTests.RoomTuneAnalysisTests testFlatResponseRemovesExcitationSpectrumAndUnknownDelay]' started.
+Test Case '-[RoomcutTests.RoomTuneAnalysisTests testFlatResponseRemovesExcitationSpectrumAndUnknownDelay]' passed (0.167 seconds).
+Test Case '-[RoomcutTests.RoomTuneAnalysisTests testInvalidSampleRateAndNonFiniteRecordingAreRejected]' started.
+Test Case '-[RoomcutTests.RoomTuneAnalysisTests testInvalidSampleRateAndNonFiniteRecordingAreRejected]' passed (0.011 seconds).
+Test Case '-[RoomcutTests.RoomTuneAnalysisTests testKnownResonanceStaysAt500HzAcrossRecordingDelays]' started.
+Test Case '-[RoomcutTests.RoomTuneAnalysisTests testKnownResonanceStaysAt500HzAcrossRecordingDelays]' passed (0.209 seconds).
+Test Case '-[RoomcutTests.RoomTuneAnalysisTests testRecordingTruncatedByDelayedPlaybackIsRejected]' started.
+Test Case '-[RoomcutTests.RoomTuneAnalysisTests testRecordingTruncatedByDelayedPlaybackIsRejected]' passed (0.047 seconds).
+Test Case '-[RoomcutTests.RoomTuneAnalysisTests testSilenceAndClippingAreMeasurementFailures]' started.
+Test Case '-[RoomcutTests.RoomTuneAnalysisTests testSilenceAndClippingAreMeasurementFailures]' passed (0.003 seconds).
+Test Case '-[RoomcutTests.RoomTuneAnalysisTests testUnrelatedToneIsNotReportedAsARoomMeasurement]' started.
+Test Case '-[RoomcutTests.RoomTuneAnalysisTests testUnrelatedToneIsNotReportedAsARoomMeasurement]' passed (0.046 seconds).
+Test Case '-[RoomcutTests.RoomTuneAnalysisTests testUnrelatedWhiteNoiseIsRejected]' started.
+Test Case '-[RoomcutTests.RoomTuneAnalysisTests testUnrelatedWhiteNoiseIsRejected]' passed (0.040 seconds).
+Test Suite 'RoomTuneAnalysisTests' passed at 2026-09-08 15:16:54.386.
+	 Executed 9 tests, with 0 failures (0 unexpected) in 0.839 (0.840) seconds
+Test Suite 'RoomTuneAudioFileTests' started at 2026-09-08 15:16:54.387.
+Test Case '-[RoomcutTests.RoomTuneAudioFileTests testPCMFileFormatsAndSampleRatesPreserveLevel]' started.
+Test Case '-[RoomcutTests.RoomTuneAudioFileTests testPCMFileFormatsAndSampleRatesPreserveLevel]' passed (0.028 seconds).
+Test Suite 'RoomTuneAudioFileTests' passed at 2026-09-08 15:16:54.416.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.028 (0.029) seconds
+Test Suite 'RoomTunePCMTests' started at 2026-09-08 15:16:54.416.
+Test Case '-[RoomcutTests.RoomTunePCMTests testCaptureConversionKeepsTheInputSampleRate]' started.
+Test Case '-[RoomcutTests.RoomTunePCMTests testCaptureConversionKeepsTheInputSampleRate]' passed (0.009 seconds).
+Test Case '-[RoomcutTests.RoomTunePCMTests testFirstChannelAcrossPCMFormatsAndLayouts]' started.
+Test Case '-[RoomcutTests.RoomTunePCMTests testFirstChannelAcrossPCMFormatsAndLayouts]' passed (0.001 seconds).
+Test Case '-[RoomcutTests.RoomTunePCMTests testNonFiniteInputFailsButClippedLevelsRemainVisible]' started.
+Test Case '-[RoomcutTests.RoomTunePCMTests testNonFiniteInputFailsButClippedLevelsRemainVisible]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.RoomTunePCMTests testPacked24BitPCMEndiannessAndChannelLayouts]' started.
+Test Case '-[RoomcutTests.RoomTunePCMTests testPacked24BitPCMEndiannessAndChannelLayouts]' passed (0.001 seconds).
+Test Case '-[RoomcutTests.RoomTunePCMTests testRejectsUnreadyInvalidatedAndTruncatedBuffers]' started.
+Test Case '-[RoomcutTests.RoomTunePCMTests testRejectsUnreadyInvalidatedAndTruncatedBuffers]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.RoomTunePCMTests testRepeatedConvertedBuffersRoundTripThroughWAV]' started.
+Test Case '-[RoomcutTests.RoomTunePCMTests testRepeatedConvertedBuffersRoundTripThroughWAV]' passed (0.001 seconds).
+Test Suite 'RoomTunePCMTests' passed at 2026-09-08 15:16:54.429.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 0.012 (0.013) seconds
+Test Suite 'RoomcutViewModelTests' started at 2026-09-08 15:16:54.429.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testAnalysisClearsWhenAnalyzerUnsupported]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testAnalysisClearsWhenAnalyzerUnsupported]' passed (0.001 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testAnalysisDoesNotRefreshWhenAnalyzerIsHidden]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testAnalysisDoesNotRefreshWhenAnalyzerIsHidden]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testAnalysisRefreshesWhenEngineSupportsAnalyzer]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testAnalysisRefreshesWhenEngineSupportsAnalyzer]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testApplySavedPresetSetsParamsAndResetsMacros]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testApplySavedPresetSetsParamsAndResetsMacros]' passed (0.001 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testAwaitedBypassRejectsFailedWrite]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testAwaitedBypassRejectsFailedWrite]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testAwaitedBypassReportsAcknowledgedWrite]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testAwaitedBypassReportsAcknowledgedWrite]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testCompAmountDoesNotPushWhenEngineLacksDynamics]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testCompAmountDoesNotPushWhenEngineLacksDynamics]' passed (0.046 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testCompAmountPushesClampsAndRoundTripsInSavedPreset]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testCompAmountPushesClampsAndRoundTripsInSavedPreset]' passed (0.047 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testDebounceCoalescesSliderWrites]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testDebounceCoalescesSliderWrites]' passed (0.084 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testDeleteSavedPresetDropsItsDeviceMappings]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testDeleteSavedPresetDropsItsDeviceMappings]' passed (0.002 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testDeviceAutoPresetOffNeverAutoApplies]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testDeviceAutoPresetOffNeverAutoApplies]' passed (0.001 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testDeviceAutoPresetReappliesRememberedPresetOnDeviceSwitch]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testDeviceAutoPresetReappliesRememberedPresetOnDeviceSwitch]' passed (0.002 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testDeviceAutoPresetSkipsFirstConnectAndLoadsPersistedState]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testDeviceAutoPresetSkipsFirstConnectAndLoadsPersistedState]' passed (0.057 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testDisplayMetersHoldRecentPeakAndLimiterThroughShortSilence]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testDisplayMetersHoldRecentPeakAndLimiterThroughShortSilence]' passed (0.001 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testDropoutDisplayHoldsAfterCounterBumpDuringPlayback]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testDropoutDisplayHoldsAfterCounterBumpDuringPlayback]' passed (0.001 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testEqEditClearsLastBuiltinPresetName]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testEqEditClearsLastBuiltinPresetName]' passed (0.042 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testFailedWriteRestoresEngineParams]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testFailedWriteRestoresEngineParams]' passed (0.046 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testHighpassPushesAndClamps]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testHighpassPushesAndClamps]' passed (0.043 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testInitialConnectLoadsStateAndParams]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testInitialConnectLoadsStateAndParams]' passed (0.001 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testNoVolumeControlIsReflected]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testNoVolumeControlIsReflected]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testParametricBandPushesAndClamps]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testParametricBandPushesAndClamps]' passed (0.041 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testParametricDoesNotPushWhenEngineLacksSupport]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testParametricDoesNotPushWhenEngineLacksSupport]' passed (0.046 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testParamReadFailureDoesNotMarkEngineOffline]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testParamReadFailureDoesNotMarkEngineOffline]' passed (0.001 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testPresetExportImportRoundTripAndOverwrite]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testPresetExportImportRoundTripAndOverwrite]' passed (0.001 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testPresetImportStripsBuiltinAndRejectsGarbage]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testPresetImportStripsBuiltinAndRejectsGarbage]' passed (0.001 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testPresetSuccessReadsBackAuthoritativeParams]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testPresetSuccessReadsBackAuthoritativeParams]' passed (0.001 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testReconnectClearsStaleStateAfterReadback]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testReconnectClearsStaleStateAfterReadback]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testRefreshLoadsDevicesAndVolume]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testRefreshLoadsDevicesAndVolume]' passed (0.001 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testRemoteRevisionDoesNotOverwriteActiveEdit]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testRemoteRevisionDoesNotOverwriteActiveEdit]' passed (0.001 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testSavedPresetDynamicsBackCompat]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testSavedPresetDynamicsBackCompat]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testSavedPresetRoomTuneInfoRoundtripsAndBackCompat]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testSavedPresetRoomTuneInfoRoundtripsAndBackCompat]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testSavedPresetRoundTripsMacrosAndLimiter]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testSavedPresetRoundTripsMacrosAndLimiter]' passed (0.003 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testSavePresetOverwritesAndUsesCustomForEmpty]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testSavePresetOverwritesAndUsesCustomForEmpty]' passed (0.002 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testSelectDeviceForwardsUID]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testSelectDeviceForwardsUID]' passed (0.056 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testSetBalanceForwardsToClientAndClamps]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testSetBalanceForwardsToClientAndClamps]' passed (0.008 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testSetKeepDefaultForwards]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testSetKeepDefaultForwards]' passed (0.057 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testSetMacroIsIncrementalAndReversible]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testSetMacroIsIncrementalAndReversible]' passed (0.001 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testSetVolumeAllowsOutputBoostAboveHardwareRange]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testSetVolumeAllowsOutputBoostAboveHardwareRange]' passed (0.007 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testSpatialControlsDoNotPushWhenEngineLacksSupport]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testSpatialControlsDoNotPushWhenEngineLacksSupport]' passed (0.046 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testSpatialControlsPushWhenEngineSupportsSpatial]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testSpatialControlsPushWhenEngineSupportsSpatial]' passed (0.045 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testSpatialEditPreservesLastBuiltinPresetName]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testSpatialEditPreservesLastBuiltinPresetName]' passed (0.046 seconds).
+Test Case '-[RoomcutTests.RoomcutViewModelTests testUnderrunWarningOnlyWhenClimbingDuringPlayback]' started.
+Test Case '-[RoomcutTests.RoomcutViewModelTests testUnderrunWarningOnlyWhenClimbingDuringPlayback]' passed (0.000 seconds).
+Test Suite 'RoomcutViewModelTests' passed at 2026-09-08 15:16:55.175.
+	 Executed 42 tests, with 0 failures (0 unexpected) in 0.740 (0.745) seconds
+Test Suite 'SoundComparisonTests' started at 2026-09-08 15:16:55.175.
+Test Case '-[RoomcutTests.SoundComparisonTests testActiveAndReferenceStayPairedDuringAnInFlightSwitch]' started.
+Test Case '-[RoomcutTests.SoundComparisonTests testActiveAndReferenceStayPairedDuringAnInFlightSwitch]' passed (0.037 seconds).
+Test Case '-[RoomcutTests.SoundComparisonTests testFailedUtilityTogglePreservesExistingHistoryAndRestoresEngineMode]' started.
+Test Case '-[RoomcutTests.SoundComparisonTests testFailedUtilityTogglePreservesExistingHistoryAndRestoresEngineMode]' passed (0.018 seconds).
+Test Case '-[RoomcutTests.SoundComparisonTests testLatePairedReadCannotOverwriteANewerSelection]' started.
+Test Case '-[RoomcutTests.SoundComparisonTests testLatePairedReadCannotOverwriteANewerSelection]' passed (0.017 seconds).
+Test Case '-[RoomcutTests.SoundComparisonTests testMeterUpdatesDoNotRepublishTheWholeEditor]' started.
+Test Case '-[RoomcutTests.SoundComparisonTests testMeterUpdatesDoNotRepublishTheWholeEditor]' passed (0.277 seconds).
+Test Case '-[RoomcutTests.SoundComparisonTests testOldEngineUsesTheExistingParameterPath]' started.
+Test Case '-[RoomcutTests.SoundComparisonTests testOldEngineUsesTheExistingParameterPath]' passed (0.013 seconds).
+Test Case '-[RoomcutTests.SoundComparisonTests testPendingEditInvalidatesReadyMeterState]' started.
+Test Case '-[RoomcutTests.SoundComparisonTests testPendingEditInvalidatesReadyMeterState]' passed (0.017 seconds).
+Test Case '-[RoomcutTests.SoundComparisonTests testPresetUsesOneTransactionAndKeepsTheReference]' started.
+Test Case '-[RoomcutTests.SoundComparisonTests testPresetUsesOneTransactionAndKeepsTheReference]' passed (0.011 seconds).
+Test Case '-[RoomcutTests.SoundComparisonTests testReconnectRestoresTheAuthoritativeComparisonPair]' started.
+Test Case '-[RoomcutTests.SoundComparisonTests testReconnectRestoresTheAuthoritativeComparisonPair]' passed (0.005 seconds).
+Test Case '-[RoomcutTests.SoundComparisonTests testStaleReadyMetricsAreShownAsMeasuring]' started.
+Test Case '-[RoomcutTests.SoundComparisonTests testStaleReadyMetricsAreShownAsMeasuring]' passed (0.001 seconds).
+Test Case '-[RoomcutTests.SoundComparisonTests testToggleAndCopyDoNotAlterPresetValuesOrUndoHistory]' started.
+Test Case '-[RoomcutTests.SoundComparisonTests testToggleAndCopyDoNotAlterPresetValuesOrUndoHistory]' passed (0.038 seconds).
+Test Suite 'SoundComparisonTests' passed at 2026-09-08 15:16:55.610.
+	 Executed 10 tests, with 0 failures (0 unexpected) in 0.434 (0.436) seconds
+Test Suite 'SoundEditMenuTests' started at 2026-09-08 15:16:55.610.
+Test Case '-[RoomcutTests.SoundEditMenuTests testLocalKeyRouteWorksWithoutOwningTheMenuBar]' started.
+Test Case '-[RoomcutTests.SoundEditMenuTests testLocalKeyRouteWorksWithoutOwningTheMenuBar]' passed (0.096 seconds).
+Test Case '-[RoomcutTests.SoundEditMenuTests testNativeMenuShortcutsInvokeSoundUndoAndRedo]' started.
+Test Case '-[RoomcutTests.SoundEditMenuTests testNativeMenuShortcutsInvokeSoundUndoAndRedo]' passed (0.071 seconds).
+Test Case '-[RoomcutTests.SoundEditMenuTests testNativeTextUndoTakesPriorityOverSoundHistory]' started.
+Test Case '-[RoomcutTests.SoundEditMenuTests testNativeTextUndoTakesPriorityOverSoundHistory]' passed (0.188 seconds).
+Test Suite 'SoundEditMenuTests' passed at 2026-09-08 15:16:55.966.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.355 (0.355) seconds
+Test Suite 'SoundEditingIntegrationTests' started at 2026-09-08 15:16:55.966.
+Test Case '-[RoomcutTests.SoundEditingIntegrationTests testABSwitchSerializesBehindInFlightWrite]' started.
+Test Case '-[RoomcutTests.SoundEditingIntegrationTests testABSwitchSerializesBehindInFlightWrite]' passed (0.027 seconds).
+Test Case '-[RoomcutTests.SoundEditingIntegrationTests testContinuousGestureSendsIntermediateValuesAndStillUndoesOnce]' started.
+Test Case '-[RoomcutTests.SoundEditingIntegrationTests testContinuousGestureSendsIntermediateValuesAndStillUndoesOnce]' passed (0.245 seconds).
+Test Case '-[RoomcutTests.SoundEditingIntegrationTests testFailedLatestWriteRestoresEngineAndPreservesOtherSlot]' started.
+Test Case '-[RoomcutTests.SoundEditingIntegrationTests testFailedLatestWriteRestoresEngineAndPreservesOtherSlot]' passed (0.024 seconds).
+Test Case '-[RoomcutTests.SoundEditingIntegrationTests testGestureUndoRedoUpdatesEngineAndMacroState]' started.
+Test Case '-[RoomcutTests.SoundEditingIntegrationTests testGestureUndoRedoUpdatesEngineAndMacroState]' passed (0.033 seconds).
+Test Case '-[RoomcutTests.SoundEditingIntegrationTests testLateReadbackCannotOverwriteNewComparisonSlot]' started.
+Test Case '-[RoomcutTests.SoundEditingIntegrationTests testLateReadbackCannotOverwriteNewComparisonSlot]' passed (0.016 seconds).
+Test Case '-[RoomcutTests.SoundEditingIntegrationTests testLegacyPresetClearsPreviousParametricBands]' started.
+Test Case '-[RoomcutTests.SoundEditingIntegrationTests testLegacyPresetClearsPreviousParametricBands]' passed (0.010 seconds).
+Test Case '-[RoomcutTests.SoundEditingIntegrationTests testLibraryPresetIdentityDoesNotCollideWithUserPresetName]' started.
+Test Case '-[RoomcutTests.SoundEditingIntegrationTests testLibraryPresetIdentityDoesNotCollideWithUserPresetName]' passed (0.016 seconds).
+Test Case '-[RoomcutTests.SoundEditingIntegrationTests testParameterReadRetriesAfterBackoffWithoutLosingConnection]' started.
+Test Case '-[RoomcutTests.SoundEditingIntegrationTests testParameterReadRetriesAfterBackoffWithoutLosingConnection]' passed (0.578 seconds).
+Test Case '-[RoomcutTests.SoundEditingIntegrationTests testPresetSelectionCancelsUnsentSliderWrite]' started.
+Test Case '-[RoomcutTests.SoundEditingIntegrationTests testPresetSelectionCancelsUnsentSliderWrite]' passed (0.172 seconds).
+Test Case '-[RoomcutTests.SoundEditingIntegrationTests testSavedPresetNameSurvivesInitialParameterReadback]' started.
+Test Case '-[RoomcutTests.SoundEditingIntegrationTests testSavedPresetNameSurvivesInitialParameterReadback]' passed (0.011 seconds).
+Test Case '-[RoomcutTests.SoundEditingIntegrationTests testStalePollCannotOverwriteAnEditStartedDuringRead]' started.
+Test Case '-[RoomcutTests.SoundEditingIntegrationTests testStalePollCannotOverwriteAnEditStartedDuringRead]' passed (0.021 seconds).
+Test Suite 'SoundEditingIntegrationTests' passed at 2026-09-08 15:16:57.121.
+	 Executed 11 tests, with 0 failures (0 unexpected) in 1.154 (1.155) seconds
+Test Suite 'SoundEditorTests' started at 2026-09-08 15:16:57.121.
+Test Case '-[RoomcutTests.SoundEditorTests testComparisonSlotsKeepIndependentHistories]' started.
+Test Case '-[RoomcutTests.SoundEditorTests testComparisonSlotsKeepIndependentHistories]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.SoundEditorTests testCopyReplacesOtherReferenceWithoutChangingCurrentAudio]' started.
+Test Case '-[RoomcutTests.SoundEditorTests testCopyReplacesOtherReferenceWithoutChangingCurrentAudio]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.SoundEditorTests testImportedSnapshotHasSafeLengthsAndFiniteBounds]' started.
+Test Case '-[RoomcutTests.SoundEditorTests testImportedSnapshotHasSafeLengthsAndFiniteBounds]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.SoundEditorTests testNewBranchInvalidatesRedoAndHistoryIsBounded]' started.
+Test Case '-[RoomcutTests.SoundEditorTests testNewBranchInvalidatesRedoAndHistoryIsBounded]' passed (0.002 seconds).
+Test Case '-[RoomcutTests.SoundEditorTests testRemoteOrFailedWriteResetsActiveHistoryAndPreservesReference]' started.
+Test Case '-[RoomcutTests.SoundEditorTests testRemoteOrFailedWriteResetsActiveHistoryAndPreservesReference]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.SoundEditorTests testWholeGestureIsOneUndoAndRedoRestoresAllSoundState]' started.
+Test Case '-[RoomcutTests.SoundEditorTests testWholeGestureIsOneUndoAndRedoRestoresAllSoundState]' passed (0.000 seconds).
+Test Suite 'SoundEditorTests' passed at 2026-09-08 15:16:57.125.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 0.003 (0.004) seconds
+Test Suite 'RoomcutPackageTests.xctest' passed at 2026-09-08 15:16:57.126.
+	 Executed 184 tests, with 0 failures (0 unexpected) in 6.268 (6.295) seconds
+Test Suite 'All tests' passed at 2026-09-08 15:16:57.126.
+	 Executed 184 tests, with 0 failures (0 unexpected) in 6.268 (6.296) seconds
+held device read: status reads=3, device reads=1, peak=0.8
+Room Tune clock=-1000.0 ppm, SNR=20.0 dB: max error=0.04492198778693535 dB, cuts=0
+Room Tune clock=-1000.0 ppm, SNR=40.0 dB: max error=0.006314598284511419 dB, cuts=0
+Room Tune clock=0.0 ppm, SNR=20.0 dB: max error=0.04308189685977837 dB, cuts=0
+Room Tune clock=0.0 ppm, SNR=40.0 dB: max error=0.002373157434440998 dB, cuts=0
+Room Tune clock=1000.0 ppm, SNR=20.0 dB: max error=0.06567089649565361 dB, cuts=0
+Room Tune clock=1000.0 ppm, SNR=40.0 dB: max error=0.0066334330451987 dB, cuts=0
+WAV 8000 Hz, 16 bit, float=false: frames=12000, rms=0.0706888527104694
+WAV 8000 Hz, 24 bit, float=false: frames=12000, rms=0.07068741987349861
+WAV 8000 Hz, 32 bit, float=false: frames=12000, rms=0.07068742501425986
+WAV 8000 Hz, 32 bit, float=true: frames=12000, rms=0.0706874248688052
+WAV 16000 Hz, 16 bit, float=false: frames=12000, rms=0.07068455736305027
+WAV 16000 Hz, 24 bit, float=false: frames=12000, rms=0.07068740450551439
+WAV 16000 Hz, 32 bit, float=false: frames=12000, rms=0.07068741962566605
+WAV 16000 Hz, 32 bit, float=true: frames=12000, rms=0.07068741962566605
+WAV 44100 Hz, 16 bit, float=false: frames=12000, rms=0.07068812459612696
+WAV 44100 Hz, 24 bit, float=false: frames=12000, rms=0.07068742617662897
+WAV 44100 Hz, 32 bit, float=false: frames=12000, rms=0.07068742161643686
+WAV 44100 Hz, 32 bit, float=true: frames=12000, rms=0.07068742161750793
+WAV 48000 Hz, 16 bit, float=false: frames=12000, rms=0.07068819564401994
+WAV 48000 Hz, 24 bit, float=false: frames=12000, rms=0.07068740254870974
+WAV 48000 Hz, 32 bit, float=false: frames=12000, rms=0.07068741728114061
+WAV 48000 Hz, 32 bit, float=true: frames=12000, rms=0.07068741728114061
+WAV 96000 Hz, 16 bit, float=false: frames=12000, rms=0.07068948859557798
+WAV 96000 Hz, 24 bit, float=false: frames=12000, rms=0.07068736569967253
+WAV 96000 Hz, 32 bit, float=false: frames=12000, rms=0.07068737618113873
+WAV 96000 Hz, 32 bit, float=true: frames=12000, rms=0.07068737618113873
+WAV 192000 Hz, 16 bit, float=false: frames=12000, rms=0.0706898304404078
+WAV 192000 Hz, 24 bit, float=false: frames=12000, rms=0.07068742110040689
+WAV 192000 Hz, 32 bit, float=false: frames=12000, rms=0.07068742970070524
+WAV 192000 Hz, 32 bit, float=true: frames=12000, rms=0.07068742970070524
+PCM format=1, channels=1, interleaved=false: max error 0.0
+PCM format=1, channels=1, interleaved=true: max error 0.0
+PCM format=1, channels=2, interleaved=false: max error 0.0
+PCM format=1, channels=2, interleaved=true: max error 0.0
+PCM format=2, channels=1, interleaved=false: max error 0.0
+PCM format=2, channels=1, interleaved=true: max error 0.0
+PCM format=2, channels=2, interleaved=false: max error 0.0
+PCM format=2, channels=2, interleaved=true: max error 0.0
+PCM format=3, channels=1, interleaved=false: max error 0.0
+PCM format=3, channels=1, interleaved=true: max error 0.0
+PCM format=3, channels=2, interleaved=false: max error 0.0
+PCM format=3, channels=2, interleaved=true: max error 0.0
+PCM format=4, channels=1, interleaved=false: max error 0.0
+PCM format=4, channels=1, interleaved=true: max error 0.0
+PCM format=4, channels=2, interleaved=false: max error 0.0
+PCM format=4, channels=2, interleaved=true: max error 0.0
+PCM packed24 channels=1, interleaved=false, bigEndian=false: max error 0.0
+PCM packed24 channels=1, interleaved=false, bigEndian=true: max error 0.0
+PCM packed24 channels=1, interleaved=true, bigEndian=false: max error 0.0
+PCM packed24 channels=1, interleaved=true, bigEndian=true: max error 0.0
+PCM packed24 channels=2, interleaved=false, bigEndian=false: max error 0.0
+PCM packed24 channels=2, interleaved=false, bigEndian=true: max error 0.0
+PCM packed24 channels=2, interleaved=true, bigEndian=false: max error 0.0
+PCM packed24 channels=2, interleaved=true, bigEndian=true: max error 0.0
+◇ Test run started.
+↳ Testing Library Version: 1902
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

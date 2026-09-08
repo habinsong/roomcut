@@ -1,0 +1,110 @@
+Building for debugging...
+[0/16] /Users/songhabin/roomcut/build/polling-audit/swift-tsan/arm64-apple-macosx/debug/RoomcutPackageTests.derived/runner.swift
+[1/16] Write sources
+[5/16] Write Roomcut-entitlement.plist
+[5/16] Write sources
+[7/16] Write swift-version--58304C5D6DBC2206.txt
+[8/20] Compiling Control.cpp
+[9/20] Compiling EngineConnection.cpp
+[10/20] Compiling ClientShim.cpp
+[12/20] Compiling RoomcutPresentationCore RoomcutMainPresentation.swift
+[13/20] Compiling RoomcutPresentationCore RoomcutPresentation.swift
+[14/20] Compiling RoomcutPresentationCore RoomcutTheme.swift
+[15/20] Emitting module RoomcutPresentationCore
+[16/36] Emitting module RoomcutCore
+[17/41] Compiling RoomcutCore NowPlayingPayload.swift
+[18/41] Compiling RoomcutCore ParameterWriter.swift
+[19/41] Compiling RoomcutCore PresetLibrary.swift
+[20/41] Compiling RoomcutCore PresetStore.swift
+[21/41] Compiling RoomcutCore RoomTuneAnalysis.swift
+[22/41] Compiling RoomcutCore AppPreferences.swift
+[23/41] Compiling RoomcutCore DeviceReadback.swift
+[24/41] Compiling RoomcutCore EngineClient.swift
+[25/41] Compiling RoomcutCore EnginePoller.swift
+[26/41] Compiling RoomcutCore LRCLIBClient.swift
+[27/41] Compiling RoomcutCore SavedPreset.swift
+[28/41] Compiling RoomcutCore SoundComparison.swift
+[29/41] Compiling RoomcutCore SoundEditMenuController.swift
+[30/41] Compiling RoomcutCore SoundEditor.swift
+[31/41] Compiling RoomcutCore SoundSnapshot.swift
+[32/41] Compiling RoomcutCore RoomTuneAudioFile.swift
+[33/41] Compiling RoomcutCore RoomTuneResponse.swift
+[34/41] Compiling RoomcutCore RoomTuneSignal.swift
+[35/41] Compiling RoomcutCore RoomcutMeters.swift
+[36/41] Compiling RoomcutCore RoomcutViewModel.swift
+[37/75] Emitting module Roomcut
+[38/82] Compiling Roomcut AdvancedControls.swift
+[39/82] Compiling Roomcut AudioStatusView.swift
+[40/82] Compiling Roomcut EqMiniCurve.swift
+[41/82] Compiling Roomcut EqualizerView.swift
+[42/82] Compiling Roomcut HomeTab.swift
+[43/82] Compiling Roomcut InspectTab.swift
+[44/82] Compiling Roomcut MainWindow.swift
+[45/82] Compiling Roomcut SelfTest.swift
+[46/82] Compiling Roomcut SettingsTab.swift
+[47/82] Compiling Roomcut SoundHistoryControls.swift
+[48/82] Compiling Roomcut SpaceTab.swift
+[49/82] Compiling Roomcut UIFixture.swift
+[50/82] Compiling Roomcut WindowChrome.swift
+[51/82] Compiling Roomcut main.swift
+[52/82] Compiling Roomcut RoomTuneSweep.swift
+[53/82] Compiling Roomcut RoomTuneTab.swift
+[54/82] Compiling Roomcut RoomcutApp.swift
+[55/82] Compiling Roomcut RoomcutAppCanvas.swift
+[56/82] Compiling Roomcut RoomcutBackgroundLayer.swift
+[57/82] Compiling Roomcut RoomcutGlassStyle.swift
+[58/82] Compiling Roomcut RoomcutMacroControls.swift
+[59/82] Compiling Roomcut MenuContent.swift
+[60/82] Compiling Roomcut NowPlayingMonitor.swift
+[61/82] Compiling Roomcut NowPlayingView.swift
+[62/82] Compiling Roomcut ParametricEditor.swift
+[63/82] Compiling Roomcut RoomTuneInputScanner.swift
+[64/82] Compiling Roomcut RoomTuneMeasurement.swift
+[65/82] Compiling Roomcut RoomTuneRecorder.swift
+[65/82] Write Objects.LinkFileList
+[67/82] Emitting module RoomcutTests
+[67/85] Linking Roomcut
+[68/85] Applying Roomcut
+[78/85] Compiling RoomcutTests SoundEditMenuTests.swift
+[79/85] Compiling RoomcutTests SoundEditingIntegrationTests.swift
+[80/85] Compiling RoomcutTests SoundEditorTests.swift
+[84/87] Emitting module RoomcutPackageTests
+[85/87] Compiling RoomcutPackageTests runner.swift
+[85/87] Write Objects.LinkFileList
+[86/87] Linking RoomcutPackageTests
+Build complete! (41.98s)
+Test Suite 'Selected tests' started at 2026-09-08 12:41:23.178.
+Test Suite 'RoomcutPackageTests.xctest' started at 2026-09-08 12:41:23.181.
+Test Suite 'PollingLifecycleTests' started at 2026-09-08 12:41:23.181.
+Test Case '-[RoomcutTests.PollingLifecycleTests testCancelledManualRefreshDoesNotPublish]' started.
+Test Case '-[RoomcutTests.PollingLifecycleTests testCancelledManualRefreshDoesNotPublish]' passed (0.012 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testHiddenAnalyzerDoesNotRepublishLateResult]' started.
+Test Case '-[RoomcutTests.PollingLifecycleTests testHiddenAnalyzerDoesNotRepublishLateResult]' passed (0.004 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testLiveDeviceQueueAllowsMainActorWorkDuringABlockedRead]' started.
+Test Case '-[RoomcutTests.PollingLifecycleTests testLiveDeviceQueueAllowsMainActorWorkDuringABlockedRead]' passed (0.005 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testNewPollCanFinishBeforeTheStoppedPollReturns]' started.
+Test Case '-[RoomcutTests.PollingLifecycleTests testNewPollCanFinishBeforeTheStoppedPollReturns]' passed (0.006 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testPollerCadenceAndOldCompletionIsolation]' started.
+Test Case '-[RoomcutTests.PollingLifecycleTests testPollerCadenceAndOldCompletionIsolation]' passed (0.001 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testSlowDeviceReadCannotRelabelANewerSoundEdit]' started.
+Test Case '-[RoomcutTests.PollingLifecycleTests testSlowDeviceReadCannotRelabelANewerSoundEdit]' passed (0.011 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testStartThenStopDiscardsTheQueuedInitialPoll]' started.
+Test Case '-[RoomcutTests.PollingLifecycleTests testStartThenStopDiscardsTheQueuedInitialPoll]' passed (0.015 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testStoppedPollCannotPublishLateConnectionError]' started.
+Test Case '-[RoomcutTests.PollingLifecycleTests testStoppedPollCannotPublishLateConnectionError]' passed (0.023 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testStoppedPollCannotPublishLateParameterError]' started.
+Test Case '-[RoomcutTests.PollingLifecycleTests testStoppedPollCannotPublishLateParameterError]' passed (0.005 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testStoppedPollCannotPublishOrClaimDefaultFromLateState]' started.
+Test Case '-[RoomcutTests.PollingLifecycleTests testStoppedPollCannotPublishOrClaimDefaultFromLateState]' passed (0.007 seconds).
+Test Case '-[RoomcutTests.PollingLifecycleTests testVolumeEditOutlivesAnOlderDeviceReadback]' started.
+Test Case '-[RoomcutTests.PollingLifecycleTests testVolumeEditOutlivesAnOlderDeviceReadback]' passed (0.005 seconds).
+Test Suite 'PollingLifecycleTests' passed at 2026-09-08 12:41:23.295.
+	 Executed 11 tests, with 0 failures (0 unexpected) in 0.094 (0.114) seconds
+Test Suite 'RoomcutPackageTests.xctest' passed at 2026-09-08 12:41:23.295.
+	 Executed 11 tests, with 0 failures (0 unexpected) in 0.094 (0.114) seconds
+Test Suite 'Selected tests' passed at 2026-09-08 12:41:23.295.
+	 Executed 11 tests, with 0 failures (0 unexpected) in 0.094 (0.117) seconds
+◇ Test run started.
+↳ Testing Library Version: 1902
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

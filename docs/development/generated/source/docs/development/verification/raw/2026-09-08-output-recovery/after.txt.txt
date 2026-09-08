@@ -1,0 +1,15 @@
+[engine] device change: reopening output (target device changed)
+[engine] output reopen failed: 2003329396 (retry scheduled)
+[engine] device change: reopening output (target device changed)
+[engine] output -> 'test' @ 48000 Hz
+[engine] device change: reopening output (target device changed)
+[engine] output reopen failed: 2003329396 (retry scheduled)
+[engine] device change: reopening output (target device changed)
+[engine] output -> 'test' @ 48000 Hz
+[engine] device change: reopening output (sample rate changed)
+[engine] output -> 'test' @ 48000 Hz
+[engine] device change: reopening output (sample rate changed)
+[engine] output -> 'test' @ 96000 Hz
+[engine] device change: reopening output (target device changed)
+[engine] output -> 'test' @ 48000 Hz
+failed opens in 500ms=1

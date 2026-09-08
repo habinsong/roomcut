@@ -1,0 +1,11 @@
+ROOMTUNE_QA 577942.8046435417 override begin
+ROOMTUNE_QA 577942.8050805001 engine request bypass=true
+ROOMTUNE_QA 577945.9551435834 engine applied bypass=true
+ROOMTUNE_QA 577946.0039070834 override begin result=true
+ROOMTUNE_QA 577946.0041812917 override restore
+ROOMTUNE_QA 577946.0042271251 engine request bypass=false
+ROOMTUNE_QA 577946.245157125 user request bypass=false
+ROOMTUNE_QA 577949.1538749584 engine applied bypass=false
+ROOMTUNE_QA 577949.1542371251 engine request bypass=false
+ROOMTUNE_QA 577949.1543642917 override restore result=true
+ROOMTUNE_QA 577952.3031477084 engine applied bypass=false

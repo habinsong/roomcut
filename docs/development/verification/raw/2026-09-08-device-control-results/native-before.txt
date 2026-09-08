@@ -1,0 +1,33 @@
+Internal ctest changing into directory: /Users/songhabin/roomcut/build
+Test project /Users/songhabin/roomcut/build
+    Start 10: client_volume
+1/2 Test #10: client_volume ....................   Passed    0.56 sec
+    Start 11: client_devices
+2/2 Test #11: client_devices ...................***Failed    0.42 sec
+FAIL: real nominal-rate failure is not hidden and stops virtual write (27)
+FAIL: virtual nominal-rate failure is not success (29)
+FAIL: moving balance cannot unmute silent channels at full level (57)
+FAIL: invalid pan cannot write channels (60)
+FAIL: invalid pan cannot write channels (60)
+FAIL: read failure cannot default to maximum volume (64)
+FAIL: short channel payload cannot write channels (66)
+FAIL: non-finite channel level cannot write channels (68)
+FAIL: invalid readback preserves caller output (70)
+FAIL: preflight both channels before any write (72)
+FAIL: read failure cannot default to maximum volume (64)
+FAIL: short channel payload cannot write channels (66)
+FAIL: non-finite channel level cannot write channels (68)
+FAIL: invalid readback preserves caller output (70)
+FAIL: preflight both channels before any write (72)
+FAIL: first channel failure stops the second write (75)
+real rate rejected: result=0, physical=96000, real=48000, virtual=96000
+silent channels: result=0, left=0.50, right=1.00
+
+
+50% tests passed, 1 tests failed out of 2
+
+Total Test time (real) =   0.98 sec
+
+The following tests FAILED:
+	 11 - client_devices (Failed)
+Errors while running CTest

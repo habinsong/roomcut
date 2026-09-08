@@ -1,0 +1,62 @@
+@preconcurrency import AVFoundation
+import RoomcutCore
+
+@MainActor
+final class RoomTuneAudioSession: RoomTuneAudio {
+    private lazy var hardware = RoomTuneAudioHardware()
+    private lazy var round = RoomTuneRound(transport: hardware)
+    var inputPeak: Float { hardware.recorder.peakLevel }
+
+    func requestPermission() async -> Bool {
+        let permission = AsyncStream<Bool> { completion in
+            AVCaptureDevice.requestAccess(for: .audio) { granted in
+                completion.yield(granted); completion.finish()
+            }
+        }
+        for await granted in permission { return granted }
+        return false
+    }
+
+    func measure(deviceID: String) async throws -> [(freq: Double, db: Double)] {
+        try await round.measure(deviceID: deviceID)
+    }
+}
+
+private struct RoomTuneAudioFailure: LocalizedError {
+    let message: String
+    init(_ message: String) { self.message = message }
+    var errorDescription: String? { message }
+}
+
+// Accessed by RoomTuneWorkQueue only; peakLevel is the recorder's locked getter.
+private final class RoomTuneAudioHardware: RoomTuneTransport {
+    let recorder = RoomTuneRecorder()
+    private let engine = AVAudioEngine()
+    private let player = AVAudioPlayerNode()
+    private var attached = false
+    private var buffer: AVAudioPCMBuffer?
+
+    func prepare(deviceID: String, url: URL) throws {
+        guard let device = AVCaptureDevice(uniqueID: deviceID) else { throw RoomTuneAudioFailure("마이크 연결을 확인하세요") }
+        guard let buffer = RoomTuneSweep.makeBuffer() else { throw RoomTuneAudioFailure("테스트음 생성 실패") }
+        do { try recorder.start(device: device, to: url) }
+        catch { throw RoomTuneAudioFailure("녹음 시작 실패: \(error.localizedDescription)") }
+        if !attached {
+            engine.attach(player)
+            engine.connect(player, to: engine.mainMixerNode, format: buffer.format)
+            attached = true
+        }
+        do { try engine.start() }
+        catch { throw RoomTuneAudioFailure("오디오 엔진 시작 실패: \(error.localizedDescription)") }
+        self.buffer = buffer
+    }
+    func play(completion: @escaping () -> Void) throws {
+        guard let buffer else { throw RoomTuneAudioFailure("테스트음 생성 실패") }
+        player.scheduleBuffer(buffer, at: nil, options: [], completionCallbackType: .dataPlayedBack) { _ in completion() }
+        player.play()
+    }
+    func stop() -> URL? {
+        player.stop(); engine.stop(); buffer = nil
+        return recorder.stop()
+    }
+}

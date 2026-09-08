@@ -1,0 +1,23 @@
+Internal ctest changing into directory: /Users/songhabin/roomcut/build
+Test project /Users/songhabin/roomcut/build
+    Start 32: device_volume
+1/2 Test #32: device_volume ....................***Failed    0.00 sec
+FAIL: missing source preserves last known level (72)
+
+    Start 33: device_services
+2/2 Test #33: device_services ..................***Failed    0.66 sec
+[engine] property listener registration failed: 2003329396
+[engine] property listener removal failed: 2003329396
+[engine] property listener removal failed: 2003329396
+FAIL: mute remains silent if another hardware control changes the device level (173)
+FAIL: source disappearance does not jump hardware to full volume (190)
+
+
+0% tests passed, 2 tests failed out of 2
+
+Total Test time (real) =   0.67 sec
+
+The following tests FAILED:
+	 32 - device_volume (Failed)
+	 33 - device_services (Failed)
+Errors while running CTest

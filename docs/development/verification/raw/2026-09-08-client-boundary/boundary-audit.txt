@@ -1,0 +1,8 @@
+18 moved HAL helper bodies: identical after identifier/whitespace normalization
+19 C API bodies and 5 engine/policy helpers: identical after identifier/whitespace normalization
+public C header: byte-identical
+public C exports: 24 unchanged
+object imports: HAL module has no Mach/client calls; C shim has no HAL/CF calls
+before/after devices exit/stdout/stderr: identical
+before/after volume exit/stdout/stderr: identical
+boundary audit: PASS

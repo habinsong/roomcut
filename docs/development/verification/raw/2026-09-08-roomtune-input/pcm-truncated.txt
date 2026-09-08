@@ -1,0 +1,12 @@
+Building for production...
+[0/4] Write sources
+[1/4] Write swift-version--58304C5D6DBC2206.txt
+[3/4] Compiling RoomcutTests DeviceCommandTests.swift
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/RoomTunePCMTests.swift:118:51: error: incorrect argument label in call (have '_:newBuffer:', expected '_:newValue:')
+116 |         let truncated = try sampleBuffer(input, count: values.count + 1, withData: false)
+117 |         let data = try XCTUnwrap(CMSampleBufferGetDataBuffer(valid))
+118 |         XCTAssertEqual(CMSampleBufferSetDataBuffer(truncated, newBuffer: data), noErr)
+    |                                                   `- error: incorrect argument label in call (have '_:newBuffer:', expected '_:newValue:')
+119 |         XCTAssertEqual(CMSampleBufferSetDataReady(truncated), noErr)
+120 |         XCTAssertNil(decoder.firstChannel(from: truncated))
+error: fatalError

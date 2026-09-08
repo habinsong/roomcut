@@ -1,0 +1,36 @@
+[engine] device change: reopening output (target device changed)
+[engine] output reopen failed: 2003329396 (retrying on next tick)
+FAIL: failed start must retry even when the configured rate matches hardware (126)
+[engine] device change: reopening output (target device changed)
+[engine] output reopen failed: 2003329396 (retrying on next tick)
+[engine] device change: reopening output (target device changed)
+[engine] output reopen failed: 2003329396 (retrying on next tick)
+[engine] device change: reopening output (target device changed)
+[engine] output reopen failed: 2003329396 (retrying on next tick)
+[engine] device change: reopening output (target device changed)
+[engine] output reopen failed: 2003329396 (retrying on next tick)
+[engine] device change: reopening output (target device changed)
+[engine] output reopen failed: 2003329396 (retrying on next tick)
+[engine] device change: reopening output (target device changed)
+[engine] output reopen failed: 2003329396 (retrying on next tick)
+[engine] device change: reopening output (target device changed)
+[engine] output reopen failed: 2003329396 (retrying on next tick)
+[engine] device change: reopening output (target device changed)
+[engine] output reopen failed: 2003329396 (retrying on next tick)
+[engine] device change: reopening output (target device changed)
+[engine] output reopen failed: 2003329396 (retrying on next tick)
+[engine] device change: reopening output (target device changed)
+[engine] output reopen failed: 2003329396 (retrying on next tick)
+FAIL: busy control messages must not accelerate failed reopen retries (134)
+[engine] device change: reopening output (target device changed)
+[engine] output -> 'test' @ 48000 Hz
+[engine] device change: reopening output (sample rate changed)
+[engine] output -> 'test' @ 48000 Hz
+[engine] device change: reopening output (sample rate changed)
+[engine] device keeps leaving the ring rate; opening at its own rate and resampling
+[engine] output -> 'test' @ 96000 Hz
+[engine] device change: reopening output (target device changed)
+[engine] device keeps leaving the ring rate; opening at its own rate and resampling
+[engine] output -> 'test' @ 96000 Hz
+FAIL: a replacement device gets a fresh attempt at the requested ring rate (142)
+failed opens in 500ms=10

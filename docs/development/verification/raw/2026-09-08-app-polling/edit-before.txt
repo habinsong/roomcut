@@ -1,0 +1,25 @@
+Building for production...
+[0/4] Write sources
+[1/4] Write swift-version--58304C5D6DBC2206.txt
+[3/4] Compiling RoomcutTests LRCLIBClientTests.swift
+[4/6] Compiling RoomcutPackageTests runner.swift
+[4/6] Write Objects.LinkFileList
+[5/6] Linking RoomcutPackageTests
+Build complete! (9.92s)
+Test Suite 'Selected tests' started at 2026-09-08 12:39:22.537.
+Test Suite 'RoomcutPackageTests.xctest' started at 2026-09-08 12:39:22.539.
+Test Suite 'PollingLifecycleTests' started at 2026-09-08 12:39:22.539.
+Test Case '-[RoomcutTests.PollingLifecycleTests testSlowDeviceReadCannotRelabelANewerSoundEdit]' started.
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/PollingLifecycleTests.swift:150: error: -[RoomcutTests.PollingLifecycleTests testSlowDeviceReadCannotRelabelANewerSoundEdit] : XCTAssertNil failed: "flat"
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/PollingLifecycleTests.swift:151: error: -[RoomcutTests.PollingLifecycleTests testSlowDeviceReadCannotRelabelANewerSoundEdit] : XCTAssertEqual failed: ("Flat") is not equal to ("Custom")
+Test Case '-[RoomcutTests.PollingLifecycleTests testSlowDeviceReadCannotRelabelANewerSoundEdit]' failed (0.230 seconds).
+Test Suite 'PollingLifecycleTests' failed at 2026-09-08 12:39:22.769.
+	 Executed 1 test, with 2 failures (0 unexpected) in 0.230 (0.230) seconds
+Test Suite 'RoomcutPackageTests.xctest' failed at 2026-09-08 12:39:22.769.
+	 Executed 1 test, with 2 failures (0 unexpected) in 0.230 (0.230) seconds
+Test Suite 'Selected tests' failed at 2026-09-08 12:39:22.769.
+	 Executed 1 test, with 2 failures (0 unexpected) in 0.230 (0.232) seconds
+◇ Test run started.
+↳ Testing Library Version: 1902
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

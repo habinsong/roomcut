@@ -1,0 +1,40 @@
+[0/1] Planning build
+Building for production...
+[0/7] Write sources
+[2/7] Write swift-version--58304C5D6DBC2206.txt
+[4/8] Compiling RoomcutPresentationCore RoomcutMainPresentation.swift
+[5/9] Compiling RoomcutCore AppPreferences.swift
+[6/11] Compiling RoomcutTests DeviceCommandTests.swift
+[7/12] Compiling RoomcutPackageTests runner.swift
+[7/12] Write Objects.LinkFileList
+[8/12] Linking RoomcutPackageTests
+[10/12] Compiling Roomcut AdvancedControls.swift
+[10/12] Write Objects.LinkFileList
+[11/12] Linking Roomcut
+Build complete! (47.21s)
+Test Suite 'Selected tests' started at 2026-09-08 15:32:38.984.
+Test Suite 'RoomcutPackageTests.xctest' started at 2026-09-08 15:32:38.986.
+Test Suite 'RoomTuneWorkflowTests' started at 2026-09-08 15:32:38.986.
+Test Case '-[RoomcutTests.RoomTuneWorkflowTests testCancelledBypassMustSettleBeforeAnotherRunStarts]' started.
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/RoomTuneWorkflowTests.swift:23: error: -[RoomcutTests.RoomTuneWorkflowTests testCancelledBypassMustSettleBeforeAnotherRunStarts] : XCTAssertTrue failed - pending bypass may still change the engine
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/RoomTuneWorkflowTests.swift:24: error: -[RoomcutTests.RoomTuneWorkflowTests testCancelledBypassMustSettleBeforeAnotherRunStarts] : XCTAssertFalse failed - new measurement cannot overlap old compensation
+Test Case '-[RoomcutTests.RoomTuneWorkflowTests testCancelledBypassMustSettleBeforeAnotherRunStarts]' failed (0.512 seconds).
+Test Case '-[RoomcutTests.RoomTuneWorkflowTests testRestorationCompletionOwnsTheRunAndIsNotCancelled]' started.
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/RoomTuneWorkflowTests.swift:40: error: -[RoomcutTests.RoomTuneWorkflowTests testRestorationCompletionOwnsTheRunAndIsNotCancelled] : XCTAssertTrue failed
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/RoomTuneWorkflowTests.swift:41: error: -[RoomcutTests.RoomTuneWorkflowTests testRestorationCompletionOwnsTheRunAndIsNotCancelled] : XCTAssertNil failed: "RoomTuneResult(bands: [], response: [(freq: 100.0, db: 0.0), (freq: 200.0, db: 0.0), (freq: 400.0, db: 0.0)], summary: "3회 측정에서 공통으로 줄일 피크를 찾지 못했습니다.")" - result is published only after processing state is restored
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/RoomTuneWorkflowTests.swift:46: error: -[RoomcutTests.RoomTuneWorkflowTests testRestorationCompletionOwnsTheRunAndIsNotCancelled] : XCTAssertEqual failed: ("done") is not equal to ("idle")
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/RoomTuneWorkflowTests.swift:47: error: -[RoomcutTests.RoomTuneWorkflowTests testRestorationCompletionOwnsTheRunAndIsNotCancelled] : XCTAssertNil failed: "RoomTuneResult(bands: [], response: [(freq: 100.0, db: 0.0), (freq: 200.0, db: 0.0), (freq: 400.0, db: 0.0)], summary: "3회 측정에서 공통으로 줄일 피크를 찾지 못했습니다.")"
+Test Case '-[RoomcutTests.RoomTuneWorkflowTests testRestorationCompletionOwnsTheRunAndIsNotCancelled]' failed (0.005 seconds).
+Test Case '-[RoomcutTests.RoomTuneWorkflowTests testUnconfirmedBypassStillRestoresThePriorState]' started.
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/RoomTuneWorkflowTests.swift:55: error: -[RoomcutTests.RoomTuneWorkflowTests testUnconfirmedBypassStillRestoresThePriorState] : XCTAssertEqual failed: ("0") is not equal to ("1") - a missing acknowledgement does not prove the engine was unchanged
+Test Case '-[RoomcutTests.RoomTuneWorkflowTests testUnconfirmedBypassStillRestoresThePriorState]' failed (0.003 seconds).
+Test Suite 'RoomTuneWorkflowTests' failed at 2026-09-08 15:32:39.507.
+	 Executed 3 tests, with 7 failures (0 unexpected) in 0.520 (0.521) seconds
+Test Suite 'RoomcutPackageTests.xctest' failed at 2026-09-08 15:32:39.507.
+	 Executed 3 tests, with 7 failures (0 unexpected) in 0.520 (0.521) seconds
+Test Suite 'Selected tests' failed at 2026-09-08 15:32:39.507.
+	 Executed 3 tests, with 7 failures (0 unexpected) in 0.520 (0.522) seconds
+◇ Test run started.
+↳ Testing Library Version: 1902
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

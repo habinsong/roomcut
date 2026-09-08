@@ -1,0 +1,71 @@
+from pathlib import Path
+import subprocess
+import re
+
+root = Path('/Users/songhabin/roomcut')
+base = root / 'build/client-boundary-audit'
+before = (base / 'ClientShim.before.cpp').read_text()
+after = (root / 'engine/client/ClientShim.cpp').read_text()
+module = (root / 'engine/client/CoreAudioDevices.cpp').read_text()
+renames = {'ShimDevice': 'OutputDevice', 'realOutputDevices': 'realOutputs',
+    'findRealOutputDevice': 'realOutput', 'findRoomcutDeviceID': 'roomcutOutput',
+    'systemDefaultOutputDevice': 'defaultOutput', 'setSystemDefaultOutputDevice': 'setDefaultOutput',
+    'readDeviceVolumeScalar': 'volume', 'writeDeviceVolumeScalar': 'setVolume'}
+
+def body(text, name):
+    # Free-function definitions start at column zero; ignore indented call sites.
+    match = re.search(r'^[^\s\n][^\n]*\b' + name + r'\([^;]*', text, re.M)
+    assert match, name
+    start = text.index('{', match.start())
+    end = start + 1
+    depth = 1
+    while depth:
+        depth += (text[end] == '{') - (text[end] == '}')
+        end += 1
+    return text[start:end]
+
+def normalized(text):
+    text = text.replace('devices::', '')
+    for old, new in renames.items(): text = re.sub(r'\b' + old + r'\b', new, text)
+    return re.sub(r'\s+', ' ', text).strip()
+
+moved = ['cfToStd', 'deviceStringProp', 'deviceHasOutputStreams', 'audioObjectNumericProperty',
+    'outputStreamLatencyFrames', 'firstOutputStream', 'availablePhysicalFormats', 'currentPhysicalFormat',
+    'formatCarriesRate', 'readChannelVolumeScalar', 'writeChannelVolumeScalar', 'realOutputDevices',
+    'findRealOutputDevice', 'findRoomcutDeviceID', 'systemDefaultOutputDevice',
+    'setSystemDefaultOutputDevice', 'readDeviceVolumeScalar', 'writeDeviceVolumeScalar']
+for name in moved:
+    assert normalized(body(before, name)) == normalized(body(module, renames.get(name, name))), name
+print('18 moved HAL helper bodies: identical after identifier/whitespace normalization')
+converted = {'roomcutClientAudioFormat', 'roomcutClientDeviceFormatOptions', 'roomcutClientSetDeviceFormat',
+             'roomcutClientBalanceGet', 'roomcutClientBalanceSet'}
+remaining = [n for n in re.findall(r'^int (roomcutClient\w+)\(', before, re.M) if n not in converted]
+for name in remaining:
+    assert normalized(body(before, name)) == normalized(body(after, name)), name
+for name in ['withEngine', 'clampEffectiveVolume', 'clampVolumeBoost', 'setEngineVolumeBoost', 'findBalanceDevice']:
+    assert normalized(body(before, name)) == normalized(body(after, name)), name
+print(len(remaining), 'C API bodies and 5 engine/policy helpers: identical after identifier/whitespace normalization')
+assert (base / 'roomcut_client.before.h').read_bytes() == (root / 'engine/client/include/roomcut_client.h').read_bytes()
+print('public C header: byte-identical')
+
+def symbols(path):
+    output = subprocess.check_output(['nm', '-gU', str(path)], text=True)
+    return sorted(re.findall(r'\b(_roomcutClient\w+)$', output, re.M))
+
+old = symbols(base / 'test_client_devices.before')
+new = symbols(root / 'build/core/tests/test_client_devices')
+assert old == new, (old, new)
+print('public C exports:', len(new), 'unchanged')
+objects = root / 'build/core/tests/CMakeFiles/test_client_devices.dir/__/__/engine/client'
+module_imports = subprocess.check_output(['nm', '-u', str(objects / 'CoreAudioDevices.cpp.o')], text=True)
+shim_imports = subprocess.check_output(['nm', '-u', str(objects / 'ClientShim.cpp.o')], text=True)
+assert not re.search(r'EngineConnection|roomcutClient|control(Get|Set)|_mach_', module_imports), module_imports
+assert not re.search(r'_AudioObject\w+|_CF(String|Release)', shim_imports), shim_imports
+print('object imports: HAL module has no Mach/client calls; C shim has no HAL/CF calls')
+for name in ['devices', 'volume']:
+    old_run = subprocess.run([str(base / ('test_client_' + name + '.before'))], capture_output=True, text=True)
+    new_run = subprocess.run([str(root / ('build/core/tests/test_client_' + name))], capture_output=True, text=True)
+    assert old_run.returncode == new_run.returncode == 0
+    assert old_run.stdout == new_run.stdout and old_run.stderr == new_run.stderr
+    print('before/after', name, 'exit/stdout/stderr: identical')
+print('boundary audit: PASS')

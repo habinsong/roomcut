@@ -1,0 +1,65 @@
+reply case=0 driver=0 reconnect=0
+reply case=1 driver=0 reconnect=0
+reply case=2 driver=0 reconnect=0
+reply case=3 driver=0 reconnect=0
+reply case=4 driver=0 reconnect=0
+reply case=5 driver=0 reconnect=0
+reply case=6 driver=0 reconnect=0
+reply case=7 driver=0 reconnect=0
+reply case=8 driver=0 reconnect=0
+reply case=9 driver=0 reconnect=0
+reply case=10 driver=0 reconnect=0
+reply case=11 driver=0 reconnect=0
+reply case=12 driver=0 reconnect=0
+reply case=13 driver=0 reconnect=0
+reply case=14 driver=0 reconnect=0
+reply case=15 driver=0 reconnect=0
+reply case=16 driver=0 reconnect=0
+reply case=17 driver=0 reconnect=0
+reply case=0 driver=1 reconnect=0
+reply case=1 driver=1 reconnect=0
+reply case=2 driver=1 reconnect=0
+reply case=3 driver=1 reconnect=0
+reply case=4 driver=1 reconnect=0
+reply case=5 driver=1 reconnect=0
+reply case=6 driver=1 reconnect=0
+reply case=7 driver=1 reconnect=0
+reply case=8 driver=1 reconnect=0
+reply case=9 driver=1 reconnect=0
+reply case=10 driver=1 reconnect=0
+reply case=11 driver=1 reconnect=0
+reply case=12 driver=1 reconnect=0
+reply case=13 driver=1 reconnect=0
+reply case=14 driver=1 reconnect=0
+reply case=15 driver=1 reconnect=0
+reply case=16 driver=1 reconnect=0
+reply case=17 driver=1 reconnect=0
+reply case=0 driver=0 reconnect=1
+reply case=1 driver=0 reconnect=1
+reply case=2 driver=0 reconnect=1
+reply case=3 driver=0 reconnect=1
+reply case=4 driver=0 reconnect=1
+reply case=5 driver=0 reconnect=1
+reply case=6 driver=0 reconnect=1
+reply case=7 driver=0 reconnect=1
+reply case=8 driver=0 reconnect=1
+reply case=9 driver=0 reconnect=1
+reply case=10 driver=0 reconnect=1
+reply case=11 driver=0 reconnect=1
+reply case=12 driver=0 reconnect=1
+reply case=13 driver=0 reconnect=1
+reply case=14 driver=0 reconnect=1
+reply case=15 driver=0 reconnect=1
+reply case=16 driver=0 reconnect=1
+reply case=17 driver=0 reconnect=1
+request case=0
+request case=1
+request case=2
+request case=3
+request case=4
+request case=5
+request case=6
+request case=7
+request case=8
+cancelled caller result=0 dead refs=0
+all handshake boundary tests passed

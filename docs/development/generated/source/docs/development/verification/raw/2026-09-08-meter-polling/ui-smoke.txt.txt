@@ -1,0 +1,16 @@
+2026-09-08 평가용 UI 확인
+식별자: com.roomcut.meter-qa
+실행 인자: --ui-fixture ui-basic --ui-appearance dark
+
+Home에서 fixture 재생 정보와 출력 장치 표시 확인.
+Inspect로 전환한 뒤 접근성 트리와 스크린샷 확인:
+Peak -9 dBFS / Limiter Safe / Dropouts 0
+상관도 +1.00 / 폭 68%
+48 kHz / 32-bit / 지연 12.0 ms
+iFi USB Audio SE / 볼륨 60% / 실행 중
+Preamp 0.0 dB / Output gain 0.0 dB
+Home 복귀 후 선택 상태와 재생 정보 표시 확인.
+
+위 값은 메모리 fixture이며 실기기 오디오 측정값이 아닙니다.
+
+CUA 앱 목록에서 com.roomcut.meter-qa가 더 이상 실행 중이지 않음을 확인했습니다.

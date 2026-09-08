@@ -1,0 +1,91 @@
+FAIL: missing rate list never reads Mach trailer (141)
+FAIL: only complete valid HELLO replies succeed (136)
+FAIL: invalid reply exposes no mapping (151)
+FAIL: failed handoff leaves caller format and rates untouched (153)
+FAIL: only complete valid HELLO replies succeed (136)
+FAIL: invalid reply exposes no mapping (151)
+FAIL: failed handoff leaves caller format and rates untouched (153)
+FAIL: only complete valid HELLO replies succeed (136)
+FAIL: invalid reply exposes no mapping (151)
+FAIL: failed handoff leaves caller format and rates untouched (153)
+FAIL: only complete valid HELLO replies succeed (136)
+FAIL: invalid reply exposes no mapping (151)
+FAIL: failed handoff leaves caller format and rates untouched (153)
+FAIL: only complete valid HELLO replies succeed (136)
+FAIL: invalid reply exposes no mapping (151)
+FAIL: failed handoff leaves caller format and rates untouched (153)
+FAIL: only complete valid HELLO replies succeed (136)
+FAIL: invalid reply exposes no mapping (151)
+FAIL: failed handoff leaves caller format and rates untouched (153)
+FAIL: only complete valid HELLO replies succeed (136)
+FAIL: invalid reply exposes no mapping (151)
+FAIL: failed handoff leaves caller format and rates untouched (153)
+FAIL: only complete valid HELLO replies succeed (136)
+FAIL: invalid reply exposes no mapping (151)
+FAIL: failed handoff leaves caller format and rates untouched (153)
+FAIL: failed handoff leaves caller format and rates untouched (153)
+FAIL: failed or retired mapping leaves no memory-entry rights (157)
+FAIL: failed handoff leaves caller format and rates untouched (153)
+FAIL: failed or retired mapping leaves no memory-entry rights (157)
+FAIL: only complete valid HELLO replies succeed (136)
+FAIL: invalid reply exposes no mapping (151)
+FAIL: failed handoff leaves caller format and rates untouched (153)
+FAIL: unexpected descriptors and header rights are released (158)
+FAIL: failed or retired mapping leaves no memory-entry rights (157)
+FAIL: unexpected descriptors and header rights are released (158)
+FAIL: failed handoff leaves caller format and rates untouched (153)
+FAIL: unexpected descriptors and header rights are released (158)
+FAIL: only complete valid HELLO replies succeed (136)
+FAIL: invalid reply exposes no mapping (151)
+FAIL: only complete valid HELLO replies succeed (136)
+FAIL: invalid reply exposes no mapping (151)
+FAIL: unexpected descriptors and header rights are released (158)
+FAIL: engine rejects malformed or incompatible requests (191)
+FAIL: engine rejects malformed or incompatible requests (191)
+FAIL: engine rejects malformed or incompatible requests (191)
+FAIL: engine rejects malformed or incompatible requests (191)
+FAIL: engine rejects malformed or incompatible requests (191)
+47 handshake boundary checks failed
+reply case=0 driver=0
+reply case=1 driver=0
+reply case=2 driver=0
+reply case=3 driver=0
+reply case=4 driver=0
+reply case=5 driver=0
+reply case=6 driver=0
+reply case=7 driver=0
+reply case=8 driver=0
+reply case=9 driver=0
+reply case=10 driver=0
+reply case=11 driver=0
+reply case=12 driver=0
+reply case=13 driver=0
+reply case=14 driver=0
+reply case=15 driver=0
+reply case=16 driver=0
+reply case=17 driver=0
+reply case=0 driver=1
+reply case=1 driver=1
+reply case=2 driver=1
+reply case=3 driver=1
+reply case=4 driver=1
+reply case=5 driver=1
+reply case=6 driver=1
+reply case=7 driver=1
+reply case=8 driver=1
+reply case=9 driver=1
+reply case=10 driver=1
+reply case=11 driver=1
+reply case=12 driver=1
+reply case=13 driver=1
+reply case=14 driver=1
+reply case=15 driver=1
+reply case=16 driver=1
+reply case=17 driver=1
+request case=0
+request case=1
+request case=2
+request case=3
+request case=4
+request case=5
+request case=6

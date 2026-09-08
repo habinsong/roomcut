@@ -1,0 +1,2 @@
+[engine] state: cannot save /tmp/roomcut-command-test.EX1t0C/not-a-file
+all engine command/reply tests passed (real Mach, mailbox and state store)

@@ -1,0 +1,46 @@
+[ 12%] Built target RoomcutHAL
+[ 15%] Built target roomcutctl
+[ 15%] Built target roomcut-driver-sim
+[ 16%] Built target test_ring
+[ 18%] Built target test_ring_region
+[ 20%] Built target roomcut-devicectl
+[ 24%] Built target test_handshake
+[ 24%] Building CXX object engine/CMakeFiles/RoomcutAudioEngine.dir/src/DeviceVolume.cpp.o
+[ 28%] Built target test_handshake_validation
+[ 31%] Built target test_heartbeat
+[ 35%] Built target test_mach_cleanup
+[ 38%] Built target test_control
+[ 40%] Built target test_control_validation
+[ 41%] Building CXX object engine/CMakeFiles/RoomcutAudioEngine.dir/src/VolumeController.cpp.o
+[ 43%] Built target test_engine_connection
+[ 45%] Built target test_lifecycle
+[ 46%] Built target test_resampler
+[ 48%] Built target test_resampler_quality
+[ 49%] Built target test_biquad
+[ 50%] Built target test_graphic_eq
+[ 52%] Built target test_limiter
+[ 54%] Built target test_spatial
+[ 56%] Built target test_parametric
+[ 56%] Built target test_compressor
+[ 58%] Built target test_dsp_chain
+[ 60%] Built target test_analyzer
+[ 61%] Built target test_dsp_transitions
+[ 63%] Built target test_comparison
+[ 65%] Built target test_presets
+[ 67%] Built target test_device_policy
+[ 69%] Built target test_volume_ramp
+[ 71%] Built target test_render_pipeline
+[ 72%] Built target test_realtime_params
+[ 74%] Built target test_analysis_tap
+[ 76%] Built target test_render_gate
+[ 77%] Linking CXX executable RoomcutAudioEngine
+[ 81%] Built target test_engine_state
+[ 83%] Built target test_output_device
+[ 83%] Building CXX object core/tests/CMakeFiles/test_device_volume.dir/__/__/engine/src/DeviceVolume.cpp.o
+[ 93%] Built target RoomcutAudioEngine
+[ 95%] Building CXX object core/tests/CMakeFiles/test_device_services.dir/__/__/engine/src/DeviceVolume.cpp.o
+[ 95%] Building CXX object core/tests/CMakeFiles/test_device_services.dir/__/__/engine/src/VolumeController.cpp.o
+[ 96%] Linking CXX executable test_device_volume
+[ 97%] Linking CXX executable test_device_services
+[ 98%] Built target test_device_volume
+[100%] Built target test_device_services

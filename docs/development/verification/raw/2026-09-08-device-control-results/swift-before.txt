@@ -1,0 +1,36 @@
+[0/1] Planning build
+Building for production...
+[0/5] Write sources
+[2/5] Write swift-version--58304C5D6DBC2206.txt
+[4/6] Compiling RoomcutPresentationCore RoomcutMainPresentation.swift
+[5/9] Compiling RoomcutCore AppPreferences.swift
+[6/11] Compiling RoomcutTests DeviceCommandTests.swift
+[7/12] Compiling RoomcutPackageTests runner.swift
+[7/12] Write Objects.LinkFileList
+[8/12] Linking RoomcutPackageTests
+[10/12] Compiling Roomcut AdvancedControls.swift
+[10/12] Write Objects.LinkFileList
+[11/12] Linking Roomcut
+Build complete! (44.89s)
+Test Suite 'Selected tests' started at 2026-09-08 14:30:27.827.
+Test Suite 'RoomcutPackageTests.xctest' started at 2026-09-08 14:30:27.828.
+Test Suite 'DeviceCommandTests' started at 2026-09-08 14:30:27.829.
+Test Case '-[RoomcutTests.DeviceCommandTests testAlreadySelectedOutputDoesNotCreateAClaimError]' started.
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/DeviceCommandTests.swift:203: error: -[RoomcutTests.DeviceCommandTests testAlreadySelectedOutputDoesNotCreateAClaimError] : XCTAssertNil failed: "Roomcut 출력을 선택하지 못했습니다"
+Test Case '-[RoomcutTests.DeviceCommandTests testAlreadySelectedOutputDoesNotCreateAClaimError]' failed (0.297 seconds).
+Test Case '-[RoomcutTests.DeviceCommandTests testLiveDefaultOutputAcceptsChangedAndAlreadySelected]' started.
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/DeviceCommandTests.swift:183: error: -[RoomcutTests.DeviceCommandTests testLiveDefaultOutputAcceptsChangedAndAlreadySelected] : failed - successful native result 1 became transport(1)
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/DeviceCommandTests.swift:183: error: -[RoomcutTests.DeviceCommandTests testLiveDefaultOutputAcceptsChangedAndAlreadySelected] : failed - successful native result 1 became transport(1)
+Test Case '-[RoomcutTests.DeviceCommandTests testLiveDefaultOutputAcceptsChangedAndAlreadySelected]' failed (0.002 seconds).
+Test Case '-[RoomcutTests.DeviceCommandTests testLiveDefaultOutputPreservesFailures]' started.
+Test Case '-[RoomcutTests.DeviceCommandTests testLiveDefaultOutputPreservesFailures]' passed (0.001 seconds).
+Test Suite 'DeviceCommandTests' failed at 2026-09-08 14:30:28.130.
+	 Executed 3 tests, with 3 failures (0 unexpected) in 0.301 (0.301) seconds
+Test Suite 'RoomcutPackageTests.xctest' failed at 2026-09-08 14:30:28.130.
+	 Executed 3 tests, with 3 failures (0 unexpected) in 0.301 (0.301) seconds
+Test Suite 'Selected tests' failed at 2026-09-08 14:30:28.130.
+	 Executed 3 tests, with 3 failures (0 unexpected) in 0.301 (0.302) seconds
+◇ Test run started.
+↳ Testing Library Version: 1902
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

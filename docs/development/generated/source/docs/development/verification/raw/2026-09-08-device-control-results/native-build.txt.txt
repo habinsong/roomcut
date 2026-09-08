@@ -1,0 +1,48 @@
+[  4%] Built target RoomcutHAL
+[  8%] Built target roomcut-driver-sim
+[ 13%] Built target roomcutctl
+[ 14%] Built target test_ring
+[ 16%] Built target test_ring_region
+[ 18%] Built target roomcut-devicectl
+[ 29%] Built target RoomcutAudioEngine
+[ 33%] Built target test_handshake
+[ 36%] Built target test_handshake_validation
+[ 39%] Built target test_heartbeat
+[ 42%] Built target test_mach_cleanup
+[ 44%] Built target test_control
+[ 46%] Built target test_control_validation
+[ 48%] Built target test_engine_connection
+[ 49%] Built target test_lifecycle
+[ 51%] Building CXX object core/tests/CMakeFiles/test_client_devices.dir/__/__/engine/tests/test_client_devices.cpp.o
+[ 51%] Built target test_resampler
+[ 51%] Building CXX object core/tests/CMakeFiles/test_client_volume.dir/__/__/engine/tests/test_client_volume.cpp.o
+[ 53%] Built target test_resampler_quality
+[ 54%] Built target test_biquad
+[ 55%] Built target test_graphic_eq
+[ 57%] Built target test_limiter
+[ 58%] Built target test_spatial
+[ 60%] Built target test_compressor
+[ 62%] Built target test_parametric
+[ 63%] Built target test_analyzer
+[ 65%] Built target test_dsp_chain
+[ 66%] Building CXX object core/tests/CMakeFiles/test_client_devices.dir/__/__/engine/client/ClientShim.cpp.o
+[ 67%] Built target test_dsp_transitions
+[ 68%] Built target test_comparison
+[ 69%] Building CXX object core/tests/CMakeFiles/test_client_volume.dir/__/__/engine/client/ClientShim.cpp.o
+[ 70%] Built target test_presets
+[ 72%] Built target test_device_policy
+[ 74%] Built target test_volume_ramp
+[ 75%] Built target test_render_pipeline
+[ 76%] Built target test_realtime_params
+[ 78%] Built target test_analysis_tap
+[ 80%] Built target test_render_gate
+[ 83%] Built target test_engine_state
+[ 85%] Built target test_output_device
+[ 86%] Built target test_device_volume
+[ 90%] Built target test_device_services
+[ 91%] Built target test_output_recovery
+[ 92%] Linking CXX executable test_client_devices
+[ 97%] Built target test_engine_commands
+[ 98%] Built target test_client_devices
+[ 99%] Linking CXX executable test_client_volume
+[100%] Built target test_client_volume

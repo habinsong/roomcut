@@ -1,0 +1,9 @@
+FAIL: repeated timeouts keep exactly the original service right (53)
+FAIL: repeated timeouts leave no reply or dead-name rights (54)
+FAIL: repeated timeouts keep exactly the original service right (53)
+FAIL: repeated timeouts leave no reply or dead-name rights (54)
+FAIL: repeated timeouts keep exactly the original service right (53)
+FAIL: repeated timeouts leave no reply or dead-name rights (54)
+client=0 remaining service refs=11 temporary rights delta=10
+client=1 remaining service refs=11 temporary rights delta=10
+client=2 remaining service refs=11 temporary rights delta=10

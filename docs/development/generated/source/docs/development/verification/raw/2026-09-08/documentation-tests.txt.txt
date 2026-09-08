@@ -1,0 +1,10 @@
+test_complete_bytes_and_untracked_files (test_development_docs.DevelopmentDocsTests.test_complete_bytes_and_untracked_files) ... ok
+test_detects_edits_additions_deletions_and_archive_damage (test_development_docs.DevelopmentDocsTests.test_detects_edits_additions_deletions_and_archive_damage) ... ok
+test_generated_directory_link_is_rejected (test_development_docs.DevelopmentDocsTests.test_generated_directory_link_is_rejected) ... ok
+test_handwritten_file_in_generated_folder_is_preserved (test_development_docs.DevelopmentDocsTests.test_handwritten_file_in_generated_folder_is_preserved) ... ok
+test_ignored_artifacts_and_links_are_not_collected (test_development_docs.DevelopmentDocsTests.test_ignored_artifacts_and_links_are_not_collected) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 3.554s
+
+OK

@@ -1,0 +1,15 @@
+Internal ctest changing into directory: /Users/songhabin/roomcut/build
+Test project /Users/songhabin/roomcut/build
+    Start 10: client_volume
+1/1 Test #10: client_volume ....................***Failed    0.46 sec
+FAIL: hardware without a master scalar keeps virtual software volume (201)
+rejected boost: result=7, real=0.40, virtual=0.40
+
+
+0% tests passed, 1 tests failed out of 1
+
+Total Test time (real) =   0.46 sec
+
+The following tests FAILED:
+	 10 - client_volume (Failed)
+Errors while running CTest

@@ -1,0 +1,88 @@
+//
+// RoomTuneRecorder.swift — Phase 2 (step 2): capture the iPhone mic to a WAV.
+//
+// Records the chosen input device (the iPhone Continuity mic) via AVCaptureSession
+// and writes mono float WAV. Lives OFF the main actor — the capture callback runs on
+// its own queue; the owner reads `peakLevel` for UI and gets the file URL from stop().
+//
+// Note on AGC: Continuity-mic audio is processed on the iPhone, so the Mac can't turn
+// off automatic gain control here (no public API). Room Tune compensates by being
+// conservative (cut-only, limited gain) rather than relying on a flat mic response.
+//
+import AVFoundation
+import RoomcutCore
+
+enum RoomTuneError: Error { case cannotAddInput, cannotAddOutput }
+
+final class RoomTuneRecorder: NSObject, AVCaptureAudioDataOutputSampleBufferDelegate {
+    private let session = AVCaptureSession()
+    private let output = AVCaptureAudioDataOutput()
+    private let queue = DispatchQueue(label: "com.roomcut.roomtune.capture")
+    private let pcmDecoder = RoomTunePCM()
+    private var file: AVAudioFile?
+    private var url: URL?
+    private var writeFailed = false
+    private let lock = NSLock()
+    private var _peak: Float = 0
+
+    var peakLevel: Float { lock.lock(); defer { lock.unlock() }; return _peak }
+
+    /// Start capturing `device` to a WAV at `url`. The file is created from the first
+    /// buffer's real format. Throws on session setup failure.
+    func start(device: AVCaptureDevice, to url: URL) throws {
+        try configure(device: device)
+        queue.sync {
+            self.url = url
+            file = nil
+            writeFailed = false
+        }
+        lock.lock(); _peak = 0; lock.unlock()
+        session.startRunning()
+    }
+
+    private func configure(device: AVCaptureDevice) throws {
+        session.beginConfiguration()
+        defer { session.commitConfiguration() }
+        session.inputs.forEach { session.removeInput($0) }
+        session.outputs.forEach { session.removeOutput($0) }
+        let input = try AVCaptureDeviceInput(device: device)
+        guard session.canAddInput(input) else { throw RoomTuneError.cannotAddInput }
+        session.addInput(input)
+        output.setSampleBufferDelegate(self, queue: queue)
+        guard session.canAddOutput(output) else { throw RoomTuneError.cannotAddOutput }
+        session.addOutput(output)
+    }
+
+    /// Stop capturing; returns the written WAV URL (nil if nothing was recorded).
+    func stop() -> URL? {
+        session.stopRunning()
+        return queue.sync {
+            let result = file != nil && !writeFailed ? url : nil
+            file = nil
+            url = nil
+            return result
+        }
+    }
+
+    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer,
+                       from connection: AVCaptureConnection) {
+        guard !writeFailed, let url, CMSampleBufferGetNumSamples(sampleBuffer) > 0 else { return }
+        guard let pcm = pcmDecoder.firstChannel(from: sampleBuffer) else {
+            writeFailed = true
+            return
+        }
+        do {
+            if file == nil { file = try AVAudioFile(forWriting: url, settings: pcm.format.settings) }
+            try file?.write(from: pcm)
+        } catch {
+            writeFailed = true
+            return
+        }
+        if let ch = pcm.floatChannelData?[0] {
+            var p: Float = 0
+            for i in 0..<Int(pcm.frameLength) { p = max(p, abs(ch[i])) }
+            lock.lock(); _peak = p; lock.unlock()
+        }
+    }
+
+}

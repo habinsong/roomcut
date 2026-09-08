@@ -1,0 +1,11 @@
+# `docs/development/verification/raw/2026-09-08-output-recovery`
+
+| 현재 파일 | 전체 원문 | 행 | 바이트 | SHA-256 |
+|---|---|---:|---:|---|
+| [after.txt](../../../../../../../verification/raw/2026-09-08-output-recovery/after.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-output-recovery/after.txt.txt) | 15 | 780 | `9d0819fea19715358b1c74e8e92f6377b64e8c88d3cf0678d5a931b911fd0898` |
+| [before.txt](../../../../../../../verification/raw/2026-09-08-output-recovery/before.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-output-recovery/before.txt.txt) | 36 | 2278 | `fcd83f433c392983b993f45b51f0c8dcef5de7de9b0e0669230604a96425d091` |
+| [native-build.txt](../../../../../../../verification/raw/2026-09-08-output-recovery/native-build.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-output-recovery/native-build.txt.txt) | 41 | 1580 | `12355e9145b2969ac7475d5708bf4fe56ed7432016073e2887c7b94100bb93c3` |
+| [native-tests.txt](../../../../../../../verification/raw/2026-09-08-output-recovery/native-tests.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-output-recovery/native-tests.txt.txt) | 74 | 3609 | `7cad5adda3b27a970e89a1da0d39a5beda054c3b9e0662745f9347c04afdfa48` |
+| [policy-sanitized.txt](../../../../../../../verification/raw/2026-09-08-output-recovery/policy-sanitized.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-output-recovery/policy-sanitized.txt.txt) | 1 | 53 | `e9095fd9f048e353953c6eef6095255b733bf6d0479f4903505596088a67aea0` |
+| [recovery-sanitized.txt](../../../../../../../verification/raw/2026-09-08-output-recovery/recovery-sanitized.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-output-recovery/recovery-sanitized.txt.txt) | 15 | 780 | `9d0819fea19715358b1c74e8e92f6377b64e8c88d3cf0678d5a931b911fd0898` |
+| [targeted-tests.txt](../../../../../../../verification/raw/2026-09-08-output-recovery/targeted-tests.txt) | [원문](../../../../../../source/docs/development/verification/raw/2026-09-08-output-recovery/targeted-tests.txt.txt) | 10 | 394 | `525d180f0d068d15953d4cca02bdd7f81b202e7d5780ccb42770876f30180eaa` |

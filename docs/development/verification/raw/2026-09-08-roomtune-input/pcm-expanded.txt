@@ -1,0 +1,87 @@
+[0/1] Planning build
+Building for production...
+[0/6] Write sources
+[2/6] Write swift-version--58304C5D6DBC2206.txt
+[4/7] Compiling RoomcutCore AppPreferences.swift
+[4/8] Write Objects.LinkFileList
+[5/9] Linking Roomcut
+[7/9] Compiling RoomcutTests DeviceCommandTests.swift
+[8/10] Compiling RoomcutPackageTests runner.swift
+[8/10] Write Objects.LinkFileList
+[9/10] Linking RoomcutPackageTests
+Build complete! (31.70s)
+Test Suite 'Selected tests' started at 2026-09-08 15:03:07.064.
+Test Suite 'RoomcutPackageTests.xctest' started at 2026-09-08 15:03:07.065.
+Test Suite 'RoomTuneAudioFileTests' started at 2026-09-08 15:03:07.065.
+Test Case '-[RoomcutTests.RoomTuneAudioFileTests testPCMFileFormatsAndSampleRatesPreserveLevel]' started.
+Test Case '-[RoomcutTests.RoomTuneAudioFileTests testPCMFileFormatsAndSampleRatesPreserveLevel]' passed (0.059 seconds).
+Test Suite 'RoomTuneAudioFileTests' passed at 2026-09-08 15:03:07.125.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.059 (0.059) seconds
+Test Suite 'RoomTunePCMTests' started at 2026-09-08 15:03:07.125.
+Test Case '-[RoomcutTests.RoomTunePCMTests testFirstChannelAcrossPCMFormatsAndLayouts]' started.
+Test Case '-[RoomcutTests.RoomTunePCMTests testFirstChannelAcrossPCMFormatsAndLayouts]' passed (0.006 seconds).
+Test Case '-[RoomcutTests.RoomTunePCMTests testNonFiniteInputFailsButClippedLevelsRemainVisible]' started.
+Test Case '-[RoomcutTests.RoomTunePCMTests testNonFiniteInputFailsButClippedLevelsRemainVisible]' passed (0.000 seconds).
+Test Case '-[RoomcutTests.RoomTunePCMTests testPacked24BitPCMEndiannessAndChannelLayouts]' started.
+Test Case '-[RoomcutTests.RoomTunePCMTests testPacked24BitPCMEndiannessAndChannelLayouts]' passed (0.001 seconds).
+Test Case '-[RoomcutTests.RoomTunePCMTests testRejectsUnreadyInvalidatedAndTruncatedBuffers]' started.
+/Users/songhabin/roomcut/apps/macos/RoomcutTests/RoomTunePCMTests.swift:46: error: -[RoomcutTests.RoomTunePCMTests testRejectsUnreadyInvalidatedAndTruncatedBuffers] : XCTAssertEqual failed: ("-12731") is not equal to ("0")
+Test Case '-[RoomcutTests.RoomTunePCMTests testRejectsUnreadyInvalidatedAndTruncatedBuffers]' failed (0.324 seconds).
+Test Suite 'RoomTunePCMTests' failed at 2026-09-08 15:03:07.457.
+	 Executed 4 tests, with 1 failure (0 unexpected) in 0.331 (0.332) seconds
+Test Suite 'RoomcutPackageTests.xctest' failed at 2026-09-08 15:03:07.457.
+	 Executed 5 tests, with 1 failure (0 unexpected) in 0.390 (0.391) seconds
+Test Suite 'Selected tests' failed at 2026-09-08 15:03:07.457.
+	 Executed 5 tests, with 1 failure (0 unexpected) in 0.390 (0.393) seconds
+WAV 8000 Hz, 16 bit, float=false: frames=12000, rms=0.0706888527104694
+WAV 8000 Hz, 24 bit, float=false: frames=12000, rms=0.07068741987349861
+WAV 8000 Hz, 32 bit, float=false: frames=12000, rms=0.07068742501425986
+WAV 8000 Hz, 32 bit, float=true: frames=12000, rms=0.0706874248688052
+WAV 16000 Hz, 16 bit, float=false: frames=12000, rms=0.07068455736305027
+WAV 16000 Hz, 24 bit, float=false: frames=12000, rms=0.07068740450551439
+WAV 16000 Hz, 32 bit, float=false: frames=12000, rms=0.07068741962566605
+WAV 16000 Hz, 32 bit, float=true: frames=12000, rms=0.07068741962566605
+WAV 44100 Hz, 16 bit, float=false: frames=12000, rms=0.07068812459612696
+WAV 44100 Hz, 24 bit, float=false: frames=12000, rms=0.07068742617662897
+WAV 44100 Hz, 32 bit, float=false: frames=12000, rms=0.07068742161643686
+WAV 44100 Hz, 32 bit, float=true: frames=12000, rms=0.07068742161750793
+WAV 48000 Hz, 16 bit, float=false: frames=12000, rms=0.07068819564401994
+WAV 48000 Hz, 24 bit, float=false: frames=12000, rms=0.07068740254870974
+WAV 48000 Hz, 32 bit, float=false: frames=12000, rms=0.07068741728114061
+WAV 48000 Hz, 32 bit, float=true: frames=12000, rms=0.07068741728114061
+WAV 96000 Hz, 16 bit, float=false: frames=12000, rms=0.07068948859557798
+WAV 96000 Hz, 24 bit, float=false: frames=12000, rms=0.07068736569967253
+WAV 96000 Hz, 32 bit, float=false: frames=12000, rms=0.07068737618113873
+WAV 96000 Hz, 32 bit, float=true: frames=12000, rms=0.07068737618113873
+WAV 192000 Hz, 16 bit, float=false: frames=12000, rms=0.0706898304404078
+WAV 192000 Hz, 24 bit, float=false: frames=12000, rms=0.07068742110040689
+WAV 192000 Hz, 32 bit, float=false: frames=12000, rms=0.07068742970070524
+WAV 192000 Hz, 32 bit, float=true: frames=12000, rms=0.07068742970070524
+PCM format=1, channels=1, interleaved=false: max error 0.0
+PCM format=1, channels=1, interleaved=true: max error 0.0
+PCM format=1, channels=2, interleaved=false: max error 0.0
+PCM format=1, channels=2, interleaved=true: max error 0.0
+PCM format=2, channels=1, interleaved=false: max error 0.0
+PCM format=2, channels=1, interleaved=true: max error 0.0
+PCM format=2, channels=2, interleaved=false: max error 0.0
+PCM format=2, channels=2, interleaved=true: max error 0.0
+PCM format=3, channels=1, interleaved=false: max error 0.0
+PCM format=3, channels=1, interleaved=true: max error 0.0
+PCM format=3, channels=2, interleaved=false: max error 0.0
+PCM format=3, channels=2, interleaved=true: max error 0.0
+PCM format=4, channels=1, interleaved=false: max error 0.0
+PCM format=4, channels=1, interleaved=true: max error 0.0
+PCM format=4, channels=2, interleaved=false: max error 0.0
+PCM format=4, channels=2, interleaved=true: max error 0.0
+PCM packed24 channels=1, interleaved=false, bigEndian=false: max error 0.0
+PCM packed24 channels=1, interleaved=false, bigEndian=true: max error 0.0
+PCM packed24 channels=1, interleaved=true, bigEndian=false: max error 0.0
+PCM packed24 channels=1, interleaved=true, bigEndian=true: max error 0.0
+PCM packed24 channels=2, interleaved=false, bigEndian=false: max error 0.0
+PCM packed24 channels=2, interleaved=false, bigEndian=true: max error 0.0
+PCM packed24 channels=2, interleaved=true, bigEndian=false: max error 0.0
+PCM packed24 channels=2, interleaved=true, bigEndian=true: max error 0.0
+◇ Test run started.
+↳ Testing Library Version: 1902
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.
