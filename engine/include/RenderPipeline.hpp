@@ -52,6 +52,10 @@ public:
     void setBypass(bool bypass) { dsp_.setBypass(bypass); }
     double ratio() const { return resampler_.ratio(); }
     double resamplerLatencySeconds() const { return resampler_.latencySeconds(); }
+    // What the engine adds on purpose, end to end: rate conversion plus the
+    // limiter's look-ahead. Ring occupancy and the device's own buffers are not
+    // in here — they are not ours to report.
+    double latencySeconds() const { return resampler_.latencySeconds() + dsp_.latencySeconds(); }
 
     RenderMetrics render(float* output, uint32_t frames, InputFn input,
                          void* inputContext, float outputGain) {

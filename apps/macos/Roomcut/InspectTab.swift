@@ -82,9 +82,22 @@ struct InspectTab: View {
                               tint: model.audioFormat == nil ? .secondary : RoomcutTokens.blue(scheme))
                 }
                 RoomcutDivider()
-                RoomcutRow(L("지연", "Latency", "レイテンシ", "Latence", "Latenz"), systemImage: "timer") {
+                RoomcutRow(L("장치 지연", "Device latency", "デバイスのレイテンシ",
+                             "Latence du périphérique", "Gerätelatenz"), systemImage: "timer") {
                     valueText(model.audioFormat.map { String(format: "%.1f ms", $0.latencyMs) } ?? "—",
                               tint: latencyTint(model.audioFormat?.latencyMs))
+                }
+                if model.status.engineLatencyMs > 0 {
+                    RoomcutDivider()
+                    // Two numbers, not one total: this is what Roomcut adds on purpose
+                    // (limiter look-ahead plus rate conversion). Ring occupancy and the
+                    // driver's own buffering are not measured here, so adding them up
+                    // would report a round-trip nobody measured.
+                    RoomcutRow(L("처리 지연", "Processing latency", "処理のレイテンシ",
+                                 "Latence de traitement", "Verarbeitungslatenz"), systemImage: "waveform.path") {
+                        valueText(String(format: "%.1f ms", model.status.engineLatencyMs),
+                                  tint: RoomcutTokens.blue(scheme))
+                    }
                 }
             }
 

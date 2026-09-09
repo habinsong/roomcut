@@ -19,6 +19,7 @@ struct EngineStatusSnapshot {
     std::string outputDeviceUID;
     bool keepDefault = false;
     double volumeBoost = 1;
+    double engineLatencyMs = 0;   // limiter look-ahead + resampler group delay
 };
 
 RoomcutEngineState presentedEngineState(RoomcutEngineLifecycle lifecycle, bool manualBypass, bool safeBypass);

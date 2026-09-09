@@ -303,6 +303,10 @@ typedef struct {
     uint32_t          keepDefault;  /* 0/1 — reclaim-Roomcut-as-default toggle */
     uint32_t          capabilities;
     double            volumeBoost;
+    /* Latency the engine adds on purpose: the limiter's look-ahead plus the
+     * resampler's group delay. Appended (see RoomcutSetParamsRequest); 0 from an
+     * engine that predates the field, which reads as "not reported". */
+    double            engineLatencyMs;
 } RoomcutStateReply;
 
 typedef struct {

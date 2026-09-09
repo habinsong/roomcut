@@ -98,6 +98,10 @@ struct EngineContext {
     ComparisonMetrics comparisonSnapshot;        // control-owned last received metrics
     std::atomic<uint32_t>  limiterGRBits{0};       // float bits, render → control
 
+    // Latency the engine adds on purpose, in ms. Written by the control thread
+    // when the render pipeline is prepared; read by the same thread for replies.
+    double                 engineLatencyMs = 0;
+
     // --dump diagnostic: the control thread allocates before output.start();
     // the render thread is the only writer of the contents + frame count.
     std::vector<float>     dumpBuf;
@@ -259,6 +263,7 @@ OSStatus openOutputOn(EngineContext& ctx, OutputDevice& output,
         output.close();
         return kAudioHardwareUnspecifiedError;
     }
+    ctx.engineLatencyMs = ctx.render.latencySeconds() * 1000.0;
     if (ctx.render.ratio() != 1.0) {
         std::fprintf(stderr,
             "[engine] device sr=%.2f != ring sr=%u; band-limited resampling ring->device (ratio=%.4f, delay=%.2fms)\n",
@@ -957,6 +962,7 @@ int main(int argc, char** argv) {
                 if (snapshot.outputRunning) snapshot.outputDeviceUID = deviceUID(output.deviceID());
                 snapshot.keepDefault = keepRoomcutDefault;
                 snapshot.volumeBoost = ctx.volume.boost();
+                snapshot.engineLatencyMs = output.running() ? ctx.engineLatencyMs : 0.0;
                 kr = controlReplyState(rx.control.stateRequest, makeStateReply(sound, snapshot));
                 if (kr != KERN_SUCCESS)
                     std::fprintf(stderr, "[engine] state reply failed: %d\n", kr);

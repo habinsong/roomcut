@@ -199,6 +199,12 @@ target_compile_options(test_parametric PRIVATE -Wall -Wextra)
 
 add_test(NAME parametric COMMAND test_parametric)
 
+add_executable(test_latency ${CMAKE_SOURCE_DIR}/core/tests/test_latency.cpp)
+target_include_directories(test_latency PRIVATE
+  ${CMAKE_SOURCE_DIR}/core/dsp ${CMAKE_SOURCE_DIR}/core ${CMAKE_SOURCE_DIR}/engine/include)
+target_compile_options(test_latency PRIVATE -Wall -Wextra)
+add_test(NAME latency COMMAND test_latency)
+
 add_executable(test_dynamic_eq ${CMAKE_SOURCE_DIR}/core/tests/test_dynamic_eq.cpp)
 target_include_directories(test_dynamic_eq PRIVATE ${CMAKE_SOURCE_DIR}/core/dsp)
 target_compile_options(test_dynamic_eq PRIVATE -Wall -Wextra)

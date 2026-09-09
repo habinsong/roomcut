@@ -76,6 +76,7 @@ typedef struct {
     uint32_t keepDefault;            /* 0/1 — reclaim-Roomcut-as-default toggle */
     uint32_t capabilities;
     double   volumeBoost;
+    double   engineLatencyMs;   /* limiter look-ahead + resampler; 0 = not reported */
 } RoomcutClientState;
 
 typedef struct {

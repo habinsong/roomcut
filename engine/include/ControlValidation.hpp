@@ -78,7 +78,8 @@ inline bool normalizeControlReply(RoomcutControlMsgBuffer& buffer, uint32_t expe
     case ROOMCUT_MSG_STATE:
         valid = sizeMatches(size, sizeof(RoomcutStateReply), {
             offsetof(RoomcutStateReply, outputDeviceUID), offsetof(RoomcutStateReply, keepDefault),
-            offsetof(RoomcutStateReply, capabilities), offsetof(RoomcutStateReply, volumeBoost)});
+            offsetof(RoomcutStateReply, capabilities), offsetof(RoomcutStateReply, volumeBoost),
+            offsetof(RoomcutStateReply, engineLatencyMs)});
         break;
     case ROOMCUT_MSG_GET_PARAMS:
         valid = sizeMatches(size, sizeof(RoomcutGetParamsReply), {
