@@ -23,6 +23,7 @@ namespace roomcut {
 class DSPChain {
 public:
     void prepare(double fs, std::size_t channels = 2, double crossfadeMs = 15.0) {
+        fs_ = fs;
         channels_ = std::clamp(channels, std::size_t{1}, Limiter::kMaxChannels);
         activePath_ = 0;
         paths_[activePath_].prepare(fs, channels_);
@@ -67,6 +68,13 @@ public:
     }
 
     double limiterGainReductionDb() const { return limiter_.gainReductionDb(); }
+
+    // Delay the chain adds on purpose. Only the limiter's look-ahead is a bulk
+    // delay of the whole signal; the filters are IIR, so their group delay varies
+    // with frequency and is not part of a single number.
+    double latencySeconds() const {
+        return fs_ > 0 ? static_cast<double>(limiter_.lookaheadFrames()) / fs_ : 0.0;
+    }
     bool safeBypassed() const { return safeBypass_; }
 
     void processInterleaved(float* buf, std::size_t frames, const float* finalGains = nullptr) {
@@ -131,6 +139,7 @@ private:
 
     static constexpr double kClipCeilingDb = 0.0;
     std::size_t channels_ = 2;
+    double fs_ = 0.0;
     ChainParams params_{};
     ChainParams transitionParams_{};
     std::array<DSPPath, 2> paths_{};

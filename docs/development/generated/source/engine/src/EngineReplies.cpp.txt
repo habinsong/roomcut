@@ -31,6 +31,7 @@ RoomcutStateReply makeStateReply(const EngineSoundState& sound, const EngineStat
         | ROOMCUT_CAP_VOLUME_BOOST | ROOMCUT_CAP_DYNAMICS | ROOMCUT_CAP_LEVEL_MATCH
         | ROOMCUT_CAP_DYNAMIC_EQ;
     reply.volumeBoost = runtime.volumeBoost;
+    reply.engineLatencyMs = runtime.engineLatencyMs;
     return reply;
 }
 

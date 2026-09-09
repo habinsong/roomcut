@@ -80,6 +80,8 @@ public struct EngineStatus {
     public var keepDefault = false
     public var capabilities: UInt32 = 0
     public var volumeBoost = 1.0
+    // What the engine adds on purpose. 0 means an engine that doesn't report it.
+    public var engineLatencyMs = 0.0
 
     public init() {}
 
@@ -426,6 +428,7 @@ public final class LiveEngineClient: EngineClientProtocol {
             s.keepDefault = c.keepDefault != 0
             s.capabilities = c.capabilities
             s.volumeBoost = c.volumeBoost
+            s.engineLatencyMs = c.engineLatencyMs
             return s
         }
     }

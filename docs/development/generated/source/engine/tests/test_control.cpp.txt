@@ -87,6 +87,7 @@ void* serverThread(void* arg) {
                 std::snprintf(reply.presetId, sizeof(reply.presetId), "%s", "custom");
                 reply.paramsRevision = 7;
                 reply.capabilities = ROOMCUT_CAP_SPATIAL_PARAMS;
+                reply.engineLatencyMs = 2.75;
                 kr = roomcut::controlReplyState(buf.stateRequest, reply);
                 CHECK(kr == KERN_SUCCESS, "server replied state");
                 break;
@@ -206,6 +207,7 @@ int main() {
     kern_return_t kr = roomcut::controlGetState(service, 2000, &state);
     CHECK(kr == KERN_SUCCESS, "client got state");
     CHECK(state.paramsRevision == 7, "state carries params revision");
+    CHECK(std::fabs(state.engineLatencyMs - 2.75) < 0.001, "state carries the engine's own latency");
     CHECK((state.capabilities & ROOMCUT_CAP_SPATIAL_PARAMS) != 0, "state carries spatial capability");
 
     RoomcutComparisonRequest comparison{};

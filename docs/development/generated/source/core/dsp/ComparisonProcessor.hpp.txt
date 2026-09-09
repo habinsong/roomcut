@@ -24,6 +24,9 @@ struct ComparisonMetrics {
 // limiters only attenuates; the output blend therefore remains peak-safe.
 class ComparisonProcessor {
 public:
+    // Both chains are the same shape, so either one answers for the pair.
+    double latencySeconds() const { return chains_[0].latencySeconds(); }
+
     void prepare(double fs, std::size_t channels, const ComparisonSettings& settings = {}) {
         if (channels < 1 || channels > 2) throw std::invalid_argument("comparison requires mono or stereo");
         channels_ = channels;

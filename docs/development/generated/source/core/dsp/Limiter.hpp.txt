@@ -80,6 +80,9 @@ public:
         return gain_ < 1.0 ? -20.0 * std::log10(gain_) : 0.0;
     }
 
+    // Frames of deliberate delay: the look-ahead window the gain rides.
+    std::size_t lookaheadFrames() const { return lookahead_; }
+
     void reset() {
         for (auto& d : delay_) std::fill(d.begin(), d.end(), 0.0f);
         std::fill(maxVal_.begin(), maxVal_.end(), 0.0f);

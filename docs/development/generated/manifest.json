@@ -163,10 +163,10 @@
     },
     {
       "path": "apps/macos/Roomcut/EngineClient.swift",
-      "bytes": 27926,
-      "sha256": "9091e9724998705f4b923a099d7a62b192d7f5d5ad23801bcb95157e2f793191",
+      "bytes": 28095,
+      "sha256": "5799434337c8cf3984dd643c7e039b486e61861055345fab62b6237ec78d33ee",
       "kind": "text",
-      "lines": 696,
+      "lines": 699,
       "archive": "docs/development/generated/source/apps/macos/Roomcut/EngineClient.swift.txt"
     },
     {
@@ -203,10 +203,10 @@
     },
     {
       "path": "apps/macos/Roomcut/InspectTab.swift",
-      "bytes": 9160,
-      "sha256": "58fe01303992ddef7023ce9cd697ae10d5ae3bbd0a727ae7ad61d51e55d691c6",
+      "bytes": 10077,
+      "sha256": "f5b326f2acab0eb09b88e33438a9f64ec339c523756dacf1f56078c068f4f17a",
       "kind": "text",
-      "lines": 187,
+      "lines": 200,
       "archive": "docs/development/generated/source/apps/macos/Roomcut/InspectTab.swift.txt"
     },
     {
@@ -787,10 +787,10 @@
     },
     {
       "path": "core/dsp/ComparisonProcessor.hpp",
-      "bytes": 4954,
-      "sha256": "bcf90a7b91a9b65b8e1ac44f9f67a25be6b3d31a238420ab75bfbac002af49f5",
+      "bytes": 5104,
+      "sha256": "26d60e6d52f45f5e6367ba1ad8db5b14f9d03843cf26a2056dbbe4e78b99291b",
       "kind": "text",
-      "lines": 119,
+      "lines": 122,
       "archive": "docs/development/generated/source/core/dsp/ComparisonProcessor.hpp.txt"
     },
     {
@@ -803,10 +803,10 @@
     },
     {
       "path": "core/dsp/DSPChain.hpp",
-      "bytes": 5852,
-      "sha256": "3771f77e2154d93386f4268f22b4a1214a8024216a1bb679f3f164a16aa69244",
+      "bytes": 6242,
+      "sha256": "bbfb12b419071dc98e17331394f743f8ad6702f345d46259c51028ffd0ba7699",
       "kind": "text",
-      "lines": 150,
+      "lines": 159,
       "archive": "docs/development/generated/source/core/dsp/DSPChain.hpp.txt"
     },
     {
@@ -843,10 +843,10 @@
     },
     {
       "path": "core/dsp/Limiter.hpp",
-      "bytes": 7532,
-      "sha256": "1ac1e7b6fd4da62e1c7b9ddb0ce6c41c2401c81818045bab8f23e4bc246db842",
+      "bytes": 7669,
+      "sha256": "6e5d6b949c4b7a4167a22626b0da4032d1fbf1fb691b93c2bc500c30d1a12837",
       "kind": "text",
-      "lines": 193,
+      "lines": 196,
       "archive": "docs/development/generated/source/core/dsp/Limiter.hpp.txt"
     },
     {
@@ -883,10 +883,10 @@
     },
     {
       "path": "core/tests/CMakeLists.txt",
-      "bytes": 19093,
-      "sha256": "12ddd5f4670937523ec0f8bd20edfa36fc03eb9ee6ba17794a64d66758f53691",
+      "bytes": 19717,
+      "sha256": "60916553a8bdfc90bcc4d5fa349530b3132121532fe2a15019101811d7f863e1",
       "kind": "text",
-      "lines": 371,
+      "lines": 382,
       "archive": "docs/development/generated/source/core/tests/CMakeLists.txt.txt"
     },
     {
@@ -952,6 +952,14 @@
       "kind": "text",
       "lines": 134,
       "archive": "docs/development/generated/source/core/tests/test_graphic_eq.cpp.txt"
+    },
+    {
+      "path": "core/tests/test_latency.cpp",
+      "bytes": 4452,
+      "sha256": "db22d49318b088c65526d36495d612d63183b42d617fd90c4f336bd2d7dfc16b",
+      "kind": "text",
+      "lines": 103,
+      "archive": "docs/development/generated/source/core/tests/test_latency.cpp.txt"
     },
     {
       "path": "core/tests/test_limiter.cpp",
@@ -1043,10 +1051,10 @@
     },
     {
       "path": "docs/development/README.md",
-      "bytes": 7508,
-      "sha256": "a633b9e85ea54e82859b336c6de0757c1c460c17d3014e67c22f641cccd6188c",
+      "bytes": 7676,
+      "sha256": "f48e0c5c79f48d4b2408e793b34299a9cd19b7a82380bce21b1d7123575e9ecf",
       "kind": "text",
-      "lines": 77,
+      "lines": 78,
       "archive": "docs/development/generated/source/docs/development/README.md.txt"
     },
     {
@@ -1059,26 +1067,26 @@
     },
     {
       "path": "docs/development/continuation.md",
-      "bytes": 6505,
-      "sha256": "902fc1040d524218c459359310392b7cdc7de395c3eb81a6ba8daabfa2ab0e61",
+      "bytes": 6507,
+      "sha256": "6c90794f4e7a69e0cb440bb91aed969e6f5ecacd241b442f89f4d0f004356f72",
       "kind": "text",
       "lines": 50,
       "archive": "docs/development/generated/source/docs/development/continuation.md.txt"
     },
     {
       "path": "docs/development/issues/current.md",
-      "bytes": 9263,
-      "sha256": "090e300bbcc066e151dcb7a2bac6b4cda7596e0872d63d7644af147ee718291e",
+      "bytes": 9344,
+      "sha256": "5423b7be36bf09076ade39a8c6b33d73575ffabe82f61d2701e9b075d575f58d",
       "kind": "text",
       "lines": 35,
       "archive": "docs/development/generated/source/docs/development/issues/current.md.txt"
     },
     {
       "path": "docs/development/plan/roadmap.md",
-      "bytes": 10283,
-      "sha256": "98c21978eb3692d5164e41ca18d421f573849814f6d099bbba5c11b287279aff",
+      "bytes": 10498,
+      "sha256": "35b7f35256743a2314084b155eeaa98d4567fef234ea77a4df88590b5a86c035",
       "kind": "text",
-      "lines": 105,
+      "lines": 107,
       "archive": "docs/development/generated/source/docs/development/plan/roadmap.md.txt"
     },
     {
@@ -1248,6 +1256,14 @@
       "kind": "text",
       "lines": 41,
       "archive": "docs/development/generated/source/docs/development/verification/2026-09-10-engine-boundaries.md.txt"
+    },
+    {
+      "path": "docs/development/verification/2026-09-10-latency-and-routing.md",
+      "bytes": 3810,
+      "sha256": "f9dc7a1e7cbe9cb855090b69fa78c0bcb766db27be02e9f7e97cc231568530c9",
+      "kind": "text",
+      "lines": 63,
+      "archive": "docs/development/generated/source/docs/development/verification/2026-09-10-latency-and-routing.md.txt"
     },
     {
       "path": "docs/development/verification/raw/2026-09-08/app-build.txt",
@@ -2483,10 +2499,10 @@
     },
     {
       "path": "engine/client/ClientShim.cpp",
-      "bytes": 16820,
-      "sha256": "caaa14d0b1dc197f64b6cfd0ceb6c88947bd49f014cb8d8acb0016bc60ebc136",
+      "bytes": 16868,
+      "sha256": "076d78c151b3282cb3c1713e9d397abcb5ffcbb14cb8bf5720e464b46e9cb07d",
       "kind": "text",
-      "lines": 444,
+      "lines": 445,
       "archive": "docs/development/generated/source/engine/client/ClientShim.cpp.txt"
     },
     {
@@ -2523,10 +2539,10 @@
     },
     {
       "path": "engine/client/include/roomcut_client.h",
-      "bytes": 11412,
-      "sha256": "c0530ed76ac5fe66d280e28248c21dd9de377358edfe017a59af4621c64cd15c",
+      "bytes": 11499,
+      "sha256": "4416c7dc3d0fff4a5bce116592d563126c866265056c29e324dbe7aad0fd4ad0",
       "kind": "text",
-      "lines": 264,
+      "lines": 265,
       "archive": "docs/development/generated/source/engine/client/include/roomcut_client.h.txt"
     },
     {
@@ -2563,10 +2579,10 @@
     },
     {
       "path": "engine/include/ControlValidation.hpp",
-      "bytes": 6124,
-      "sha256": "2402079fcfa00460a13174753fc64535ad873469cfc77e3f628a6839c86888ba",
+      "bytes": 6182,
+      "sha256": "1ca0057512660524b939f940eaf7f66976d718ed499267b9337ff34a17f5f059",
       "kind": "text",
-      "lines": 108,
+      "lines": 109,
       "archive": "docs/development/generated/source/engine/include/ControlValidation.hpp.txt"
     },
     {
@@ -2619,10 +2635,10 @@
     },
     {
       "path": "engine/include/EngineReplies.hpp",
-      "bytes": 1310,
-      "sha256": "9e67ada0b2842c9391d7f5a4b8623cefc6784df3318b2b6a218e6d34e1db228a",
+      "bytes": 1390,
+      "sha256": "f96091083b604b48923c2482f75fdf67fffbe507c2380175dde762ee9384d372",
       "kind": "text",
-      "lines": 31,
+      "lines": 32,
       "archive": "docs/development/generated/source/engine/include/EngineReplies.hpp.txt"
     },
     {
@@ -2698,6 +2714,14 @@
       "archive": "docs/development/generated/source/engine/include/OutputRecovery.hpp.txt"
     },
     {
+      "path": "engine/include/OutputRouter.hpp",
+      "bytes": 4158,
+      "sha256": "052dbbf9859bde599e58869abd436fa06e28f12cf1011a6dc4e3c259952788dc",
+      "kind": "text",
+      "lines": 98,
+      "archive": "docs/development/generated/source/engine/include/OutputRouter.hpp.txt"
+    },
+    {
       "path": "engine/include/ParameterCodec.hpp",
       "bytes": 2728,
       "sha256": "9bdff88b37038cd681a9dffe531d28dcdc3d0bb7e6664ec72c3a762ce20cc45e",
@@ -2739,10 +2763,10 @@
     },
     {
       "path": "engine/include/RenderPipeline.hpp",
-      "bytes": 5656,
-      "sha256": "1321f40646ab3f46b5f6f563dcf0a26af8a945dc3a737f064a48307b8afba19b",
+      "bytes": 5960,
+      "sha256": "088fddfa2d8ff01525e20c59bb83305a9b50ab0ca2ec2b08386e79a5cf0fc6d9",
       "kind": "text",
-      "lines": 134,
+      "lines": 138,
       "archive": "docs/development/generated/source/engine/include/RenderPipeline.hpp.txt"
     },
     {
@@ -2851,10 +2875,10 @@
     },
     {
       "path": "engine/src/EngineReplies.cpp",
-      "bytes": 4354,
-      "sha256": "86684c433da63ccbd30ae7beaeeae8cd027a2e087b4aee9f3f7e02d60e7a7620",
+      "bytes": 4407,
+      "sha256": "8f13c9897f3f0332ccad367782c042a8d833dd74171a133889bc5ef7922a2811",
       "kind": "text",
-      "lines": 95,
+      "lines": 96,
       "archive": "docs/development/generated/source/engine/src/EngineReplies.cpp.txt"
     },
     {
@@ -2939,10 +2963,10 @@
     },
     {
       "path": "engine/src/main.cpp",
-      "bytes": 50470,
-      "sha256": "bf9d115f6412d32d62e3717f52e4f6185fad1ab3de18250cea9f98a46d06a653",
+      "bytes": 50578,
+      "sha256": "833eaf47d5918e8abb0492594df70b5773f204dcea664a1e89a7d3c866160512",
       "kind": "text",
-      "lines": 1017,
+      "lines": 1020,
       "archive": "docs/development/generated/source/engine/src/main.cpp.txt"
     },
     {
@@ -3003,10 +3027,10 @@
     },
     {
       "path": "engine/tests/test_control.cpp",
-      "bytes": 15497,
-      "sha256": "dac67a509e533dc7ea973b041e550198246864fade764b6e559bbd2a2437eec1",
+      "bytes": 15645,
+      "sha256": "6395932948ea89bebdb47b51582df3b98ede6f94279e64a8973cba7e1e8f72bd",
       "kind": "text",
-      "lines": 307,
+      "lines": 309,
       "archive": "docs/development/generated/source/engine/tests/test_control.cpp.txt"
     },
     {
@@ -3136,6 +3160,14 @@
       "kind": "text",
       "lines": 100,
       "archive": "docs/development/generated/source/engine/tests/test_output_recovery.cpp.txt"
+    },
+    {
+      "path": "engine/tests/test_output_router.cpp",
+      "bytes": 5964,
+      "sha256": "b3af132eac00ed6e9210b216ce509020ac4c5adb20112313b580bc00d03eea01",
+      "kind": "text",
+      "lines": 129,
+      "archive": "docs/development/generated/source/engine/tests/test_output_router.cpp.txt"
     },
     {
       "path": "engine/tests/test_realtime_params.cpp",
@@ -3443,10 +3475,10 @@
     },
     {
       "path": "shared/protocol/roomcut_handshake.h",
-      "bytes": 18387,
-      "sha256": "59303cc76c3231f4c55d519253e356bd629f6e9ff6d8353afaca4102560e44c1",
+      "bytes": 18658,
+      "sha256": "c5ef8244d5d6cff6212d44db6ac095bfbdf4da0e3ccbf716763a0d33dad6f2be",
       "kind": "text",
-      "lines": 435,
+      "lines": 439,
       "archive": "docs/development/generated/source/shared/protocol/roomcut_handshake.h.txt"
     },
     {

@@ -96,6 +96,7 @@ int roomcutClientGetState(RoomcutClientState* out) {
     out->outputDeviceUID[sizeof(out->outputDeviceUID) - 1] = '\0';
     out->keepDefault = rep.keepDefault;
     out->capabilities = rep.capabilities;
+    out->engineLatencyMs = rep.engineLatencyMs;
     out->volumeBoost = clampVolumeBoost(rep.volumeBoost);
     return 0;
 }

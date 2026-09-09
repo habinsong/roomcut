@@ -199,6 +199,12 @@ target_compile_options(test_parametric PRIVATE -Wall -Wextra)
 
 add_test(NAME parametric COMMAND test_parametric)
 
+add_executable(test_latency ${CMAKE_SOURCE_DIR}/core/tests/test_latency.cpp)
+target_include_directories(test_latency PRIVATE
+  ${CMAKE_SOURCE_DIR}/core/dsp ${CMAKE_SOURCE_DIR}/core ${CMAKE_SOURCE_DIR}/engine/include)
+target_compile_options(test_latency PRIVATE -Wall -Wextra)
+add_test(NAME latency COMMAND test_latency)
+
 add_executable(test_dynamic_eq ${CMAKE_SOURCE_DIR}/core/tests/test_dynamic_eq.cpp)
 target_include_directories(test_dynamic_eq PRIVATE ${CMAKE_SOURCE_DIR}/core/dsp)
 target_compile_options(test_dynamic_eq PRIVATE -Wall -Wextra)
@@ -349,6 +355,11 @@ add_executable(test_driver_feed ${CMAKE_SOURCE_DIR}/engine/tests/test_driver_fee
 target_include_directories(test_driver_feed PRIVATE ${CMAKE_SOURCE_DIR}/engine/include)
 target_compile_options(test_driver_feed PRIVATE -Wall -Wextra)
 add_test(NAME driver_feed COMMAND test_driver_feed)
+
+add_executable(test_output_router ${CMAKE_SOURCE_DIR}/engine/tests/test_output_router.cpp)
+target_include_directories(test_output_router PRIVATE ${CMAKE_SOURCE_DIR}/engine/include)
+target_compile_options(test_output_router PRIVATE -Wall -Wextra)
+add_test(NAME output_router COMMAND test_output_router)
 
 add_executable(test_output_recovery ${CMAKE_SOURCE_DIR}/engine/tests/test_output_recovery.cpp)
 target_include_directories(test_output_recovery PRIVATE ${CMAKE_SOURCE_DIR}/engine/include)

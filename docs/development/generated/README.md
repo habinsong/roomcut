@@ -2,8 +2,8 @@
 
 `python3 scripts/update-development-docs.py`로 생성합니다. 직접 수정하지 마세요.
 
-총 441개 파일: 텍스트 원문 429개, 바이너리 12개.
-텍스트 총 63594행.
+총 445개 파일: 텍스트 원문 433개, 바이너리 12개.
+텍스트 총 64050행.
 
 추적 파일과 Git에서 무시하지 않는 미추적 파일의 **현재 작업 트리**를 수집합니다.
 로컬 `AGENTS.md`도 포함합니다. 원문은 `source/`에 바이트 그대로 보존합니다.
@@ -23,14 +23,14 @@
 | [apps/macos/RoomcutTests](inventory/apps/macos/RoomcutTests/index.md) | 22 |
 | [core/dsp](inventory/core/dsp/index.md) | 14 |
 | [core/presets](inventory/core/presets/index.md) | 2 |
-| [core/tests](inventory/core/tests/index.md) | 14 |
+| [core/tests](inventory/core/tests/index.md) | 15 |
 | [docs](inventory/docs/index.md) | 6 |
 | [docs/development](inventory/docs/development/index.md) | 2 |
 | [docs/development/architecture](inventory/docs/development/architecture/index.md) | 1 |
 | [docs/development/issues](inventory/docs/development/issues/index.md) | 1 |
 | [docs/development/plan](inventory/docs/development/plan/index.md) | 1 |
 | [docs/development/references](inventory/docs/development/references/index.md) | 1 |
-| [docs/development/verification](inventory/docs/development/verification/index.md) | 20 |
+| [docs/development/verification](inventory/docs/development/verification/index.md) | 21 |
 | [docs/development/verification/raw/2026-09-08](inventory/docs/development/verification/raw/2026-09-08/index.md) | 10 |
 | [docs/development/verification/raw/2026-09-08-app-polling](inventory/docs/development/verification/raw/2026-09-08-app-polling/index.md) | 7 |
 | [docs/development/verification/raw/2026-09-08-bypass-ownership](inventory/docs/development/verification/raw/2026-09-08-bypass-ownership/index.md) | 8 |
@@ -53,9 +53,9 @@
 | [engine](inventory/engine/index.md) | 1 |
 | [engine/client](inventory/engine/client/index.md) | 5 |
 | [engine/client/include](inventory/engine/client/include/index.md) | 1 |
-| [engine/include](inventory/engine/include/index.md) | 33 |
+| [engine/include](inventory/engine/include/index.md) | 34 |
 | [engine/src](inventory/engine/src/index.md) | 22 |
-| [engine/tests](inventory/engine/tests/index.md) | 29 |
+| [engine/tests](inventory/engine/tests/index.md) | 30 |
 | [icon](inventory/icon/index.md) | 1 |
 | [icon/app](inventory/icon/app/index.md) | 11 |
 | [scripts](inventory/scripts/index.md) | 15 |

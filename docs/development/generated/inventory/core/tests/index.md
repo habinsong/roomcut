@@ -2,7 +2,7 @@
 
 | 현재 파일 | 전체 원문 | 행 | 바이트 | SHA-256 |
 |---|---|---:|---:|---|
-| [CMakeLists.txt](../../../../../../core/tests/CMakeLists.txt) | [원문](../../../source/core/tests/CMakeLists.txt.txt) | 371 | 19093 | `12ddd5f4670937523ec0f8bd20edfa36fc03eb9ee6ba17794a64d66758f53691` |
+| [CMakeLists.txt](../../../../../../core/tests/CMakeLists.txt) | [원문](../../../source/core/tests/CMakeLists.txt.txt) | 382 | 19717 | `60916553a8bdfc90bcc4d5fa349530b3132121532fe2a15019101811d7f863e1` |
 | [test_analyzer.cpp](../../../../../../core/tests/test_analyzer.cpp) | [원문](../../../source/core/tests/test_analyzer.cpp.txt) | 68 | 2197 | `e3b1be21bf394f48399f0b19a391d4128d8c9b6594bc5be75cc0f4c5fee39ede` |
 | [test_biquad.cpp](../../../../../../core/tests/test_biquad.cpp) | [원문](../../../source/core/tests/test_biquad.cpp.txt) | 153 | 6268 | `c7c3cf0c85de3504bb0090d7ef72c2c7937139c82bac5ec4a5e2fb17e50dfcaa` |
 | [test_comparison.cpp](../../../../../../core/tests/test_comparison.cpp) | [원문](../../../source/core/tests/test_comparison.cpp.txt) | 221 | 10716 | `f0ef350b25bdbfba02581ca68c747f0f733926a3b1fc3411c2a33ff969944abb` |
@@ -11,6 +11,7 @@
 | [test_dsp_transitions.cpp](../../../../../../core/tests/test_dsp_transitions.cpp) | [원문](../../../source/core/tests/test_dsp_transitions.cpp.txt) | 234 | 10426 | `69b0dbe9f1e3b1de5a93e01b7913c69ec173736ca292cfe5160737b26938053a` |
 | [test_dynamic_eq.cpp](../../../../../../core/tests/test_dynamic_eq.cpp) | [원문](../../../source/core/tests/test_dynamic_eq.cpp.txt) | 249 | 11058 | `572ef27f719e083fec7917d23ee54f734b42be02f2197555b1cbeca798572757` |
 | [test_graphic_eq.cpp](../../../../../../core/tests/test_graphic_eq.cpp) | [원문](../../../source/core/tests/test_graphic_eq.cpp.txt) | 134 | 4839 | `5d315bed95ea85e2ace0872613bb2f6bf39c49ff75f15f49ed83b493927152fd` |
+| [test_latency.cpp](../../../../../../core/tests/test_latency.cpp) | [원문](../../../source/core/tests/test_latency.cpp.txt) | 103 | 4452 | `db22d49318b088c65526d36495d612d63183b42d617fd90c4f336bd2d7dfc16b` |
 | [test_limiter.cpp](../../../../../../core/tests/test_limiter.cpp) | [원문](../../../source/core/tests/test_limiter.cpp.txt) | 132 | 5102 | `0cd5774b23894e2f9602ec243be4f42cbea5db980c258c386a08ddfb72c8663b` |
 | [test_parametric.cpp](../../../../../../core/tests/test_parametric.cpp) | [원문](../../../source/core/tests/test_parametric.cpp.txt) | 76 | 2695 | `3fc12278bcaec817719bb38d1fd111e2b00bd891061520731e0bb690bbb75043` |
 | [test_presets.cpp](../../../../../../core/tests/test_presets.cpp) | [원문](../../../source/core/tests/test_presets.cpp.txt) | 121 | 4787 | `025f37e856464dd4a7986ee18667f1b13d8fbafcf7cb42d5ea71c56402adc3bd` |
