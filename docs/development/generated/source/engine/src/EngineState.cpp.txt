@@ -12,6 +12,7 @@ void capturePersistentSound(PersistentState& state, const ChainParams& params, c
     state.presetId = presetID;
     state.paramsLine = state.presetId == "custom" ? serializeParamsLine(params) : std::string();
     state.parametricLine = serializeParametricLine(params);
+    state.dynamicsLine = serializeDynamicsLine(params);
 }
 
 double clampVolumeBoost(double boost) {
@@ -68,6 +69,37 @@ std::string serializeParametricLine(const ChainParams& params) {
                << ' ' << band.gainDb << ' ' << band.q << ' ';
     }
     return output.str();
+}
+
+std::string serializeDynamicsLine(const ChainParams& params) {
+    bool used = false;
+    for (const auto& band : params.parametric) used |= band.dynamic;
+    if (!used) return {};
+    std::ostringstream output;
+    output.imbue(std::locale::classic());
+    output << std::setprecision(std::numeric_limits<double>::max_digits10);
+    for (const auto& band : params.parametric) {
+        output << (band.dynamic ? 1 : 0) << ' ' << band.thresholdDb << ' ' << band.rangeDb
+               << ' ' << band.attackMs << ' ' << band.releaseMs << ' ';
+    }
+    return output.str();
+}
+
+bool parseDynamicsLine(const std::string& line, ChainParams* params) {
+    if (params == nullptr) return false;
+    if (line.empty()) return true;
+    std::istringstream input(line);
+    input.imbue(std::locale::classic());
+    auto bands = params->parametric;
+    for (auto& band : bands) {
+        int dynamic;
+        if (!(input >> dynamic >> band.thresholdDb >> band.rangeDb >> band.attackMs >> band.releaseMs)
+            || !std::isfinite(band.thresholdDb) || !std::isfinite(band.rangeDb)
+            || !std::isfinite(band.attackMs) || !std::isfinite(band.releaseMs)) return false;
+        band.dynamic = dynamic != 0;
+    }
+    params->parametric = bands;
+    return true;
 }
 
 bool parseParametricLine(const std::string& line, ChainParams* params) {

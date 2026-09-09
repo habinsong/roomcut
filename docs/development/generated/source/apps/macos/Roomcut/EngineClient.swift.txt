@@ -61,6 +61,7 @@ public struct EngineStatus {
     public static let recover = UInt32(ROOMCUT_CLIENT_STATE_RECOVER)
     public static let spatialParamsCapability = UInt32(ROOMCUT_CLIENT_CAP_SPATIAL_PARAMS)
     public static let parametricCapability = UInt32(ROOMCUT_CLIENT_CAP_PARAMETRIC)
+    public static let dynamicEqCapability = UInt32(ROOMCUT_CLIENT_CAP_DYNAMIC_EQ)
     public static let analyzerCapability = UInt32(ROOMCUT_CLIENT_CAP_ANALYZER)
     public static let dynamicsCapability = UInt32(ROOMCUT_CLIENT_CAP_DYNAMICS)
     public static let levelMatchCapability = UInt32(ROOMCUT_CLIENT_CAP_LEVEL_MATCH)
@@ -98,6 +99,10 @@ public struct EngineStatus {
 
     public var supportsDynamics: Bool {
         (capabilities & Self.dynamicsCapability) != 0
+    }
+
+    public var supportsDynamicEq: Bool {
+        (capabilities & Self.dynamicEqCapability) != 0
     }
 
     public var stateName: String {
@@ -155,14 +160,64 @@ public struct ParametricBand: Equatable, Codable {
     public var freqHz: Double
     public var gainDb: Double
     public var q: Double
+    // Optional dynamic side, mirroring RoomcutClientParamDynamics. `dynamic` off
+    // is the static band, and older presets decode to exactly that.
+    public var dynamic: Bool
+    public var thresholdDb: Double
+    public var rangeDb: Double
+    public var attackMs: Double
+    public var releaseMs: Double
 
     public init(enabled: Bool = false, type: Int = 0,
-                freqHz: Double = 1000, gainDb: Double = 0, q: Double = 1.0) {
+                freqHz: Double = 1000, gainDb: Double = 0, q: Double = 1.0,
+                dynamic: Bool = false, thresholdDb: Double = -24, rangeDb: Double = 0,
+                attackMs: Double = 20, releaseMs: Double = 200) {
         self.enabled = enabled
         self.type = type
         self.freqHz = freqHz
         self.gainDb = gainDb
         self.q = q
+        self.dynamic = dynamic
+        self.thresholdDb = thresholdDb
+        self.rangeDb = rangeDb
+        self.attackMs = attackMs
+        self.releaseMs = releaseMs
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case enabled, type, freqHz, gainDb, q, dynamic, thresholdDb, rangeDb, attackMs, releaseMs
+    }
+
+    // A preset written before the dynamic side existed has none of those keys.
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        enabled = try c.decodeIfPresent(Bool.self, forKey: .enabled) ?? false
+        type = try c.decodeIfPresent(Int.self, forKey: .type) ?? 0
+        freqHz = try c.decodeIfPresent(Double.self, forKey: .freqHz) ?? 1000
+        gainDb = try c.decodeIfPresent(Double.self, forKey: .gainDb) ?? 0
+        q = try c.decodeIfPresent(Double.self, forKey: .q) ?? 1.0
+        dynamic = try c.decodeIfPresent(Bool.self, forKey: .dynamic) ?? false
+        thresholdDb = try c.decodeIfPresent(Double.self, forKey: .thresholdDb) ?? -24
+        rangeDb = try c.decodeIfPresent(Double.self, forKey: .rangeDb) ?? 0
+        attackMs = try c.decodeIfPresent(Double.self, forKey: .attackMs) ?? 20
+        releaseMs = try c.decodeIfPresent(Double.self, forKey: .releaseMs) ?? 200
+    }
+
+    // Only write the dynamic keys when they mean something, so a static band's
+    // JSON stays byte-for-byte what it used to be.
+    public func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(enabled, forKey: .enabled)
+        try c.encode(type, forKey: .type)
+        try c.encode(freqHz, forKey: .freqHz)
+        try c.encode(gainDb, forKey: .gainDb)
+        try c.encode(q, forKey: .q)
+        guard dynamic else { return }
+        try c.encode(dynamic, forKey: .dynamic)
+        try c.encode(thresholdDb, forKey: .thresholdDb)
+        try c.encode(rangeDb, forKey: .rangeDb)
+        try c.encode(attackMs, forKey: .attackMs)
+        try c.encode(releaseMs, forKey: .releaseMs)
     }
 
     public var kind: Kind { Kind(rawValue: type) ?? .bell }
@@ -475,8 +530,18 @@ public final class LiveEngineClient: EngineClientProtocol {
                 cb.q = b.q
                 return cb
             }
+            let cdynamics = params.parametric.map { b -> RoomcutClientParamDynamics in
+                var cd = RoomcutClientParamDynamics()
+                cd.enabled = b.dynamic ? 1 : 0
+                cd.thresholdDb = b.thresholdDb
+                cd.rangeDb = b.rangeDb
+                cd.attackMs = b.attackMs
+                cd.releaseMs = b.releaseMs
+                return cd
+            }
             let rc = params.eqGainsDb.withUnsafeBufferPointer { buf in
                 cbands.withUnsafeBufferPointer { pbuf in
+                    cdynamics.withUnsafeBufferPointer { dbuf in
                     roomcutClientSetParams(
                         params.preampDb,
                         buf.baseAddress,
@@ -489,8 +554,10 @@ public final class LiveEngineClient: EngineClientProtocol {
                         params.spatialMode,
                         params.highpassHz,
                         params.compAmount,
-                        pbuf.baseAddress
+                        pbuf.baseAddress,
+                        dbuf.baseAddress
                     )
+                    }
                 }
             }
             guard rc == 0 else { throw EngineClientError.transport(rc) }

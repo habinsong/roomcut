@@ -58,6 +58,7 @@ kern_return_t controlSetParams(mach_port_t servicePort,
                                double roomReduce, double spatialMode,
                                double highpassHz, double compAmount,
                                const RoomcutParamBand* parametric,
+                               const RoomcutParamDynamics* dynamics,
                                uint32_t timeoutMs, uint32_t* outStatus);
 
 // Fetch the engine status snapshot.

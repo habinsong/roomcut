@@ -54,8 +54,10 @@ public:
         for (std::size_t c = 0; c < channels_; ++c) {
             float sample = static_cast<float>(frame[c] * preampLin_);
             if (hpfActive_) sample = hpf_.processSample(sample, c);
-            frame[c] = peq_.processSample(eq_.processSample(sample, c), c);
+            frame[c] = eq_.processSample(sample, c);
         }
+        // Frame-level so a dynamic band can read both channels before it decides.
+        peq_.processFrame(frame, channels_);
         spatial_.processFrame(frame, channels_);
         comp_.processFrame(frame);
         for (std::size_t c = 0; c < channels_; ++c)

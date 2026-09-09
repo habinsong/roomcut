@@ -65,9 +65,14 @@ extension EngineParameters {
         p.highpassHz = clamp(p.highpassHz, 0, 400)
         p.compAmount = clamp(p.compAmount, 0, 100)
         p.parametric = p.parametric.map { band in
-            ParametricBand(enabled: band.enabled, type: (0...5).contains(band.type) ? band.type : 0,
+            let tonal = (0...2).contains(band.type)
+            return ParametricBand(enabled: band.enabled, type: (0...5).contains(band.type) ? band.type : 0,
                 freqHz: clamp(band.freqHz, 20, 20000), gainDb: clamp(band.gainDb, -24, 24),
-                q: clamp(band.q, 0.1, 12))
+                q: clamp(band.q, 0.1, 12),
+                // Only a bell or shelf has a gain to take away.
+                dynamic: band.dynamic && tonal,
+                thresholdDb: clamp(band.thresholdDb, -60, 0), rangeDb: clamp(band.rangeDb, 0, 24),
+                attackMs: clamp(band.attackMs, 1, 200), releaseMs: clamp(band.releaseMs, 10, 2000))
         }
         return p
     }
@@ -78,6 +83,11 @@ extension EngineParameters {
             p.spatialWidth = 0; p.centerFocus = 0; p.crossfeed = 0; p.roomReduce = 0; p.spatialMode = 0
         }
         if !status.supportsDynamics { p.highpassHz = 0; p.compAmount = 0 }
+        if !status.supportsDynamicEq {
+            p.parametric = p.parametric.map {
+                var band = $0; band.dynamic = false; return band
+            }
+        }
         if !status.supportsParametric { p.parametric = Array(repeating: ParametricBand(), count: Self.paramBandCount) }
         return p
     }

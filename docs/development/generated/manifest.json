@@ -51,10 +51,10 @@
     },
     {
       "path": "README.md",
-      "bytes": 8926,
-      "sha256": "33c085a11278af81d124e6470a33490d3008c73a2ae6f902a83cd5c61c8f14eb",
+      "bytes": 9671,
+      "sha256": "be9fd41e41f13ad2ea9e2ad444dc20f5bdd7f73fb1c0b57d96f77d25a116f23e",
       "kind": "text",
-      "lines": 203,
+      "lines": 193,
       "archive": "docs/development/generated/source/README.md.txt"
     },
     {
@@ -163,10 +163,10 @@
     },
     {
       "path": "apps/macos/Roomcut/EngineClient.swift",
-      "bytes": 24706,
-      "sha256": "ba156866b96722b9a36cfc187ae2a938894cf8a3178bfb4701c74693b1d41fa2",
+      "bytes": 27926,
+      "sha256": "9091e9724998705f4b923a099d7a62b192d7f5d5ad23801bcb95157e2f793191",
       "kind": "text",
-      "lines": 629,
+      "lines": 696,
       "archive": "docs/development/generated/source/apps/macos/Roomcut/EngineClient.swift.txt"
     },
     {
@@ -267,10 +267,10 @@
     },
     {
       "path": "apps/macos/Roomcut/ParametricEditor.swift",
-      "bytes": 18675,
-      "sha256": "32c54594c682c1889c5dc5f3a54af7b3189c4995ebaf4598377a7aaf9378501a",
+      "bytes": 22361,
+      "sha256": "903a887c3de33ede7393e53b87d04221353181b5392b331048ffa9f0022147d2",
       "kind": "text",
-      "lines": 405,
+      "lines": 467,
       "archive": "docs/development/generated/source/apps/macos/Roomcut/ParametricEditor.swift.txt"
     },
     {
@@ -475,10 +475,10 @@
     },
     {
       "path": "apps/macos/Roomcut/RoomcutViewModel.swift",
-      "bytes": 45271,
-      "sha256": "04be3408cb42b10ace34ae10093641c626516e01d409b81bd0ab4448534abb7c",
+      "bytes": 46646,
+      "sha256": "f2e4003d07f3afbb2cace0f946059cf44a4d6036cfb5af11909c4cb42b8dfb65",
       "kind": "text",
-      "lines": 971,
+      "lines": 997,
       "archive": "docs/development/generated/source/apps/macos/Roomcut/RoomcutViewModel.swift.txt"
     },
     {
@@ -491,10 +491,10 @@
     },
     {
       "path": "apps/macos/Roomcut/SelfTest.swift",
-      "bytes": 5067,
-      "sha256": "36d4f41112ecf269aad6dc88afc96c6d0dd93189aceb28f1f9eaa5e3d2e40e58",
+      "bytes": 5334,
+      "sha256": "2d4fd860bb572f159dac16cc76c1ee5acf12639c9eb3190039e4564a5a634034",
       "kind": "text",
-      "lines": 119,
+      "lines": 124,
       "archive": "docs/development/generated/source/apps/macos/Roomcut/SelfTest.swift.txt"
     },
     {
@@ -507,10 +507,10 @@
     },
     {
       "path": "apps/macos/Roomcut/SoundComparison.swift",
-      "bytes": 5600,
-      "sha256": "a04a870f74a4efcc3ffc27bc3498af1cc8f6d11cf18a697ec92d51ae1826c0b2",
+      "bytes": 6582,
+      "sha256": "f4c4cc4041226b6f9d7ae7be71e609a484183b8d7d8c7f3b6a3a80e84aee63e3",
       "kind": "text",
-      "lines": 117,
+      "lines": 133,
       "archive": "docs/development/generated/source/apps/macos/Roomcut/SoundComparison.swift.txt"
     },
     {
@@ -539,10 +539,10 @@
     },
     {
       "path": "apps/macos/Roomcut/SoundSnapshot.swift",
-      "bytes": 4374,
-      "sha256": "1a63a2de1f0689bfc7fb033c3587c63325d0fdfab81924cd03e74aae5f821c33",
+      "bytes": 4919,
+      "sha256": "c8bd3fb8349d0d19c67e847fc29a85d0a518d67c69c97448e4b1506f9b6d7305",
       "kind": "text",
-      "lines": 84,
+      "lines": 94,
       "archive": "docs/development/generated/source/apps/macos/Roomcut/SoundSnapshot.swift.txt"
     },
     {
@@ -600,6 +600,14 @@
       "kind": "text",
       "lines": 129,
       "archive": "docs/development/generated/source/apps/macos/RoomcutTests/DeviceReadCoordinatorTests.swift.txt"
+    },
+    {
+      "path": "apps/macos/RoomcutTests/DynamicEqTests.swift",
+      "bytes": 4951,
+      "sha256": "fd4e851ab01b2b2a8cf0d05e85eb6b31c593aa67375f75ad351426cc739d1cd6",
+      "kind": "text",
+      "lines": 103,
+      "archive": "docs/development/generated/source/apps/macos/RoomcutTests/DynamicEqTests.swift.txt"
     },
     {
       "path": "apps/macos/RoomcutTests/LRCLIBClientTests.swift",
@@ -755,10 +763,10 @@
     },
     {
       "path": "core/dsp/Biquad.hpp",
-      "bytes": 6672,
-      "sha256": "48e190b350ef565c68b8d1bca158c2dd10a9564d72167a6e4efddb415fac8150",
+      "bytes": 7152,
+      "sha256": "99f25f56f7be456583baf3bc24a9bc67866a6d6e69f28d245d55c9a3066fd96e",
       "kind": "text",
-      "lines": 176,
+      "lines": 188,
       "archive": "docs/development/generated/source/core/dsp/Biquad.hpp.txt"
     },
     {
@@ -803,10 +811,10 @@
     },
     {
       "path": "core/dsp/DSPPath.hpp",
-      "bytes": 2408,
-      "sha256": "3f5fd326a9a068330facf97d8986005ea511d6e0d3bad80377a98dc160b4cff9",
+      "bytes": 2513,
+      "sha256": "35d4541b7156cad8810540d26974e722dd5ae0da74e8f6f1bd0bc6cc736d842e",
       "kind": "text",
-      "lines": 79,
+      "lines": 81,
       "archive": "docs/development/generated/source/core/dsp/DSPPath.hpp.txt"
     },
     {
@@ -843,10 +851,10 @@
     },
     {
       "path": "core/dsp/ParametricEQ.hpp",
-      "bytes": 3698,
-      "sha256": "16e1fc3c205510e60f8d77b6a5ab9415d348906b966c18d40bd4e1a0a5138bbf",
+      "bytes": 9071,
+      "sha256": "26cfa37e307444ed9c92c51f803d97324f9438cdff34fb39c4b30006f3da0bb5",
       "kind": "text",
-      "lines": 111,
+      "lines": 217,
       "archive": "docs/development/generated/source/core/dsp/ParametricEQ.hpp.txt"
     },
     {
@@ -875,10 +883,10 @@
     },
     {
       "path": "core/tests/CMakeLists.txt",
-      "bytes": 18816,
-      "sha256": "0144dfa14f625731823d403f8e332823f88b60cafb2e2986de29256295136ddd",
+      "bytes": 19093,
+      "sha256": "12ddd5f4670937523ec0f8bd20edfa36fc03eb9ee6ba17794a64d66758f53691",
       "kind": "text",
-      "lines": 366,
+      "lines": 371,
       "archive": "docs/development/generated/source/core/tests/CMakeLists.txt.txt"
     },
     {
@@ -928,6 +936,14 @@
       "kind": "text",
       "lines": 234,
       "archive": "docs/development/generated/source/core/tests/test_dsp_transitions.cpp.txt"
+    },
+    {
+      "path": "core/tests/test_dynamic_eq.cpp",
+      "bytes": 11058,
+      "sha256": "572ef27f719e083fec7917d23ee54f734b42be02f2197555b1cbeca798572757",
+      "kind": "text",
+      "lines": 249,
+      "archive": "docs/development/generated/source/core/tests/test_dynamic_eq.cpp.txt"
     },
     {
       "path": "core/tests/test_graphic_eq.cpp",
@@ -987,50 +1003,50 @@
     },
     {
       "path": "docs/README.de.md",
-      "bytes": 9261,
-      "sha256": "e741ca3f8b76b747f275d7cae8a615cef50f8b1735a2770301683cd8dc4bfa74",
+      "bytes": 10227,
+      "sha256": "7a7b3ab2e11d815a51f3079534700a696d74e7f2431bd176cfccb4d3e5da0c3e",
       "kind": "text",
-      "lines": 198,
+      "lines": 196,
       "archive": "docs/development/generated/source/docs/README.de.md.txt"
     },
     {
       "path": "docs/README.fr.md",
-      "bytes": 9455,
-      "sha256": "a94e2ddbeebb1af305489c462834608e3fe1910413b7bd54db1592c2a706cd3c",
+      "bytes": 10515,
+      "sha256": "02e9cd07702cff0b92cee31cfa6ab6565d4c2d47a68589d9d680ad9bbc096c68",
       "kind": "text",
-      "lines": 200,
+      "lines": 199,
       "archive": "docs/development/generated/source/docs/README.fr.md.txt"
     },
     {
       "path": "docs/README.ja.md",
-      "bytes": 10990,
-      "sha256": "3d9ec7c6a96395d6f3981d678e1a667689c754e5156a95e2a0061907bda36c63",
+      "bytes": 12178,
+      "sha256": "b74dec8faada2322dbb5175029ae1115514f2daf6c1655ed2045476afc6b9dc8",
       "kind": "text",
-      "lines": 185,
+      "lines": 190,
       "archive": "docs/development/generated/source/docs/README.ja.md.txt"
     },
     {
       "path": "docs/README.ko.md",
-      "bytes": 9925,
-      "sha256": "757508cc72670be808634a57b2813c52b91bc976bdd2b6c9766ec5e0b8c265ee",
+      "bytes": 10875,
+      "sha256": "c802c10b93e6bc1df4bd12f7c6bf3087c58fc00600767155225c3109471c80eb",
       "kind": "text",
-      "lines": 186,
+      "lines": 183,
       "archive": "docs/development/generated/source/docs/README.ko.md.txt"
     },
     {
       "path": "docs/RELEASE_NOTES_1.0.9.md",
-      "bytes": 4858,
-      "sha256": "5301ac6e03a2301edc79b8768a9d6b166c0bfc6e48a3859ef3e94fe8c4060d40",
+      "bytes": 5184,
+      "sha256": "505ea512241fa261d1e3723d3f6ddddbb7422c111674dd82324f99409505d022",
       "kind": "text",
       "lines": 47,
       "archive": "docs/development/generated/source/docs/RELEASE_NOTES_1.0.9.md.txt"
     },
     {
       "path": "docs/development/README.md",
-      "bytes": 7362,
-      "sha256": "ebfc209c38e36e2a66d50c29d3da2a20f1dd9263808226654eef37d2204a5f9f",
+      "bytes": 7508,
+      "sha256": "a633b9e85ea54e82859b336c6de0757c1c460c17d3014e67c22f641cccd6188c",
       "kind": "text",
-      "lines": 76,
+      "lines": 77,
       "archive": "docs/development/generated/source/docs/development/README.md.txt"
     },
     {
@@ -1043,26 +1059,26 @@
     },
     {
       "path": "docs/development/continuation.md",
-      "bytes": 6452,
-      "sha256": "24cda963cf2b3910a822fc0b9fcfe11c3abbdfa391c6c5d33994199d03b93fd3",
+      "bytes": 6505,
+      "sha256": "902fc1040d524218c459359310392b7cdc7de395c3eb81a6ba8daabfa2ab0e61",
       "kind": "text",
       "lines": 50,
       "archive": "docs/development/generated/source/docs/development/continuation.md.txt"
     },
     {
       "path": "docs/development/issues/current.md",
-      "bytes": 9078,
-      "sha256": "c8cb0fd736c5d9070b496670be6bd03597be439415ef42dfaedef91026c0c1ec",
+      "bytes": 9263,
+      "sha256": "090e300bbcc066e151dcb7a2bac6b4cda7596e0872d63d7644af147ee718291e",
       "kind": "text",
       "lines": 35,
       "archive": "docs/development/generated/source/docs/development/issues/current.md.txt"
     },
     {
       "path": "docs/development/plan/roadmap.md",
-      "bytes": 10140,
-      "sha256": "b36915f56ec25e0b3e8fe118e8ecd3fdf3f0f91bd6eb8d9b60abc4d36a2e3838",
+      "bytes": 10283,
+      "sha256": "98c21978eb3692d5164e41ca18d421f573849814f6d099bbba5c11b287279aff",
       "kind": "text",
-      "lines": 104,
+      "lines": 105,
       "archive": "docs/development/generated/source/docs/development/plan/roadmap.md.txt"
     },
     {
@@ -1216,6 +1232,14 @@
       "kind": "text",
       "lines": 51,
       "archive": "docs/development/generated/source/docs/development/verification/2026-09-10-dsp-cost.md.txt"
+    },
+    {
+      "path": "docs/development/verification/2026-09-10-dynamic-eq.md",
+      "bytes": 4821,
+      "sha256": "7460e0e52bc78e0d29e7e7e9d05984a1d18ea92d79f8309a00938e0e1209d58e",
+      "kind": "text",
+      "lines": 75,
+      "archive": "docs/development/generated/source/docs/development/verification/2026-09-10-dynamic-eq.md.txt"
     },
     {
       "path": "docs/development/verification/2026-09-10-engine-boundaries.md",
@@ -2459,10 +2483,10 @@
     },
     {
       "path": "engine/client/ClientShim.cpp",
-      "bytes": 16248,
-      "sha256": "b5685b0b5e0ce2c7d959f6088731c6010db867d7c1a31135c56917176f619fa2",
+      "bytes": 16820,
+      "sha256": "caaa14d0b1dc197f64b6cfd0ceb6c88947bd49f014cb8d8acb0016bc60ebc136",
       "kind": "text",
-      "lines": 432,
+      "lines": 444,
       "archive": "docs/development/generated/source/engine/client/ClientShim.cpp.txt"
     },
     {
@@ -2499,10 +2523,10 @@
     },
     {
       "path": "engine/client/include/roomcut_client.h",
-      "bytes": 10789,
-      "sha256": "0d49318231ad10de59133da66aaa9ab0b2046e891823eb48d57e262f3a73de25",
+      "bytes": 11412,
+      "sha256": "c0530ed76ac5fe66d280e28248c21dd9de377358edfe017a59af4621c64cd15c",
       "kind": "text",
-      "lines": 250,
+      "lines": 264,
       "archive": "docs/development/generated/source/engine/client/include/roomcut_client.h.txt"
     },
     {
@@ -2531,18 +2555,18 @@
     },
     {
       "path": "engine/include/Control.hpp",
-      "bytes": 4479,
-      "sha256": "9ea450bf76b049ec8a32bcdf306db00977e1842df1d0a7dae5d528454092e4a7",
+      "bytes": 4548,
+      "sha256": "78330fd4ed68c70d50964823b2a263d51a5d109f769e6fe6540fc07e4e945e1f",
       "kind": "text",
-      "lines": 99,
+      "lines": 100,
       "archive": "docs/development/generated/source/engine/include/Control.hpp.txt"
     },
     {
       "path": "engine/include/ControlValidation.hpp",
-      "bytes": 6012,
-      "sha256": "25fbb67860a4b4212e1dda721ee83c51ac8658466d8374469339d628a407223e",
+      "bytes": 6124,
+      "sha256": "2402079fcfa00460a13174753fc64535ad873469cfc77e3f628a6839c86888ba",
       "kind": "text",
-      "lines": 106,
+      "lines": 108,
       "archive": "docs/development/generated/source/engine/include/ControlValidation.hpp.txt"
     },
     {
@@ -2611,10 +2635,10 @@
     },
     {
       "path": "engine/include/EngineState.hpp",
-      "bytes": 823,
-      "sha256": "369934b4c450b5c9caf4b1fc3433b34d6555efbce9218f5110ee1f9499372d90",
+      "bytes": 1139,
+      "sha256": "9a061a9f2bcb412cec004de6f90b08efb896d028bbe5958004c488d0a5279a27",
       "kind": "text",
-      "lines": 27,
+      "lines": 32,
       "archive": "docs/development/generated/source/engine/include/EngineState.hpp.txt"
     },
     {
@@ -2675,10 +2699,10 @@
     },
     {
       "path": "engine/include/ParameterCodec.hpp",
-      "bytes": 2227,
-      "sha256": "5b88af40b9153b50688bf1bb1713b0cf4b4832fe5e80a0ea93a3db443850458c",
+      "bytes": 2728,
+      "sha256": "9bdff88b37038cd681a9dffe531d28dcdc3d0bb7e6664ec72c3a762ce20cc45e",
       "kind": "text",
-      "lines": 52,
+      "lines": 61,
       "archive": "docs/development/generated/source/engine/include/ParameterCodec.hpp.txt"
     },
     {
@@ -2787,10 +2811,10 @@
     },
     {
       "path": "engine/src/Control.cpp",
-      "bytes": 15009,
-      "sha256": "47c59d3b78079f28e98081796d1bceb0717b8c22e6dafb5b180189b58906a46b",
+      "bytes": 15200,
+      "sha256": "9e4588f60f6c690251a3f6f91e41da2ea5b80573b1838ad18c4d0e3e1de1de35",
       "kind": "text",
-      "lines": 383,
+      "lines": 387,
       "archive": "docs/development/generated/source/engine/src/Control.cpp.txt"
     },
     {
@@ -2827,26 +2851,26 @@
     },
     {
       "path": "engine/src/EngineReplies.cpp",
-      "bytes": 4321,
-      "sha256": "857858567be3f567a5992dabde12cf39d55bc41d85c8ecd80635241b13f6a6a8",
+      "bytes": 4354,
+      "sha256": "86684c433da63ccbd30ae7beaeeae8cd027a2e087b4aee9f3f7e02d60e7a7620",
       "kind": "text",
-      "lines": 94,
+      "lines": 95,
       "archive": "docs/development/generated/source/engine/src/EngineReplies.cpp.txt"
     },
     {
       "path": "engine/src/EngineState.cpp",
-      "bytes": 3485,
-      "sha256": "f0daa5e13f874257e4470a0fcd7fd2da4b26d0589b647de426ff269a8b21334e",
+      "bytes": 4802,
+      "sha256": "e5976ca7d7f2aa0fbf243eb1f10f5a67f0e8b6a2047f03b789f928592c22892e",
       "kind": "text",
-      "lines": 89,
+      "lines": 121,
       "archive": "docs/development/generated/source/engine/src/EngineState.cpp.txt"
     },
     {
       "path": "engine/src/EngineStateStore.cpp",
-      "bytes": 3525,
-      "sha256": "5ec559c7994058bd506956075089c87a2f831bd8b7649776575c0bbba1d812f7",
+      "bytes": 3651,
+      "sha256": "c3d52bb4f26ab0a5c7c81743df2c90390794f455c5c4ba1b399d7bd82bd428bd",
       "kind": "text",
-      "lines": 82,
+      "lines": 84,
       "archive": "docs/development/generated/source/engine/src/EngineStateStore.cpp.txt"
     },
     {
@@ -2915,10 +2939,10 @@
     },
     {
       "path": "engine/src/main.cpp",
-      "bytes": 50320,
-      "sha256": "094a825b10d3426c79fc5a3214ea7824cd733f4118b7bfa71470b3198418b244",
+      "bytes": 50470,
+      "sha256": "bf9d115f6412d32d62e3717f52e4f6185fad1ab3de18250cea9f98a46d06a653",
       "kind": "text",
-      "lines": 1014,
+      "lines": 1017,
       "archive": "docs/development/generated/source/engine/src/main.cpp.txt"
     },
     {
@@ -2939,10 +2963,10 @@
     },
     {
       "path": "engine/src/roomcutctl.cpp",
-      "bytes": 17532,
-      "sha256": "e18b8ea5f8b26af196d004fdb29572f0d8c617f33373da47b1071f134f70739c",
+      "bytes": 18170,
+      "sha256": "f48c001e2b662fed95ee7b45470cba9178fba63e1fb9c9fe7b3db0182cc6c1d7",
       "kind": "text",
-      "lines": 377,
+      "lines": 388,
       "archive": "docs/development/generated/source/engine/src/roomcutctl.cpp.txt"
     },
     {
@@ -2979,16 +3003,16 @@
     },
     {
       "path": "engine/tests/test_control.cpp",
-      "bytes": 14516,
-      "sha256": "fdf81e553d55b2eaf7edb43ee1b12a24ea17d27839b6b1e9fa70e1f3698cfee9",
+      "bytes": 15497,
+      "sha256": "dac67a509e533dc7ea973b041e550198246864fade764b6e559bbd2a2437eec1",
       "kind": "text",
-      "lines": 294,
+      "lines": 307,
       "archive": "docs/development/generated/source/engine/tests/test_control.cpp.txt"
     },
     {
       "path": "engine/tests/test_control_validation.cpp",
-      "bytes": 5071,
-      "sha256": "e698a9d24df36e31d8871324e947db5101f32d34005a916b24cef5ef6e2f8a35",
+      "bytes": 5100,
+      "sha256": "790dc291d3b6495232aa2daffedadd09eed62e43118ddcec92f423139f72f641",
       "kind": "text",
       "lines": 86,
       "archive": "docs/development/generated/source/engine/tests/test_control_validation.cpp.txt"
@@ -3051,10 +3075,10 @@
     },
     {
       "path": "engine/tests/test_engine_state.cpp",
-      "bytes": 6663,
-      "sha256": "f288232c4ab8af1781ee17ee2633634d2792574bfb7b79e973e3fd34620b84f7",
+      "bytes": 8347,
+      "sha256": "c65713913fd5bc00d40ba7bb52711122f61f644e5fe736ee7ec6fd7087e3a426",
       "kind": "text",
-      "lines": 142,
+      "lines": 170,
       "archive": "docs/development/generated/source/engine/tests/test_engine_state.cpp.txt"
     },
     {
@@ -3259,10 +3283,10 @@
     },
     {
       "path": "scripts/benchmark-dsp.cpp",
-      "bytes": 4342,
-      "sha256": "a10b5c0c3ed0251f43b155955c5d03bb30451e18c62ab839c727a864af6c6a18",
+      "bytes": 5778,
+      "sha256": "35da2fb7d11337e52cdb289ca8576f3a42d2fcd3c5638ec67d74464adbc8db6e",
       "kind": "text",
-      "lines": 113,
+      "lines": 145,
       "archive": "docs/development/generated/source/scripts/benchmark-dsp.cpp.txt"
     },
     {
@@ -3323,10 +3347,10 @@
     },
     {
       "path": "scripts/release/README.txt",
-      "bytes": 841,
-      "sha256": "755901c6e6f54208ce29b87ce64f3779c52e85c52868d7079ab28f93952890c1",
+      "bytes": 965,
+      "sha256": "9621fef3a2a440f40facb9521190be177621725fa0afc9848df59862f53ba5ee",
       "kind": "text",
-      "lines": 21,
+      "lines": 23,
       "archive": "docs/development/generated/source/scripts/release/README.txt.txt"
     },
     {
@@ -3419,10 +3443,10 @@
     },
     {
       "path": "shared/protocol/roomcut_handshake.h",
-      "bytes": 17526,
-      "sha256": "0424fcecec3ad38afa3459dea902c8f78a2d919c1958cc666355efd6e5cc63a1",
+      "bytes": 18387,
+      "sha256": "59303cc76c3231f4c55d519253e356bd629f6e9ff6d8353afaca4102560e44c1",
       "kind": "text",
-      "lines": 418,
+      "lines": 435,
       "archive": "docs/development/generated/source/shared/protocol/roomcut_handshake.h.txt"
     },
     {

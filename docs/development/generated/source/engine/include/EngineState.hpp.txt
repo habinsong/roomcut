@@ -11,6 +11,7 @@ struct PersistentState {
     std::string presetId;
     std::string paramsLine;
     std::string parametricLine;
+    std::string dynamicsLine;
     std::string preferredOutputUID;
     bool keepRoomcutDefault = false;
     double volumeBoost = 1.0;
@@ -21,6 +22,10 @@ std::string serializeParamsLine(const ChainParams& params);
 bool parseParamsLine(const std::string& line, ChainParams* params);
 std::string serializeParametricLine(const ChainParams& params);
 bool parseParametricLine(const std::string& line, ChainParams* params);
+// Kept on its own line so a state file written before the dynamic side existed
+// still loads: no line means every band is static, which is what it was.
+std::string serializeDynamicsLine(const ChainParams& params);
+bool parseDynamicsLine(const std::string& line, ChainParams* params);
 void capturePersistentSound(PersistentState& state, const ChainParams& params, const char* presetID);
 
 } // namespace roomcut

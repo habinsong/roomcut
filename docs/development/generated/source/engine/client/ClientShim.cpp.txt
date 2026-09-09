@@ -380,7 +380,8 @@ int roomcutClientSetParams(double preampDb,
                            double centerFocus, double crossfeed,
                            double roomReduce, double spatialMode,
                            double highpassHz, double compAmount,
-                           const RoomcutClientParamBand parametric[ROOMCUT_CLIENT_PARAM_BANDS]) {
+                           const RoomcutClientParamBand parametric[ROOMCUT_CLIENT_PARAM_BANDS],
+                           const RoomcutClientParamDynamics dynamics[ROOMCUT_CLIENT_PARAM_BANDS]) {
     if (eqGainsDb == nullptr) {
         return -3;
     }
@@ -399,13 +400,24 @@ int roomcutClientSetParams(double preampDb,
             bands[b].q       = parametric[b].q;
         }
     }
+    RoomcutParamDynamics dyn[ROOMCUT_PARAM_BANDS];
+    std::memset(dyn, 0, sizeof(dyn));
+    if (dynamics != nullptr) {
+        for (int b = 0; b < ROOMCUT_PARAM_BANDS; ++b) {
+            dyn[b].enabled     = dynamics[b].enabled;
+            dyn[b].thresholdDb = dynamics[b].thresholdDb;
+            dyn[b].rangeDb     = dynamics[b].rangeDb;
+            dyn[b].attackMs    = dynamics[b].attackMs;
+            dyn[b].releaseMs   = dynamics[b].releaseMs;
+        }
+    }
     return withEngine([&](mach_port_t svc, uint32_t* status) {
         return roomcut::controlSetParams(svc, preampDb, eqGainsDb,
                                          limiterReleaseMs,
                                          outputGainDb, spatialWidth,
                                          centerFocus, crossfeed, roomReduce, spatialMode,
                                          highpassHz, compAmount,
-                                         bands, kTimeoutMs, status);
+                                         bands, dyn, kTimeoutMs, status);
     });
 }
 

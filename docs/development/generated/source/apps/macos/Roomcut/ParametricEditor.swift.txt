@@ -78,6 +78,12 @@ struct ParametricEditor: View {
                             onFreq:      { model.setParametricFreq(i, $0) },
                             onGain:      { model.setParametricGain(i, $0) },
                             onQ:         { model.setParametricQ(i, $0) },
+                            dynamicAvailable: model.dynamicEqAvailable,
+                            onDynamic:   { model.setParametricDynamic(i, $0) },
+                            onThreshold: { model.setParametricThreshold(i, $0) },
+                            onRange:     { model.setParametricRange(i, $0) },
+                            onAttack:    { model.setParametricAttack(i, $0) },
+                            onRelease:   { model.setParametricRelease(i, $0) },
                             onEditingChanged: { $0 ? model.beginParameterEdit() : model.endParameterEdit() }
                         )
                         .equatable()
@@ -188,13 +194,19 @@ private struct ParametricBandCard: View, Equatable {
     let onFreq: (Double) -> Void
     let onGain: (Double) -> Void
     let onQ: (Double) -> Void
+    let dynamicAvailable: Bool
+    let onDynamic: (Bool) -> Void
+    let onThreshold: (Double) -> Void
+    let onRange: (Double) -> Void
+    let onAttack: (Double) -> Void
+    let onRelease: (Double) -> Void
     let onEditingChanged: (Bool) -> Void
 
     // Closures are stable (they re-capture the same model/index every render);
     // identity is the band + expand/theme, so the 30 Hz model ticks don't re-render us.
     static func == (l: ParametricBandCard, r: ParametricBandCard) -> Bool {
         l.index == r.index && l.band == r.band && l.expanded == r.expanded
-            && l.accent == r.accent && l.scheme == r.scheme
+            && l.accent == r.accent && l.scheme == r.scheme && l.dynamicAvailable == r.dynamicAvailable
     }
 
     private let fMin = 20.0, fMax = 20000.0
@@ -294,6 +306,55 @@ private struct ParametricBandCard: View, Equatable {
             sliderRow("Q", value: String(format: "%.2f", band.q),
                       binding: Binding(get: { band.q }, set: { onQ($0) }),
                       range: 0.1...12)
+            if dynamicAvailable && band.kind.usesGain { dynamicControls }
+        }
+    }
+
+    // Off by default and folded away until asked for: a static band's card looks
+    // exactly as it did.
+    private var dynamicControls: some View {
+        VStack(spacing: 11) {
+            RoomcutDivider()
+            HStack(spacing: 8) {
+                Text(L("다이내믹", "Dynamic", "ダイナミック", "Dynamique", "Dynamisch"))
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(RoomcutTokens.textSecondary(scheme))
+                Text(band.dynamic
+                     ? L("임계값을 넘을 때만 내려갑니다", "only comes down over the threshold",
+                         "しきい値を超えたときだけ下がります", "n'agit qu'au-dessus du seuil",
+                         "greift nur über dem Schwellwert")
+                     : "")
+                    .font(.system(size: 10))
+                    .foregroundStyle(RoomcutTokens.textTertiary(scheme))
+                    .lineLimit(1)
+                Spacer(minLength: 4)
+                Toggle("", isOn: Binding(get: { band.dynamic }, set: { onDynamic($0) }))
+                    .labelsHidden()
+                    .toggleStyle(.switch)
+                    .controlSize(.mini)
+                    .tint(accent)
+                    .accessibilityLabel(L("밴드 \(index + 1) 다이내믹", "Band \(index + 1) dynamic",
+                                          "バンド \(index + 1) ダイナミック", "Bande \(index + 1) dynamique",
+                                          "Band \(index + 1) dynamisch"))
+            }
+            if band.dynamic {
+                sliderRow(L("임계값", "Threshold", "しきい値", "Seuil", "Schwellwert"),
+                          value: String(format: "%.0f dB", band.thresholdDb),
+                          binding: Binding(get: { band.thresholdDb }, set: { onThreshold($0) }),
+                          range: -60...0)
+                sliderRow(L("범위", "Range", "レンジ", "Plage", "Bereich"),
+                          value: String(format: "%.1f dB", band.rangeDb),
+                          binding: Binding(get: { band.rangeDb }, set: { onRange($0) }),
+                          range: 0...24)
+                sliderRow(L("어택", "Attack", "アタック", "Attaque", "Attack"),
+                          value: String(format: "%.0f ms", band.attackMs),
+                          binding: Binding(get: { band.attackMs }, set: { onAttack($0) }),
+                          range: 1...200)
+                sliderRow(L("릴리스", "Release", "リリース", "Rétablissement", "Release"),
+                          value: String(format: "%.0f ms", band.releaseMs),
+                          binding: Binding(get: { band.releaseMs }, set: { onRelease($0) }),
+                          range: 10...2000)
+            }
         }
     }
 
@@ -321,7 +382,8 @@ private struct ParametricBandCard: View, Equatable {
 
     private var summary: String {
         let f = freqLabel(band.freqHz)
-        return band.kind.usesGain ? "\(f) · \(gainLabel(band.gainDb))" : f
+        let base = band.kind.usesGain ? "\(f) · \(gainLabel(band.gainDb))" : f
+        return band.dynamic ? "\(base) · DYN" : base
     }
     private var freqNorm: Double { log(band.freqHz / fMin) / log(fMax / fMin) }
     private func normToFreq(_ t: Double) -> Double { fMin * pow(fMax / fMin, t) }

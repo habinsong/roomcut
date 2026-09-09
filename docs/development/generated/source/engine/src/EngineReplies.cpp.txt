@@ -28,7 +28,8 @@ RoomcutStateReply makeStateReply(const EngineSoundState& sound, const EngineStat
         std::snprintf(reply.outputDeviceUID, sizeof(reply.outputDeviceUID), "%s", runtime.outputDeviceUID.c_str());
     reply.keepDefault = runtime.keepDefault;
     reply.capabilities = ROOMCUT_CAP_SPATIAL_PARAMS | ROOMCUT_CAP_PARAMETRIC | ROOMCUT_CAP_ANALYZER
-        | ROOMCUT_CAP_VOLUME_BOOST | ROOMCUT_CAP_DYNAMICS | ROOMCUT_CAP_LEVEL_MATCH;
+        | ROOMCUT_CAP_VOLUME_BOOST | ROOMCUT_CAP_DYNAMICS | ROOMCUT_CAP_LEVEL_MATCH
+        | ROOMCUT_CAP_DYNAMIC_EQ;
     reply.volumeBoost = runtime.volumeBoost;
     return reply;
 }

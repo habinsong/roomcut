@@ -8,6 +8,8 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cstdlib>
+#include <new>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
@@ -20,6 +22,20 @@
 #if defined(__x86_64__)
 #include <xmmintrin.h>
 #endif
+
+// Counts heap traffic on the render path. The chain must not allocate once it
+// is prepared, whatever the parameters do.
+static bool recordingAllocations = false;
+static std::size_t allocatedBytes = 0;
+void* operator new(std::size_t bytes) {
+    if (recordingAllocations) allocatedBytes += bytes;
+    if (auto* pointer = std::malloc(bytes ? bytes : 1)) return pointer;
+    throw std::bad_alloc();
+}
+void operator delete(void* pointer) noexcept { std::free(pointer); }
+void operator delete(void* pointer, std::size_t) noexcept { std::free(pointer); }
+void* operator new[](std::size_t bytes) { return ::operator new(bytes); }
+void operator delete[](void* pointer) noexcept { ::operator delete(pointer); }
 
 int main(int argc, char** argv) {
     if (argc != 5 && argc != 6) return 64;
@@ -95,6 +111,8 @@ int main(int argc, char** argv) {
         if (clock_gettime(CLOCK_THREAD_CPUTIME_ID, &value) != 0) std::abort();
         return value.tv_sec * 1e9 + value.tv_nsec;
     };
+    recordingAllocations = true;
+    allocatedBytes = 0;
     const double cpuStart = threadTime();
     for (std::size_t n = 0; n < blocks; ++n) {
         output = source;
@@ -118,9 +136,10 @@ int main(int argc, char** argv) {
         checksum += output.back();
     }
     const double cpuCost = threadTime() - cpuStart;
+    recordingAllocations = false;
     std::sort(costs.begin(), costs.end());
-    std::printf("%.0f,%zu,%.3f,%d,%.3f,%.3f,%.3f,%.3f,%zu,%.9f\n",
+    std::printf("%.0f,%zu,%.3f,%d,%.3f,%.3f,%.3f,%.3f,%zu,%zu,%.9f\n",
                 fs, block, updateMs, full, total / (blocks * block), cpuCost / (blocks * block),
                 costs[static_cast<std::size_t>(blocks * 0.99)] / 1000,
-                costs.back() / 1000, sizeof(chain), checksum);
+                costs.back() / 1000, sizeof(chain), allocatedBytes, checksum);
 }

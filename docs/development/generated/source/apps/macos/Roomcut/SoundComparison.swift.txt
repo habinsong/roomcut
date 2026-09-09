@@ -81,9 +81,16 @@ public final class SoundComparison: ObservableObject {
 extension EngineParameters {
     init(native: RoomcutClientParams) {
         let gains = withUnsafeBytes(of: native.eqGainsDb) { Array($0.bindMemory(to: Double.self)) }
+        let dynamics = withUnsafeBytes(of: native.dynamics) { bytes in
+            Array(bytes.bindMemory(to: RoomcutClientParamDynamics.self))
+        }
         let bands = withUnsafeBytes(of: native.parametric) { bytes in
-            bytes.bindMemory(to: RoomcutClientParamBand.self).map {
-                ParametricBand(enabled: $0.enabled != 0, type: Int($0.type), freqHz: $0.freqHz, gainDb: $0.gainDb, q: $0.q)
+            bytes.bindMemory(to: RoomcutClientParamBand.self).enumerated().map { index, band in
+                let d = dynamics[index]
+                return ParametricBand(enabled: band.enabled != 0, type: Int(band.type), freqHz: band.freqHz,
+                                      gainDb: band.gainDb, q: band.q, dynamic: d.enabled != 0,
+                                      thresholdDb: d.thresholdDb, rangeDb: d.rangeDb,
+                                      attackMs: d.attackMs, releaseMs: d.releaseMs)
             }
         }
         self.init(preampDb: native.preampDb, eqGainsDb: gains, limiterReleaseMs: native.limiterReleaseMs,
@@ -110,6 +117,15 @@ extension EngineParameters {
                 let band = value.parametric[b]
                 bands[b].enabled = band.enabled ? 1 : 0; bands[b].type = UInt32(band.type)
                 bands[b].freqHz = band.freqHz; bands[b].gainDb = band.gainDb; bands[b].q = band.q
+            }
+        }
+        withUnsafeMutableBytes(of: &result.dynamics) { bytes in
+            let dynamics = bytes.bindMemory(to: RoomcutClientParamDynamics.self)
+            for b in 0..<Self.paramBandCount {
+                let band = value.parametric[b]
+                dynamics[b].enabled = band.dynamic ? 1 : 0
+                dynamics[b].thresholdDb = band.thresholdDb; dynamics[b].rangeDb = band.rangeDb
+                dynamics[b].attackMs = band.attackMs; dynamics[b].releaseMs = band.releaseMs
             }
         }
         return result

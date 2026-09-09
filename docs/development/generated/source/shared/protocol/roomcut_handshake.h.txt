@@ -33,6 +33,7 @@
 #define ROOMCUT_CAP_VOLUME_BOOST   0x00000008u
 #define ROOMCUT_CAP_DYNAMICS       0x00000010u /* highpassHz/compAmount on the wire */
 #define ROOMCUT_CAP_LEVEL_MATCH    0x00000020u
+#define ROOMCUT_CAP_DYNAMIC_EQ     0x00000040u /* per-band dynamic EQ on the wire */
 
 /* Driver → engine: request the handoff. Sent to the engine's service port;
  * header.msgh_local_port carries a reply send-once right. */
@@ -224,6 +225,18 @@ typedef struct {
     double            q;
 } RoomcutParamBand;
 
+/* Optional dynamic behaviour for one parametric band. Carried in its own array
+ * appended after the static bands, so the band layout above never moves and a
+ * shorter message from an older sender reads as all-zero, which is "off". */
+typedef struct {
+    uint32_t          enabled;   /* 0/1 */
+    uint32_t          _pad0;
+    double            thresholdDb;
+    double            rangeDb;
+    double            attackMs;
+    double            releaseMs;
+} RoomcutParamDynamics;
+
 typedef struct {
     mach_msg_header_t header;
     uint32_t          msgType;   /* ROOMCUT_MSG_SET_PARAMS */
@@ -243,6 +256,8 @@ typedef struct {
      * reads as 0 (off) out of the zeroed receive buffer. */
     double            highpassHz;   /* 0 = off */
     double            compAmount;   /* 0..100 leveling amount, 0 = off */
+    /* Dynamic EQ (ROOMCUT_CAP_DYNAMIC_EQ), appended for the same reason. */
+    RoomcutParamDynamics dynamics[ROOMCUT_PARAM_BANDS];
 } RoomcutSetParamsRequest;
 
 /* Acknowledgement for SET_* requests. */
@@ -310,6 +325,7 @@ typedef struct {
     /* Dynamics — appended (see RoomcutSetParamsRequest). */
     double            highpassHz;
     double            compAmount;
+    RoomcutParamDynamics dynamics[ROOMCUT_PARAM_BANDS];
 } RoomcutGetParamsReply;
 
 typedef struct {
@@ -341,7 +357,7 @@ typedef struct {
 
 /* A complete A/B update is one transaction. Existing SET_PARAMS layouts stay
  * unchanged; the new payload is versioned independently of the driver ring. */
-#define ROOMCUT_COMPARISON_VERSION 1u
+#define ROOMCUT_COMPARISON_VERSION 2u /* 2 adds RoomcutParamDynamics to the payload */
 #define ROOMCUT_COMPARISON_PARAMETERS 0u
 #define ROOMCUT_COMPARISON_PRESET 1u
 typedef struct {
@@ -357,6 +373,7 @@ typedef struct {
     double highpassHz;
     double compAmount;
     RoomcutParamBand parametric[ROOMCUT_PARAM_BANDS];
+    RoomcutParamDynamics dynamics[ROOMCUT_PARAM_BANDS];
 } RoomcutParameterValues;
 
 typedef struct {

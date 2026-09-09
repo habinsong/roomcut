@@ -199,6 +199,11 @@ target_compile_options(test_parametric PRIVATE -Wall -Wextra)
 
 add_test(NAME parametric COMMAND test_parametric)
 
+add_executable(test_dynamic_eq ${CMAKE_SOURCE_DIR}/core/tests/test_dynamic_eq.cpp)
+target_include_directories(test_dynamic_eq PRIVATE ${CMAKE_SOURCE_DIR}/core/dsp)
+target_compile_options(test_dynamic_eq PRIVATE -Wall -Wextra)
+add_test(NAME dynamic_eq COMMAND test_dynamic_eq)
+
 add_executable(test_analyzer ${CMAKE_SOURCE_DIR}/core/tests/test_analyzer.cpp)
 target_include_directories(test_analyzer PRIVATE ${CMAKE_SOURCE_DIR}/core/dsp)
 target_compile_options(test_analyzer PRIVATE -Wall -Wextra)
