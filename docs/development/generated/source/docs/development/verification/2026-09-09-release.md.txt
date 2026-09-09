@@ -1,0 +1,47 @@
+# 2026-09-09 1.0.9 빌드·패키지 확인
+
+이번 기록은 공개 전 로컬 빌드와 배포 파일의 정적 확인 범위입니다. 다른 Mac에서 설치·업데이트하는
+검사, 실제 마이크 측정, 청취 평가는 포함하지 않습니다.
+
+## 버전과 변경 범위
+
+- `CMakeLists.txt`, 드라이버 `Info.plist`, 앱 번들의 `Info.plist`를 모두 `1.0.9`로 맞췄습니다.
+- `scripts/package-release.sh`는 `.pkg`와 그 패키지를 담은 `.dmg`를 만듭니다. 기존 `.zip`
+  수동 설치 경로는 이번 릴리스 산출물에서 제외했습니다.
+- 디스크 이미지의 안내문은 내부 패키지 이름과 공증되지 않은 ad-hoc 서명 상태를 명시합니다.
+
+## 실행 결과
+
+| 명령·검사 | 결과 |
+|---|---|
+| `cmake -S . -B build -DROOMCUT_BUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Release` | 구성 성공 |
+| `cmake --build build --parallel 4` | 드라이버·엔진·도구·호스트 검사 빌드 성공 |
+| `ctest --test-dir build --output-on-failure` | 37/37 통과 |
+| `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test -c release --jobs 4` | 213/213 통과 |
+| `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer bash scripts/build-app.sh release` | `build/Roomcut.app` 조립 성공 |
+| `codesign --verify --deep --strict build/Roomcut.app` | 앱 번들 서명 구조 확인 |
+| `bash scripts/package-release.sh 1.0.9` | `.pkg`와 `.dmg` 생성 성공 |
+| `hdiutil verify dist/Roomcut-1.0.9.dmg` | 디스크 이미지 체크섬 유효 |
+| `.dmg` 실제 마운트 | 내부 `Roomcut-1.0.9.pkg`의 SHA-256이 독립 `.pkg`와 일치 |
+
+앱과 드라이버 번들의 `CFBundleShortVersionString`은 각각 `1.0.9`로 읽었습니다.
+패키지 payload에는 `/Applications/Roomcut.app`, HAL 드라이버, 엔진, 제어 도구,
+LaunchDaemon, 제거 스크립트, LICENSE, THIRD_PARTY_NOTICES가 포함됩니다.
+
+## 산출물
+
+| 파일 | SHA-256 |
+|---|---|
+| `dist/Roomcut-1.0.9.pkg` | `149513069ab6dc48010246a1ffa99b6b7a555a4a1045a6c697ab5048e5ea3985` |
+| `dist/Roomcut-1.0.9.dmg` | `3a0a91fd33932a28359f551c7e85e2fbb21a65ba9f28d10fbf0e5d0374a427ef` |
+
+`.pkg`와 `.dmg`는 Developer ID로 서명하거나 공증하지 않았습니다. 앱·드라이버 등 payload
+바이너리는 ad-hoc 서명입니다. Gatekeeper가 설치 패키지를 막을 수 있으므로, 사용자는
+Control-클릭 후 열기를 선택하고 필요하면 개인정보 보호 및 보안에서 승인해야 합니다.
+
+## 남은 검증 범위
+
+- 별도 Mac에서의 신규 설치·기존 버전 업그레이드·제거 뒤 출력 복구
+- 새 `1.0.9` 엔진으로 실제 장치 전환·절전/복귀·장시간 재생
+- Room Tune의 실제 iPhone 마이크·권한·입력 중단
+- 아날로그 녹음이나 청취에 근거한 음질·지연 평가

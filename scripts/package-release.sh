@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 # package-release.sh — assemble GitHub release artifacts from the prebuilt
-# components in build/. Produces BOTH:
+# components in build/. Produces:
 #
 #   dist/Roomcut-<ver>.pkg   double-click installer (postinstall loads the engine)
-#   dist/Roomcut-<ver>.zip   prebuilt files + install.sh / uninstall.sh (terminal)
+#   dist/Roomcut-<ver>.dmg   disk image containing the installer and instructions
 #
-# Both ship the SAME ad-hoc-signed binaries and install the same layout; only the
-# entry point differs. There is no Developer ID signing / notarization here — see
-# the release notes for the Gatekeeper caveats that implies.
+# Both use the same package. There is no Developer ID signing or notarization
+# here — see the release notes for the Gatekeeper caveat.
 #
 # Usage:
 #   bash scripts/package-release.sh [version] [--build]
@@ -131,32 +130,26 @@ pkgbuild \
   --install-location "/" \
   "${PKG_OUT}"
 
-# --- zip (script install) -------------------------------------------------------
-STAGE="${WORK}/Roomcut-${VERSION}"
-mkdir -p "${STAGE}"
-cp -R "${APP_SRC}"    "${STAGE}/Roomcut.app"
-cp -R "${DRIVER_SRC}" "${STAGE}/Roomcut.driver"
-cp    "${ENGINE_SRC}" "${STAGE}/RoomcutAudioEngine"
-[[ -e "${CTL_SRC}" ]]       && cp "${CTL_SRC}"       "${STAGE}/roomcutctl"
-[[ -e "${DEVICECTL_SRC}" ]] && cp "${DEVICECTL_SRC}" "${STAGE}/roomcut-devicectl"
-cp "${PLIST_RENDERED}"           "${STAGE}/com.roomcut.engine.plist"
-cp "${RELEASE_DIR}/install.sh"   "${STAGE}/install.sh"
-cp "${RELEASE_DIR}/uninstall.sh" "${STAGE}/uninstall.sh"
-cp "${RELEASE_DIR}/README.txt"   "${STAGE}/README.txt"
-cp "${REPO_ROOT}/LICENSE"                "${STAGE}/LICENSE"
-cp "${REPO_ROOT}/THIRD_PARTY_NOTICES.md" "${STAGE}/THIRD_PARTY_NOTICES.md"
-chmod +x "${STAGE}/install.sh" "${STAGE}/uninstall.sh"
+# --- disk image ---------------------------------------------------------------
+DMG_STAGE="${WORK}/Roomcut-${VERSION}"
+mkdir -p "${DMG_STAGE}"
+cp "${PKG_OUT}" "${DMG_STAGE}/Roomcut-${VERSION}.pkg"
+sed "s/<version>/${VERSION}/g" "${RELEASE_DIR}/README.txt" > "${DMG_STAGE}/Read Me.txt"
 
-ZIP_OUT="${DIST}/Roomcut-${VERSION}.zip"
-rm -f "${ZIP_OUT}"
-echo "==> Building ${ZIP_OUT}"
-( cd "${WORK}" && /usr/bin/zip -qry "${ZIP_OUT}" "Roomcut-${VERSION}" )
+DMG_OUT="${DIST}/Roomcut-${VERSION}.dmg"
+rm -f "${DMG_OUT}"
+echo "==> Building ${DMG_OUT}"
+hdiutil create \
+  -volname "Roomcut ${VERSION}" \
+  -srcfolder "${DMG_STAGE}" \
+  -format UDZO \
+  -ov \
+  "${DMG_OUT}" >/dev/null
 
 echo
 echo "Done:"
 echo "  ${PKG_OUT}"
-echo "  ${ZIP_OUT}"
+echo "  ${DMG_OUT}"
 echo
-echo "Both are ad-hoc signed (no Developer ID). Note in the GitHub release that"
-echo "the .pkg may need right-click ▸ Open the first time, and the .zip path runs"
-echo "install.sh which strips the download quarantine."
+echo "Both artifacts contain the same installer with ad-hoc-signed payload binaries."
+echo "Note in the GitHub release that macOS may require right-click ▸ Open."

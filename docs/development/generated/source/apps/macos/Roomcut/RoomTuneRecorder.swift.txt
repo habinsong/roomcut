@@ -64,6 +64,14 @@ final class RoomTuneRecorder: NSObject, AVCaptureAudioDataOutputSampleBufferDele
         }
     }
 
+    func checkHealth() throws {
+        let interrupted = !session.isRunning
+        try queue.sync {
+            if interrupted { writeFailed = true; throw RoomTuneRoundError.captureInterrupted }
+            if writeFailed { throw RoomTuneRoundError.recordingFailed }
+        }
+    }
+
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer,
                        from connection: AVCaptureConnection) {
         guard !writeFailed, let url, CMSampleBufferGetNumSamples(sampleBuffer) > 0 else { return }

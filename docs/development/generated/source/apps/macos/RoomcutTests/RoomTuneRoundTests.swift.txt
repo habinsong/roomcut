@@ -106,6 +106,47 @@ final class RoomTuneRoundTests: XCTestCase {
         catch { XCTAssertTrue(error is CancellationError) }
         XCTAssertEqual(transport.events, [])
     }
+
+    func testMissingPlaybackCompletionEndsAndCleansUpWithoutUserCancellation() async throws {
+        let transport = TestRoomTuneTransport(autoComplete: false)
+        let measurement = round(transport)
+        var finished = false
+        var failure: Error?
+        let task = Task {
+            do { _ = try await measurement.measure(deviceID: "mic") }
+            catch { failure = error }
+            finished = true
+        }
+        try await waitUntil { transport.events.contains("play") }
+        for _ in 0..<120 where !finished { try await Task.sleep(nanoseconds: 100_000_000) }
+        let automaticallyFinished = finished
+        print("missing playback completion: automatically finished=\(automaticallyFinished)")
+        XCTAssertTrue(automaticallyFinished, "a six-second sweep must not record indefinitely")
+        if !finished { task.cancel() }
+        await task.value
+        XCTAssertNotNil(failure)
+        XCTAssertEqual(failure as? RoomTuneRoundError, .timedOut)
+        XCTAssertEqual(transport.events.filter { $0 == "stop" }.count, 1)
+        try assertRemoved(transport)
+    }
+
+    func testUnhealthyCaptureEndsPromptlyWithoutPlaybackCompletion() async throws {
+        let transport = TestRoomTuneTransport(autoComplete: false, failure: "health")
+        let measurement = round(transport)
+        var finished = false
+        var failure: Error?
+        let task = Task {
+            do { _ = try await measurement.measure(deviceID: "mic") }
+            catch { failure = error }
+            finished = true
+        }
+        for _ in 0..<100 where !finished { try await Task.sleep(nanoseconds: 10_000_000) }
+        XCTAssertTrue(finished, "an interrupted capture must not keep waiting for playback")
+        if !finished { task.cancel() }
+        await task.value
+        XCTAssertNotNil(failure)
+        try assertRemoved(transport)
+    }
 }
 
 private final class TestRoomTuneTransport: RoomTuneTransport {
@@ -143,5 +184,9 @@ private final class TestRoomTuneTransport: RoomTuneTransport {
         lock.lock(); defer { lock.unlock() }
         history.append("stop")
         return failure == "recording" ? nil : url
+    }
+    func checkHealth() throws {
+        XCTAssertFalse(Thread.isMainThread)
+        if failure == "health" { throw NSError(domain: "capture", code: 3) }
     }
 }

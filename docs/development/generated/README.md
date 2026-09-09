@@ -2,8 +2,8 @@
 
 `python3 scripts/update-development-docs.py`로 생성합니다. 직접 수정하지 마세요.
 
-총 423개 파일: 텍스트 원문 411개, 바이너리 12개.
-텍스트 총 61892행.
+총 425개 파일: 텍스트 원문 413개, 바이너리 12개.
+텍스트 총 61891행.
 
 추적 파일과 Git에서 무시하지 않는 미추적 파일의 **현재 작업 트리**를 수집합니다.
 로컬 `AGENTS.md`도 포함합니다. 원문은 `source/`에 바이트 그대로 보존합니다.
@@ -24,13 +24,13 @@
 | [core/dsp](inventory/core/dsp/index.md) | 14 |
 | [core/presets](inventory/core/presets/index.md) | 2 |
 | [core/tests](inventory/core/tests/index.md) | 13 |
-| [docs](inventory/docs/index.md) | 5 |
+| [docs](inventory/docs/index.md) | 6 |
 | [docs/development](inventory/docs/development/index.md) | 2 |
 | [docs/development/architecture](inventory/docs/development/architecture/index.md) | 1 |
 | [docs/development/issues](inventory/docs/development/issues/index.md) | 1 |
 | [docs/development/plan](inventory/docs/development/plan/index.md) | 1 |
 | [docs/development/references](inventory/docs/development/references/index.md) | 1 |
-| [docs/development/verification](inventory/docs/development/verification/index.md) | 15 |
+| [docs/development/verification](inventory/docs/development/verification/index.md) | 16 |
 | [docs/development/verification/raw/2026-09-08](inventory/docs/development/verification/raw/2026-09-08/index.md) | 10 |
 | [docs/development/verification/raw/2026-09-08-app-polling](inventory/docs/development/verification/raw/2026-09-08-app-polling/index.md) | 7 |
 | [docs/development/verification/raw/2026-09-08-bypass-ownership](inventory/docs/development/verification/raw/2026-09-08-bypass-ownership/index.md) | 8 |

@@ -1,35 +1,21 @@
-Roomcut — manual (script) install
-=================================
+Roomcut installer
+=================
 
-This zip contains prebuilt Roomcut components and an installer. macOS 26
-(Tahoe) or later is required.
+macOS 26 (Tahoe) or later and Apple Silicon are required.
 
-INSTALL
-  1. Unzip this folder anywhere (e.g. Downloads).
-  2. Open Terminal in this folder and run:
-
-         sudo ./install.sh
-
-     It installs the app to /Applications, the audio driver into the system
-     HAL folder, and a background engine, then restarts coreaudiod (system
-     audio glitches for ~1 second).
-  3. Open "Roomcut" (it lives in the menu bar — no Dock icon).
-  4. In System Settings ▸ Sound, select "Roomcut Output" (or let the app set it).
+1. Double-click Roomcut-<version>.pkg.
+2. Follow the installer. It installs Roomcut.app, the virtual audio driver, and
+   the background engine, then restarts coreaudiod. Audio may stop briefly.
+3. Open Roomcut from Applications. It runs in the menu bar.
+4. Select "Roomcut Output" in System Settings > Sound, or let Roomcut do it.
 
 UNINSTALL
-         sudo ./uninstall.sh
-  (also installed at: /Library/Application Support/Roomcut/uninstall.sh)
+  sudo bash /Library/Application\ Support/Roomcut/uninstall.sh
 
-NOTE ON SIGNING
-  These builds are ad-hoc signed (no Apple Developer ID). install.sh strips the
-  download quarantine so the driver loads and the app opens. If macOS still
-  blocks the app, right-click it ▸ Open, or allow it in
-  System Settings ▸ Privacy & Security.
-
-  Prefer a double-click installer? Use the .pkg from the same release instead.
+SIGNING
+  This build is ad-hoc signed and is not notarized. If macOS blocks the package,
+  Control-click it, choose Open, then approve it in Privacy & Security if asked.
 
 LICENSE
-  Roomcut is licensed under the Apache License 2.0 — full text in LICENSE, next
-  to this file. Third-party attributions and trademark notices are in
-  THIRD_PARTY_NOTICES.md. Both are also installed to
-  /Library/Application Support/Roomcut/ and inside Roomcut.app/Contents/Resources/.
+  Roomcut is licensed under the Apache License 2.0. The installed copy includes
+  LICENSE and THIRD_PARTY_NOTICES.md in /Library/Application Support/Roomcut/.

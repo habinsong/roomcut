@@ -28,7 +28,7 @@
     {
       "path": "CMakeLists.txt",
       "bytes": 1779,
-      "sha256": "57903674bd920a6005bbced97446dfa89a2b4767c8d27791a755ae73305b6f7a",
+      "sha256": "51bf283ac29323af698ef19f500ef191f210a6b379eb7efcfc21b7bb3add4e55",
       "kind": "text",
       "lines": 49,
       "archive": "docs/development/generated/source/CMakeLists.txt.txt"
@@ -51,10 +51,10 @@
     },
     {
       "path": "README.md",
-      "bytes": 16185,
-      "sha256": "1c250b70098fecd13de5fd137ec188866347a1eefeb469d02455a3d6ecba9afe",
+      "bytes": 8926,
+      "sha256": "33c085a11278af81d124e6470a33490d3008c73a2ae6f902a83cd5c61c8f14eb",
       "kind": "text",
-      "lines": 321,
+      "lines": 203,
       "archive": "docs/development/generated/source/README.md.txt"
     },
     {
@@ -307,10 +307,10 @@
     },
     {
       "path": "apps/macos/Roomcut/RoomTuneAudioSession.swift",
-      "bytes": 2555,
-      "sha256": "913e48ad98467484e67fc388f84d94cb4cca72fa5effab954d6e2cd576905736",
+      "bytes": 2713,
+      "sha256": "94285b9de8a28db7d1d9da187c4b94925bbbe6e4d9a3ccea0acdbb0fc665b1f9",
       "kind": "text",
-      "lines": 62,
+      "lines": 66,
       "archive": "docs/development/generated/source/apps/macos/Roomcut/RoomTuneAudioSession.swift.txt"
     },
     {
@@ -339,10 +339,10 @@
     },
     {
       "path": "apps/macos/Roomcut/RoomTuneRecorder.swift",
-      "bytes": 3500,
-      "sha256": "db69d9562df50bc5e79ed47d4ffb06edacd94d45c23d23f115420a86dc2149a8",
+      "bytes": 3786,
+      "sha256": "29bcfc9e77a81c5a261ab7c4dcdf193c92d6b21130aa312bcfe8324344d2eea8",
       "kind": "text",
-      "lines": 88,
+      "lines": 96,
       "archive": "docs/development/generated/source/apps/macos/Roomcut/RoomTuneRecorder.swift.txt"
     },
     {
@@ -355,10 +355,10 @@
     },
     {
       "path": "apps/macos/Roomcut/RoomTuneRound.swift",
-      "bytes": 2955,
-      "sha256": "23f7f48ad670c198f2c60bcc0143159fc0508efd8afcf3837c0d98f85488f538",
+      "bytes": 5296,
+      "sha256": "fee7ec91307073f71bf32d430d049b9718a2b3734a74313aab353fc2e2f59487",
       "kind": "text",
-      "lines": 65,
+      "lines": 117,
       "archive": "docs/development/generated/source/apps/macos/Roomcut/RoomTuneRound.swift.txt"
     },
     {
@@ -691,10 +691,10 @@
     },
     {
       "path": "apps/macos/RoomcutTests/RoomTuneRoundTests.swift",
-      "bytes": 6713,
-      "sha256": "dc95857aa085b51355cf4eb8cd7f278017954bce184be63a49f2c9a7e484bf2a",
+      "bytes": 8746,
+      "sha256": "3dd4b5bb92766332bd2ecd30d9012ad797412f97379ccf54a4cdd2d2f7ee26cf",
       "kind": "text",
-      "lines": 147,
+      "lines": 192,
       "archive": "docs/development/generated/source/apps/macos/RoomcutTests/RoomTuneRoundTests.swift.txt"
     },
     {
@@ -979,82 +979,90 @@
     },
     {
       "path": "docs/ENGINEERING_PLAN.md",
-      "bytes": 29728,
-      "sha256": "639a8a7a0297912a836d7e1a1ec7e6a79defb019480880c713d243f1d5ad7f19",
+      "bytes": 30162,
+      "sha256": "06ca38973bf3aff67875d7a1ef241ac9514900378ad68ba36d351d76f51ee1ed",
       "kind": "text",
-      "lines": 394,
+      "lines": 402,
       "archive": "docs/development/generated/source/docs/ENGINEERING_PLAN.md.txt"
     },
     {
       "path": "docs/README.de.md",
-      "bytes": 18336,
-      "sha256": "81e2a73f4b0a5b5b161664dceffd6ce3a586a027ba11aa5a97777fe7cb1b455d",
+      "bytes": 9261,
+      "sha256": "e741ca3f8b76b747f275d7cae8a615cef50f8b1735a2770301683cd8dc4bfa74",
       "kind": "text",
-      "lines": 224,
+      "lines": 198,
       "archive": "docs/development/generated/source/docs/README.de.md.txt"
     },
     {
       "path": "docs/README.fr.md",
-      "bytes": 19354,
-      "sha256": "3b8107b57fa336a522dcd0c087b6fda023cb17a6c4d582aef3902b74353d918d",
+      "bytes": 9455,
+      "sha256": "a94e2ddbeebb1af305489c462834608e3fe1910413b7bd54db1592c2a706cd3c",
       "kind": "text",
-      "lines": 224,
+      "lines": 200,
       "archive": "docs/development/generated/source/docs/README.fr.md.txt"
     },
     {
       "path": "docs/README.ja.md",
-      "bytes": 21828,
-      "sha256": "4a2e857e9b0cd6adb36d72dfed293e2c9cdc4e185389873c9a7956695bf30a01",
+      "bytes": 10990,
+      "sha256": "3d9ec7c6a96395d6f3981d678e1a667689c754e5156a95e2a0061907bda36c63",
       "kind": "text",
-      "lines": 224,
+      "lines": 185,
       "archive": "docs/development/generated/source/docs/README.ja.md.txt"
     },
     {
       "path": "docs/README.ko.md",
-      "bytes": 19776,
-      "sha256": "770ace7798d2996d4a8da37b4a4e3a13d4ca05bdf7dac506a6a3b87191cc087b",
+      "bytes": 9925,
+      "sha256": "757508cc72670be808634a57b2813c52b91bc976bdd2b6c9766ec5e0b8c265ee",
       "kind": "text",
-      "lines": 251,
+      "lines": 186,
       "archive": "docs/development/generated/source/docs/README.ko.md.txt"
     },
     {
-      "path": "docs/development/README.md",
-      "bytes": 6571,
-      "sha256": "021ca9d9a9aa7fb801b980e4e72bd154b372a41c905b13ebee9af88d67048539",
+      "path": "docs/RELEASE_NOTES_1.0.9.md",
+      "bytes": 6628,
+      "sha256": "d309c2133eb3f1948a1ffec57dab1c7b5077a1960d5ebd993f3e1d9b1923e0da",
       "kind": "text",
-      "lines": 71,
+      "lines": 116,
+      "archive": "docs/development/generated/source/docs/RELEASE_NOTES_1.0.9.md.txt"
+    },
+    {
+      "path": "docs/development/README.md",
+      "bytes": 6882,
+      "sha256": "7cc687a81dcb8d1dd6682ed96903cdbc5b4a69eb9fd34e6f46c1622fd088092c",
+      "kind": "text",
+      "lines": 73,
       "archive": "docs/development/generated/source/docs/development/README.md.txt"
     },
     {
       "path": "docs/development/architecture/current.md",
       "bytes": 10390,
-      "sha256": "71cdbb3276cec1f917999e2cc66b8111784802d7207463cfbc4b32871713ecc4",
+      "sha256": "b2fd56ba4d453170ff8fb6fea168d201e85ad34e64df4c6d11fda182e82169ea",
       "kind": "text",
       "lines": 76,
       "archive": "docs/development/generated/source/docs/development/architecture/current.md.txt"
     },
     {
       "path": "docs/development/continuation.md",
-      "bytes": 5868,
-      "sha256": "fb00c8ecd7fb2da83de6f0f54ae5ace8e79c4a183e461fbaeacf28162a5adde9",
+      "bytes": 6547,
+      "sha256": "578f6fc0617b1d7b66681fe1de218022924fe6d6b94efd52c8937159f0c9a94d",
       "kind": "text",
-      "lines": 43,
+      "lines": 50,
       "archive": "docs/development/generated/source/docs/development/continuation.md.txt"
     },
     {
       "path": "docs/development/issues/current.md",
-      "bytes": 8505,
-      "sha256": "2646a15a8d11564ea2279f3532301f477a5f6953a3ffbef4b6cf99549737bbc4",
+      "bytes": 8710,
+      "sha256": "7dad8cf99a7a0986aef5596f7bd6a17af9da068261e016b898c19a7639a9c1bd",
       "kind": "text",
       "lines": 35,
       "archive": "docs/development/generated/source/docs/development/issues/current.md.txt"
     },
     {
       "path": "docs/development/plan/roadmap.md",
-      "bytes": 9423,
-      "sha256": "37ea4f645bba0b770578a1eaca6c45bed6e8d2047780c303454f838f329afc88",
+      "bytes": 9680,
+      "sha256": "b6d6dc5a3b7787ce7b04750933d9e15512d075844e4a1a9b3dcfb9f59e204780",
       "kind": "text",
-      "lines": 97,
+      "lines": 100,
       "archive": "docs/development/generated/source/docs/development/plan/roadmap.md.txt"
     },
     {
@@ -1184,6 +1192,14 @@
       "kind": "text",
       "lines": 87,
       "archive": "docs/development/generated/source/docs/development/verification/2026-09-08.md.txt"
+    },
+    {
+      "path": "docs/development/verification/2026-09-09-release.md",
+      "bytes": 2810,
+      "sha256": "d8dd33a5e32c0220626b3d179ad6f14f8fe79cbbf14770c34b7c209fcb04bf83",
+      "kind": "text",
+      "lines": 47,
+      "archive": "docs/development/generated/source/docs/development/verification/2026-09-09-release.md.txt"
     },
     {
       "path": "docs/development/verification/raw/2026-09-08/app-build.txt",
@@ -2340,7 +2356,7 @@
     {
       "path": "driver/RoomcutHAL/Info.plist",
       "bytes": 1529,
-      "sha256": "39adaed3ae4a3906d2ef027197efd1a1631bac687a279ca8066dd68fb2f309cd",
+      "sha256": "7fe904e27a764789d6a1fa5027431e169c51349d34dfc6421bdef64d6bfbd6d9",
       "kind": "text",
       "lines": 48,
       "archive": "docs/development/generated/source/driver/RoomcutHAL/Info.plist.txt"
@@ -3156,7 +3172,7 @@
     {
       "path": "scripts/build-app.sh",
       "bytes": 4562,
-      "sha256": "f787e9b38fd41051815abddd990fdb6f4c5708c73bce35afecf328089df8ff2b",
+      "sha256": "0222c2d8b0055edde888ef0eb5b92ed10e360c40972fca6e3bdd8c53d890448c",
       "kind": "text",
       "lines": 106,
       "archive": "docs/development/generated/source/scripts/build-app.sh.txt"
@@ -3195,18 +3211,18 @@
     },
     {
       "path": "scripts/package-release.sh",
-      "bytes": 7148,
-      "sha256": "6ca9637d21e0e8ef0fb5eafa7193bdfc003d92d83701a6ab1452442f35c7ab5c",
+      "bytes": 6476,
+      "sha256": "1e60f514b48589343764277b22646b569ddc3cb1d02158b7f23eb1b8f6ec627f",
       "kind": "text",
-      "lines": 162,
+      "lines": 155,
       "archive": "docs/development/generated/source/scripts/package-release.sh.txt"
     },
     {
       "path": "scripts/release/README.txt",
-      "bytes": 1405,
-      "sha256": "9f3b4f6dbd9f27bb753196d55d5576fda1e7a2730ad44fb52cad1d479bc7ee52",
+      "bytes": 841,
+      "sha256": "755901c6e6f54208ce29b87ce64f3779c52e85c52868d7079ab28f93952890c1",
       "kind": "text",
-      "lines": 35,
+      "lines": 21,
       "archive": "docs/development/generated/source/scripts/release/README.txt.txt"
     },
     {

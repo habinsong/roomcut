@@ -59,4 +59,8 @@ private final class RoomTuneAudioHardware: RoomTuneTransport {
         player.stop(); engine.stop(); buffer = nil
         return recorder.stop()
     }
+    func checkHealth() throws {
+        try recorder.checkHealth()
+        guard engine.isRunning else { throw RoomTuneRoundError.playbackInterrupted }
+    }
 }

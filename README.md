@@ -4,233 +4,186 @@
 
 # Roomcut
 
-**Cut the room. Keep the sound.**
-
 **English** · [한국어](docs/README.ko.md) · [日本語](docs/README.ja.md) · [Français](docs/README.fr.md) · [Deutsch](docs/README.de.md)
 
-[![Download](https://img.shields.io/github/v/release/habinsong/roomcut?style=for-the-badge&label=download&color=2EA043)](https://github.com/habinsong/roomcut/releases/latest) [![License](https://img.shields.io/badge/license-Apache--2.0-D22128?style=for-the-badge)](LICENSE) ![macOS 26+](https://img.shields.io/badge/macOS-26%2B-000000?style=for-the-badge) ![Apple Silicon](https://img.shields.io/badge/Apple-Silicon-555555?style=for-the-badge) ![Local-first](https://img.shields.io/badge/LOCAL--FIRST-1f2328?style=for-the-badge) ![Core Audio plug-in](https://img.shields.io/badge/Core%20Audio-Plug--In-8957E5?style=for-the-badge)
+[![Download](https://img.shields.io/github/v/release/habinsong/roomcut?style=for-the-badge&label=download&color=2EA043)](https://github.com/habinsong/roomcut/releases/latest) [![License](https://img.shields.io/badge/license-Apache--2.0-D22128?style=for-the-badge)](LICENSE) ![macOS 26+](https://img.shields.io/badge/macOS-26%2B-000000?style=for-the-badge) ![Apple Silicon](https://img.shields.io/badge/Apple-Silicon-555555?style=for-the-badge) ![Local-first](https://img.shields.io/badge/LOCAL--FIRST-1f2328?style=for-the-badge)
 
-![System-wide](https://img.shields.io/badge/System--wide-EQ%20%2B%20DSP-0A84FF?style=for-the-badge) ![EQ](https://img.shields.io/badge/EQ-10--band%20%2B%20Parametric-5E5CE6?style=for-the-badge) ![Spatial](https://img.shields.io/badge/Spatial-narrow%20%C2%B7%20widen-1F6FEB?style=for-the-badge) ![Room Tune](https://img.shields.io/badge/Room%20Tune-iPhone%20mic-2EA043?style=for-the-badge) ![Now Playing](https://img.shields.io/badge/Now%20Playing-Lyrics-C2185B?style=for-the-badge) ![UI languages](https://img.shields.io/badge/UI-5%20languages-FB8500?style=for-the-badge)
-
-![Native tests](https://img.shields.io/badge/ctest-passing-2EA043?style=for-the-badge) ![Swift tests](https://img.shields.io/badge/swift%20test-passing-2EA043?style=for-the-badge) ![Driver](https://img.shields.io/badge/HAL%20driver-loads-0A84FF?style=for-the-badge)
-
-Roomcut 1.0 currently ships: system-wide routing, EQ, limiter, spatial controls, analyzer, presets, Now Playing, and Room Tune.<br>Tested on Apple Silicon Macs running macOS 26+.
+Roomcut 1.0.9 is for Apple-silicon Macs running macOS 26 or later.
 
 </div>
 
-> **Official repository notice**
+> **Official repository**
 >
-> This is the official repository for **Roomcut**, created and maintained by [habinsong](https://github.com/habinsong).
->
-> Repositories, packages, marketplace listings, websites, services, or other projects that copy, mirror, rebrand, or closely imitate this repository's original documentation, README text, architecture descriptions, feature descriptions, screenshots, UI concepts, project metadata, or other original materials are not affiliated with this project unless explicitly stated in this repository.
->
-> The source code is licensed under the Apache License 2.0 (see [LICENSE](LICENSE)). The Roomcut name, branding, screenshots, and documentation are © 2026 송하빈 and are not covered by that license.
+> Roomcut is created and maintained by [habinsong](https://github.com/habinsong). Copies, mirrors, rebrands, or look-alike projects are not affiliated unless this repository says so. The source code is available under Apache License 2.0. The Roomcut name, branding, screenshots, and documentation are © 2026 송하빈 and are not covered by that licence.
 
-Roomcut is a system-wide audio processor for macOS. It adds a virtual output
-device, runs everything your Mac plays through a real-time DSP chain, and sends
-the result to whatever speakers, headphones, or DAC you actually use. It runs on
-a native CoreAudio Audio Server Plug-in, so there's no BlackHole, Soundflower, or
-other loopback driver to install alongside it.
+Roomcut is a system-wide audio processor for macOS. It creates a virtual output
+device, processes what the Mac is playing, and sends it to your speakers,
+headphones, or DAC. The driver is built on CoreAudio; you do not need a second
+loopback driver such as BlackHole or Soundflower.
 
-Most "audio enhancers" only push the sound outward. Roomcut moves it both ways,
-and lets you decide how far. Focus pulls back excessive room ambience and stereo
-spread to bring vocals and dialogue closer to the recording; Widen opens the
-stage up when you want more space. Reduce it, widen it, or sit anywhere in
-between.
+## Stereo-space controls for what you are hearing
 
-<!-- Add a hero screenshot or short GIF here once the UI settles, e.g. docs/assets/roomcut.png -->
-
----
-#### Put simply, Roomcut gives your ears music that's fun to listen to, <br> while its Apple Liquid Glass UI/UX makes it lovely just to look at.
----
+Focus brings an overly diffuse stereo image inward; Space widens it. Start with
+a preset or adjust the controls directly.
 
 <div align="center">
 <table>
 <tr>
-<td align="center" valign="middle"><img src="icon/app/main_home.png" alt="Main window" width="200"><br><sub>Main window</sub></td>
-<td align="center" valign="middle"><img src="icon/app/menubar.png" alt="Menu bar" width="270"><br><sub>Menu bar</sub></td>
-<td align="center" valign="middle"><img src="icon/app/compact_mode.png" alt="Compact mode" width="220"><br><sub>Compact mode</sub></td>
+<td align="center" valign="middle"><img src="icon/app/main_home.png" alt="Roomcut home" width="200"><br><sub>Home</sub></td>
+<td align="center" valign="middle"><img src="icon/app/menubar.png" alt="Roomcut menu bar" width="270"><br><sub>Menu bar</sub></td>
+<td align="center" valign="middle"><img src="icon/app/compact_mode.png" alt="Roomcut compact mode" width="220"><br><sub>Compact mode</sub></td>
 </tr>
 </table>
 </div>
 
-## Features
+## What's new in 1.0.9
 
-- **Global EQ.** A 10-band graphic EQ and a 6-band parametric EQ (bell, shelf,
-  high/low pass, notch) stacked together, with a live response curve.
-- **Macros.** Bass, Warmth, Vocal, Clarity, and Air knobs that move the right
-  bands for you, so you don't have to think in frequencies.
-- **Spatial, both directions.** Narrow or widen the image, freely: Space (width),
-  Center (phantom-center focus), Damping (room reduction), and crossfeed /
-  crosstalk. Pick speaker or headphone mode, toggle surround, and a live
-  stereo-field view reacts as you adjust; Focus and Widen are one-tap presets.
-- **Limiter and gain.** Pre-amp and output trim plus a peak limiter, so a heavy
-  EQ curve doesn't clip the output. An optional Volume Leveling knob evens out
-  loud and quiet passages for night listening.
-- **High-res aware.** Processes in 32-bit float and lets you pick the output
-  device's sample rate and bit depth; the Now Playing card shows the live format
-  and latency.
-- **Analyzer.** Live peak, RMS, stereo width, spectral centroid, a spectrum
-  view, and a plain-language label for what's currently playing.
-- **Presets.** A built-in library grouped by Signature, Apple gear, Speakers,
-  and Headphones, plus your own saved presets. Export and import them as JSON
-  files, and let Roomcut remember a preset per output device and switch
-  automatically.
-- **Room Tune.** Measure your room with an iPhone over the Continuity mic and get
-  conservative EQ corrections for its worst resonances. It only cuts, never
-  boosts, and saves the result as a preset.
-- **Now Playing.** Artwork-driven themes, synced lyrics via
-  [LRCLIB](https://lrclib.net), and transport controls in the menu-bar window.
-- **Localized UI.** English, Korean, Japanese, French, and German, following the
-  system language or a manual override.
-- **Fails safe.** If the engine crashes, your output falls back to a real device,
-  and raw audio never leaves your Mac.
+- A/B comparison now keeps an independent edit history for each side and can
+  match their playback level before you judge the change. Switching is ramped
+  so ordinary comparisons do not add a click of their own.
+- Output recovery, device reads, device writes, and app polling now have their
+  own ownership boundaries. That keeps a late answer or an older write from
+  casually replacing a newer choice.
+- Room Tune has a clearer cleanup path for cancelled or delayed rounds. Its
+  temporary bypass is returned only when it still owns that change.
+- The release is available as both a `.pkg` installer and a `.dmg` containing
+  that installer.
 
-## How it works
+## What it does
 
-macOS sends audio to "Roomcut Output", a virtual device. The driver is the thin
-part: it lives inside `coreaudiod`, does no DSP, and just hands incoming frames
-to a helper process over a shared ring buffer. The helper, `RoomcutAudioEngine`,
-runs the DSP chain and renders to your real output device.
+- **EQ and tone controls.** Use a 10-band graphic EQ, six-band parametric EQ,
+  preamp, output trim, limiter, and five quick controls for Bass, Warmth,
+  Vocal, Clarity, and Air.
+- **Space controls.** Bring the image inward with Focus or widen it with Space.
+  Center focus, damping, crossfeed, speaker/headphone mode, and surround are
+  there when you need them.
+- **A/B and undo.** Keep two versions of a sound, copy either one to the other,
+  compare them at a matched level, and undo a gesture as one edit.
+- **Room Tune.** Use an iPhone through Continuity Camera to measure a room.
+  Roomcut suggests cut-only EQ for obvious resonances and saves the result as a
+  preset. It is a practical starting point, not a replacement for a calibrated
+  measurement microphone.
+- **Now Playing.** The menu-bar window can show artwork, transport controls,
+  and timed lyrics from [LRCLIB](https://lrclib.net).
+- **Presets and per-device settings.** Start with built-in presets, save your
+  own, exchange them as JSON, and remember a preset for each output device.
+- **Inspect.** Check live peak, RMS, stereo width, correlation, sample rate,
+  latency, limiter activity, and dropouts without changing the sound.
+- **Five interface languages.** English, Korean, Japanese, French, and German
+  follow the system language unless you choose one in Settings.
 
-```
+## How it is put together
+
+macOS sends audio to **Roomcut Output**, the virtual device. `Roomcut.driver`
+runs inside `coreaudiod` and passes frames through a shared ring buffer. The
+`RoomcutAudioEngine` helper applies the DSP and renders to the actual output.
+
+```text
 System audio
-  → Roomcut Output            virtual device
-  → Roomcut.driver            Audio Server Plug-in, sandboxed in coreaudiod
-  → shared-memory ring buffer handed over via a Mach service
-  → RoomcutAudioEngine        DSP + render
-  → speakers / AirPods / DAC / HDMI
+  → Roomcut Output                 virtual device
+  → Roomcut.driver                 CoreAudio Audio Server Plug-in
+  → shared-memory ring buffer
+  → RoomcutAudioEngine             DSP and rendering
+  → speakers / headphones / DAC / HDMI
 ```
 
-An Audio Server Plug-in is sandboxed inside `coreaudiod` and can't open arbitrary
-sockets or shared memory. Roomcut bootstraps the ring buffer through an
-`AudioServerPlugIn_MachServices` connection, the same approach Background Music
-uses.
-
-| Component | Role | Language |
+| Component | Job | Language |
 |---|---|---|
-| `Roomcut.app` | Menu-bar app and Now Playing UI | Swift (SwiftUI + AppKit) |
-| `Roomcut.driver` | Virtual output device (Audio Server Plug-in) | C |
-| `RoomcutAudioEngine` | Background helper: DSP and rendering | C++ |
-| `RoomcutCore` | Shared DSP, presets, and analysis | C++ |
-| `RoomcutNowPlaying.dylib` | MediaRemote bridge for Now Playing | Objective-C |
+| `Roomcut.app` | Menu-bar app and Now Playing window | Swift (SwiftUI + AppKit) |
+| `Roomcut.driver` | Virtual output device | C |
+| `RoomcutAudioEngine` | DSP and audio rendering | C++ |
+| `RoomcutCore` | DSP, analysis, presets | C++ |
+| `RoomcutNowPlaying.dylib` | Now Playing bridge | Objective-C |
 
 ## Requirements
 
-- macOS 26 (Tahoe) or newer. The interface uses the system Liquid Glass APIs.
-- Apple Silicon.
-- For building: Xcode 26 (it ships the macOS 26 SDK) and CMake.
+- Apple Silicon
+- macOS 26 (Tahoe) or later
+- Xcode 26 and CMake when building from source
 
 ## Install
 
-There are two ways in. Building from source is the path I'd recommend right now,
-since it avoids the Gatekeeper prompts that come with downloaded, un-notarized
-binaries.
+### From a release
 
-### Build from source
+Download either `Roomcut-1.0.9.pkg` or `Roomcut-1.0.9.dmg` from
+[Releases](https://github.com/habinsong/roomcut/releases). If you downloaded the
+disk image, open it and double-click the package inside. The installer puts the
+app in `/Applications`, installs the virtual driver and engine, then restarts
+`coreaudiod`; sound may pause for a moment.
+
+These builds are ad-hoc signed and not notarized. If macOS blocks the package,
+Control-click it, choose **Open**, then approve it in **Privacy & Security** if
+asked. You can also install it from Terminal:
+
+```sh
+sudo installer -pkg Roomcut-1.0.9.pkg -target /
+```
+
+Open Roomcut from Applications. It has no Dock icon; it lives in the menu bar.
+Then select **Roomcut Output** in System Settings → Sound, or let Roomcut set
+it for you.
+
+### From source
 
 ```sh
 git clone https://github.com/habinsong/roomcut.git
 cd roomcut
 
-# native driver + engine
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake -S . -B build -DROOMCUT_BUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Release
 cmake --build build
-
-# the menu-bar app
-bash scripts/build-app.sh
-
-# install the driver + engine (prompts for your password, restarts coreaudiod)
+bash scripts/build-app.sh release
 sudo bash scripts/install-driver.sh
 ```
 
-Open `build/Roomcut.app` (it lives in the menu bar, no Dock icon), then choose
-"Roomcut Output" in System Settings ▸ Sound, or let the app set it for you.
-Installing restarts `coreaudiod`, so system audio glitches for about a second.
+Installing restarts `coreaudiod`. If you would rather not change your current
+audio setup, build without the final install command.
 
-### Prebuilt release
+## Use it
 
-Download the latest `.pkg` (double-click) or `.zip` (terminal) from
-[Releases](https://github.com/habinsong/roomcut/releases). Prebuilt builds are
-currently ad-hoc signed and not notarized, so macOS may ask you to approve them
-on first launch: right-click the `.pkg`, choose Open, or run
-`sudo installer -pkg Roomcut-*.pkg -target /`. The `.zip` ships an `install.sh`
-that handles the rest. Building from source avoids the approval step.
+1. Choose **Roomcut Output** as the Mac's output device.
+2. Choose the real device Roomcut should render to, then turn processing on.
+   Turning it off is a bypass; it does not quit the app.
+3. Begin with a preset for your headphones or speakers. Adjust only what you
+   hear a reason to change.
 
-## Usage
+The five tabs are deliberately small in scope:
 
-With the driver installed and the app open:
+- **Home** holds Now Playing, the processing switch, quick tone controls,
+  volume, presets, and the expandable full EQ.
+- **Space** holds stereo width, center focus, damping, crossfeed, and the
+  Focus/Widen starting points.
+- **Tune** runs the iPhone measurement and saves its result as a preset.
+- **Inspect** is read-only: it reports what the engine is doing.
+- **Settings** holds the output device and format, per-device preset choice,
+  startup, appearance, language, preset files, and lyric cache.
 
-1. Pick **Roomcut Output** in System Settings ▸ Sound (or let the app set it).
-   Everything your Mac plays now runs through Roomcut.
-2. Set the real device Roomcut renders to (your speakers, headphones, or DAC),
-   and toggle Roomcut on. Off is a clean bypass.
-3. Start from a preset that matches your gear, then fine-tune.
+When the sound sheet is fully open, **A/B** stores two sound states. Each side
+has its own undo history; `⌘Z` and `⇧⌘Z` affect the active side. Level matching
+is useful for a fair comparison, but it needs real program material before it
+can report a match.
 
-The window has five tabs:
+## Privacy and limits
 
-- **Home.** Now Playing, the on/off toggle, and a sound-controls sheet you drag
-  up: Bass / Warmth / Vocal / Clarity / Air macros, volume, and the preset
-  picker. Drag further for the full 10-band and parametric EQ.
-- **Space.** narrow or widen the stereo image, set center focus, room damping,
-  and crossfeed, with Focus / Widen presets for speakers or headphones.
-- **Tune.** measure your room with an iPhone (Continuity mic) and apply
-  conservative EQ corrections.
-- **Inspect.** read-only meters: peak, limiter, dropouts, correlation, width,
-  sample rate, latency, and engine state.
-- **Settings.** output device and format, volume, per-device presets, launch at
-  login, appearance (theme, layout, language), preset export / import, and the
-  lyrics cache.
+Audio processing and analysis stay on the Mac. Logs contain counters and device
+names, not audio samples. Room Tune uses the iPhone microphone only while a
+measurement is running. Lyrics are requested from LRCLIB by title, artist, and
+duration, then cached locally; a track can be missing if LRCLIB does not have it.
 
-<div align="center">
-<img src="icon/app/main_space.png" alt="Space" width="150"> <img src="icon/app/main_tune_start.png" alt="Tune" width="150"> <img src="icon/app/main_tune_measuring.png" alt="Tune, measuring" width="150"> <img src="icon/app/main_tune_result.png" alt="Tune, result" width="150"> <img src="icon/app/main_inspect.png" alt="Inspect" width="150">
-</div>
+Roomcut reads Now Playing metadata through Apple's private MediaRemote framework.
+That keeps it out of the Mac App Store, and a macOS update may affect the
+Now Playing panel independently of the audio path.
 
-The window resizes from any edge or corner, and the ↑ / ↓ keys open and close the
-sound-controls sheet on Home.
+## Build and test
 
-The thin handle bar at the top moves the window. Click it once to collapse the
-full window into the compact Now Playing card; in compact mode, click the handle
-again to tuck the window away (Roomcut keeps running in the menu bar, it does not
-quit), and tap the card to bring it back. The toggle on that bar pins the window
-above every other app so it never gets hidden. Roomcut also lives in the menu bar
-as a small Now Playing popover with transport controls.
+```sh
+DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test -c release
+cmake -S . -B build -DROOMCUT_BUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+ctest --test-dir build --output-on-failure
+```
 
-### Basic and Advanced
-
-The sound-controls sheet on **Home** has two modes:
-
-- **Basic** keeps it light: the five macro knobs (Bass, Warmth, Vocal, Clarity,
-  Air), a volume slider that can push past 100% up to 200%, an EQ summary curve,
-  and the preset picker.
-- **Advanced** opens the full set across five sub-tabs:
-  - **graph.** The combined EQ response as one read-only curve.
-  - **10-Band.** The classic graphic EQ; drag each band by hand.
-  - **Parametric.** Six biquad bands (bell, shelf, high/low pass, notch) with
-    frequency, gain, and Q.
-  - **Limiter.** The peak limiter, pre-amp and output gain, and Volume Leveling
-    for night listening.
-  - **Analyzer.** Live spectrum with peak, RMS, stereo width, and spectral
-    centroid.
-
-<div align="center">
-<img src="icon/app/main_home_basic.png" alt="Basic controls" width="240"> <img src="icon/app/main_home_advanced.png" alt="Advanced controls" width="240">
-</div>
-
-### Appearance
-
-Settings ▸ Appearance has three quick switches:
-
-- **Auto / Light / Dark.** Follow the system, or force a light or dark app theme.
-- **Halo / Cover / Mesh Gradient.** The Now Playing background: a calm glow ring
-  around the card (Halo), the album art filling the whole window (Cover), or an
-  animated mesh gradient drawn from the artwork colors (Mesh Gradient).
-- **Card / Poster.** The Now Playing layout: a single centered card (Card), or a
-  full-width cover (Poster).
-
-<div align="center">
-<img src="icon/app/main_settings.png" alt="Settings, Appearance" width="240">
-</div>
+The detailed source inventory, development notes, verification records, and
+remaining hardware limits are in [docs/development](docs/development/README.md).
 
 ## Uninstall
 
@@ -238,84 +191,13 @@ Settings ▸ Appearance has three quick switches:
 sudo bash scripts/uninstall-driver.sh
 ```
 
-This removes the driver and engine, restores your previous output device, and
-restarts `coreaudiod`. If sound stays quiet afterward, pick a device by hand in
-System Settings ▸ Sound.
+This restores the previous output device where possible and restarts
+`coreaudiod`. If needed, choose an output device again in System Settings →
+Sound.
 
-## Troubleshooting
+## Licence and credits
 
-**"Roomcut Output" doesn't show up in Sound settings.** The driver loads when
-`coreaudiod` restarts. Re-run `sudo bash scripts/install-driver.sh` (it restarts
-it for you), or reboot. A downloaded driver also must not be quarantined; the
-`.pkg` and `install.sh` clear that for you.
-
-**No sound after installing.** Check that Roomcut's own output device is set and
-that Roomcut is toggled on. If it's still silent, run
-`sudo bash scripts/reset-audio-output.sh`, or pick a device by hand in
-System Settings ▸ Sound.
-
-**The app won't open ("unidentified developer").** Prebuilt builds aren't
-notarized yet. Right-click the app ▸ Open, or allow it under System Settings ▸
-Privacy & Security. Building from source avoids this.
-
-**Lyrics don't show for a song.** Lyrics come from LRCLIB, matched by title,
-artist, and duration. macOS doesn't expose a streaming app's own lyrics, so a
-track can have lyrics in Apple Music but not here if LRCLIB doesn't have it.
-
-**Spatial controls are greyed out.** They need an engine build that supports
-them. Reinstall the latest engine from source.
-
-## Privacy
-
-Roomcut processes everything you hear, so the boundaries matter: raw audio never
-leaves your machine, DSP and analysis run locally, and logs keep counters and
-device names rather than samples. Room Tune uses the iPhone mic only while a
-measurement is running.
-
-## Building and testing
-
-```sh
-swift test                          # app / Swift unit tests
-cmake -S . -B build -DROOMCUT_BUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Release
-cmake --build build
-ctest --test-dir build --output-on-failure   # native (DSP / engine) tests
-```
-
-Both suites run in CI on every push and pull request, on a macOS 26 runner:
-
-[![CI](https://github.com/habinsong/roomcut/actions/workflows/ci.yml/badge.svg)](https://github.com/habinsong/roomcut/actions/workflows/ci.yml)
-
-## Contributing
-
-Issues and pull requests are welcome. The steps above give you a working tree; if
-you're picking something up, opening an issue first usually saves everyone time.
-
-## Lyrics and credits
-
-Track info (title, artist, artwork) comes from the system's Now Playing
-metadata. Synced lyrics are matched from [LRCLIB](https://lrclib.net) by title,
-artist, and duration, fetched on demand and cached locally; Roomcut identifies
-itself with a `User-Agent` and never bundles or redistributes lyrics in this
-repository. Lyrics belong to their respective owners.
-
-macOS doesn't hand a streaming app's in-app lyrics to other apps, so Roomcut
-brings its own from LRCLIB. A song can show lyrics in Apple Music but not here if
-LRCLIB doesn't have that track yet.
-
-LRCLIB's own server and client are MIT-licensed, and Roomcut talks to it only
-through its public HTTP API, so none of that code ships here.
-
-## License
-
-Roomcut is licensed under the Apache License 2.0. See [LICENSE](LICENSE) for the
-full text. The license covers the source code; the Roomcut name and branding
-aren't part of the grant, since Apache 2.0 doesn't assign trademark rights.
-
-No third-party source is vendored here. Attributions for the techniques and
-services Roomcut builds on, and trademark notices for the device names used in
-presets and screenshots, are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
-Both files ship inside every release, so a downloaded build always carries them.
-
-Roomcut reads Now Playing metadata through Apple's private MediaRemote framework.
-That's why it can't go to the Mac App Store, and why the Now Playing panel may
-break on a macOS update while the audio path keeps working.
+Roomcut is licensed under the Apache License 2.0; see [LICENSE](LICENSE).
+Attributions and trademark notices are in
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Both files are included in the
+app and installer.
