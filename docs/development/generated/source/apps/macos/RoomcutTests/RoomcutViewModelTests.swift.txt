@@ -199,13 +199,13 @@ final class RoomcutViewModelTests: XCTestCase {
 
     func testUnderrunWarningOnlyWhenClimbingDuringPlayback() {
         // First sample establishes a baseline — never warns.
-        XCTAssertFalse(RoomcutViewModel.underrunsActive(previous: nil, current: 1_000_000, peak: 0.5))
+        XCTAssertFalse(RefreshPlanner.underrunsActive(previous: nil, current: 1_000_000, peak: 0.5))
         // Climbing while audio flows → real dropout.
-        XCTAssertTrue(RoomcutViewModel.underrunsActive(previous: 1_000, current: 1_050, peak: 0.5))
+        XCTAssertTrue(RefreshPlanner.underrunsActive(previous: 1_000, current: 1_050, peak: 0.5))
         // Climbing during silence (idle empty ring) → not a dropout the user hears.
-        XCTAssertFalse(RoomcutViewModel.underrunsActive(previous: 1_000, current: 1_050, peak: 0.0))
+        XCTAssertFalse(RefreshPlanner.underrunsActive(previous: 1_000, current: 1_050, peak: 0.0))
         // Steady counter during playback → no warning.
-        XCTAssertFalse(RoomcutViewModel.underrunsActive(previous: 1_000, current: 1_000, peak: 0.5))
+        XCTAssertFalse(RefreshPlanner.underrunsActive(previous: 1_000, current: 1_000, peak: 0.5))
     }
 
     func testDisplayMetersHoldRecentPeakAndLimiterThroughShortSilence() async {

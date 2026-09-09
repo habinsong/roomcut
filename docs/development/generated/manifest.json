@@ -43,10 +43,10 @@
     },
     {
       "path": "Package.swift",
-      "bytes": 10493,
-      "sha256": "654932549347c92d0448e674e8a1be159030b86f46ab0110bcce8185194f3a14",
+      "bytes": 10856,
+      "sha256": "0bf5f41bfd2a17ea38c87824e0751d95fa03c0f9e59def4bb2c5ef36e39eb551",
       "kind": "text",
-      "lines": 265,
+      "lines": 274,
       "archive": "docs/development/generated/source/Package.swift.txt"
     },
     {
@@ -234,11 +234,19 @@
       "archive": "docs/development/generated/source/apps/macos/Roomcut/MenuContent.swift.txt"
     },
     {
-      "path": "apps/macos/Roomcut/NowPlayingMonitor.swift",
-      "bytes": 38380,
-      "sha256": "ebe62896ea6d5df0a9708c5dc587bdfd46ecb0f1f2015bd20100dae83b86fd04",
+      "path": "apps/macos/Roomcut/NowPlayingLyrics.swift",
+      "bytes": 4293,
+      "sha256": "03af23f4bf81b8af1f3e6788feae6dda0164a3e403989130578328178a9447c6",
       "kind": "text",
-      "lines": 943,
+      "lines": 120,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/NowPlayingLyrics.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/NowPlayingMonitor.swift",
+      "bytes": 35907,
+      "sha256": "75acb4bdfe9192355760eba5f93a75a5b192b897939cfb8f0ca483a3c94131c7",
+      "kind": "text",
+      "lines": 873,
       "archive": "docs/development/generated/source/apps/macos/Roomcut/NowPlayingMonitor.swift.txt"
     },
     {
@@ -248,6 +256,14 @@
       "kind": "text",
       "lines": 284,
       "archive": "docs/development/generated/source/apps/macos/Roomcut/NowPlayingPayload.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/NowPlayingStream.swift",
+      "bytes": 2503,
+      "sha256": "c28b2bd608055064e97eef3c4ea6052d535dea360157ba8bc5758d6878e6eda0",
+      "kind": "text",
+      "lines": 67,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/NowPlayingStream.swift.txt"
     },
     {
       "path": "apps/macos/Roomcut/NowPlayingView.swift",
@@ -288,6 +304,14 @@
       "kind": "text",
       "lines": 107,
       "archive": "docs/development/generated/source/apps/macos/Roomcut/PresetStore.swift.txt"
+    },
+    {
+      "path": "apps/macos/Roomcut/RefreshPlan.swift",
+      "bytes": 5702,
+      "sha256": "514d2044435f60b1b546c6087d9f611de25b8d24073ed2a19b228a05dfc15993",
+      "kind": "text",
+      "lines": 110,
+      "archive": "docs/development/generated/source/apps/macos/Roomcut/RefreshPlan.swift.txt"
     },
     {
       "path": "apps/macos/Roomcut/RoomTuneAnalysis.swift",
@@ -475,10 +499,10 @@
     },
     {
       "path": "apps/macos/Roomcut/RoomcutViewModel.swift",
-      "bytes": 46646,
-      "sha256": "f2e4003d07f3afbb2cace0f946059cf44a4d6036cfb5af11909c4cb42b8dfb65",
+      "bytes": 44513,
+      "sha256": "bac4bc9fd35cfc0d31d65632903f311633fc0aa8af4bd67e24ecf6537ff45511",
       "kind": "text",
-      "lines": 997,
+      "lines": 960,
       "archive": "docs/development/generated/source/apps/macos/Roomcut/RoomcutViewModel.swift.txt"
     },
     {
@@ -642,12 +666,28 @@
       "archive": "docs/development/generated/source/apps/macos/RoomcutTests/MainPresentationTests.swift.txt"
     },
     {
+      "path": "apps/macos/RoomcutTests/NowPlayingLyricsTests.swift",
+      "bytes": 6512,
+      "sha256": "beb0961e466e38b21fb5b9ee78b74d882ed607ddf96293476b5a3dffb043e8e1",
+      "kind": "text",
+      "lines": 145,
+      "archive": "docs/development/generated/source/apps/macos/RoomcutTests/NowPlayingLyricsTests.swift.txt"
+    },
+    {
       "path": "apps/macos/RoomcutTests/NowPlayingPayloadTests.swift",
       "bytes": 9122,
       "sha256": "3c98cb110a3b90e3333b5bb6ca661cf61d6a42ce12e573e5014708abfd41c513",
       "kind": "text",
       "lines": 259,
       "archive": "docs/development/generated/source/apps/macos/RoomcutTests/NowPlayingPayloadTests.swift.txt"
+    },
+    {
+      "path": "apps/macos/RoomcutTests/NowPlayingStreamTests.swift",
+      "bytes": 4182,
+      "sha256": "975fa2a8535006ce2c4631f7ccbaa42e781b08fd961f26e3c6f8fdb68ad48a56",
+      "kind": "text",
+      "lines": 91,
+      "archive": "docs/development/generated/source/apps/macos/RoomcutTests/NowPlayingStreamTests.swift.txt"
     },
     {
       "path": "apps/macos/RoomcutTests/PollingLifecycleTests.swift",
@@ -672,6 +712,14 @@
       "kind": "text",
       "lines": 40,
       "archive": "docs/development/generated/source/apps/macos/RoomcutTests/PresetStoreTests.swift.txt"
+    },
+    {
+      "path": "apps/macos/RoomcutTests/RefreshPlanTests.swift",
+      "bytes": 7972,
+      "sha256": "1a8acd84dd5604b3fb336639fb6ca142ca0b3d9eefed90d605d86b22df9cb92a",
+      "kind": "text",
+      "lines": 141,
+      "archive": "docs/development/generated/source/apps/macos/RoomcutTests/RefreshPlanTests.swift.txt"
     },
     {
       "path": "apps/macos/RoomcutTests/RoomTuneAnalysisTests.swift",
@@ -715,8 +763,8 @@
     },
     {
       "path": "apps/macos/RoomcutTests/RoomcutViewModelTests.swift",
-      "bytes": 39188,
-      "sha256": "faec26f4ae16d2e76292f733e7038c64ac159c1e9cc5c5d85ded5b57d92b77c1",
+      "bytes": 39180,
+      "sha256": "6a3eb0da7c7b1e2c43404e0dfa8a494a6cdfc9405b130351d726a50d495145ae",
       "kind": "text",
       "lines": 900,
       "archive": "docs/development/generated/source/apps/macos/RoomcutTests/RoomcutViewModelTests.swift.txt"
@@ -1051,42 +1099,42 @@
     },
     {
       "path": "docs/development/README.md",
-      "bytes": 7676,
-      "sha256": "f48e0c5c79f48d4b2408e793b34299a9cd19b7a82380bce21b1d7123575e9ecf",
+      "bytes": 7830,
+      "sha256": "a25f7d45c109154bea1f55b708924de18d4bcdf52daace1a18e7f60d4225bc28",
       "kind": "text",
-      "lines": 78,
+      "lines": 79,
       "archive": "docs/development/generated/source/docs/development/README.md.txt"
     },
     {
       "path": "docs/development/architecture/current.md",
-      "bytes": 10419,
-      "sha256": "22e2b3471ddddc48cdc72837111a27727b3da9639ae0b3e7da53d0d6eac6d8b5",
+      "bytes": 10439,
+      "sha256": "342e36ffead292732834abad73c2385115c9b8a27dd2c6e0a5b901d368a9396d",
       "kind": "text",
       "lines": 76,
       "archive": "docs/development/generated/source/docs/development/architecture/current.md.txt"
     },
     {
       "path": "docs/development/continuation.md",
-      "bytes": 6507,
-      "sha256": "6c90794f4e7a69e0cb440bb91aed969e6f5ecacd241b442f89f4d0f004356f72",
+      "bytes": 6565,
+      "sha256": "5010c6f253d92522985a7e65d8774a0741f2d243b3c2685f2745a697af54ea00",
       "kind": "text",
       "lines": 50,
       "archive": "docs/development/generated/source/docs/development/continuation.md.txt"
     },
     {
       "path": "docs/development/issues/current.md",
-      "bytes": 9344,
-      "sha256": "5423b7be36bf09076ade39a8c6b33d73575ffabe82f61d2701e9b075d575f58d",
+      "bytes": 9603,
+      "sha256": "745995ae1050ea66e75ac9b0f78775088b040b27c22d862e0acf4d7bcca26c3b",
       "kind": "text",
       "lines": 35,
       "archive": "docs/development/generated/source/docs/development/issues/current.md.txt"
     },
     {
       "path": "docs/development/plan/roadmap.md",
-      "bytes": 10498,
-      "sha256": "35b7f35256743a2314084b155eeaa98d4567fef234ea77a4df88590b5a86c035",
+      "bytes": 10784,
+      "sha256": "cf16f4ed2806d73b2b26305661955c9e4f0e890fbffb3869949cd6ad9c4633c5",
       "kind": "text",
-      "lines": 107,
+      "lines": 109,
       "archive": "docs/development/generated/source/docs/development/plan/roadmap.md.txt"
     },
     {
@@ -1232,6 +1280,14 @@
       "kind": "text",
       "lines": 42,
       "archive": "docs/development/generated/source/docs/development/verification/2026-09-09-roomtune-round.md.txt"
+    },
+    {
+      "path": "docs/development/verification/2026-09-10-app-boundaries.md",
+      "bytes": 4868,
+      "sha256": "0021819b0e60b17c42d70ad7175182b376d5c0f093dd7162b85a6eff7cdf39a3",
+      "kind": "text",
+      "lines": 75,
+      "archive": "docs/development/generated/source/docs/development/verification/2026-09-10-app-boundaries.md.txt"
     },
     {
       "path": "docs/development/verification/2026-09-10-dsp-cost.md",
