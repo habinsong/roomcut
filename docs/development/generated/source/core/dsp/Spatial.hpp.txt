@@ -63,9 +63,9 @@ public:
         // zone — and the side gain stays strictly positive, so narrowing approaches
         // mono instead of crossing zero into an L/R polarity flip.
         width_ = clamp(width, -200.0, 200.0);
-        centerFocus_ = clamp(centerFocus, 0.0, 100.0);
+        centerFocus_ = clamp(centerFocus, 0.0, 200.0);
         crossfeed_ = clamp(crossfeed, 0.0, 100.0);
-        roomReduce_ = clamp(roomReduce, 0.0, 100.0);
+        roomReduce_ = clamp(roomReduce, 0.0, 200.0);
         // mode: 0 = speaker (XTC), 1 = headphone, 2 = headphone+surround,
         //       3 = speaker+surround. Output device and surround are independent.
         const int m = (int)std::lround(mode);

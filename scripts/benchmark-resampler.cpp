@@ -1,6 +1,8 @@
 // clang++ -std=c++17 -O3 -DNDEBUG -Iengine/include scripts/benchmark-resampler.cpp -o build/benchmark-resampler
 // Add -DROOMCUT_BENCH_CUBIC to measure the former engine implementation.
 // Arguments: input-rate output-rate block-frames
+// Prints: in,out,block,cpu-ns-per-frame,p99-us-per-block,prepare-ms,prepare-bytes,
+//         render-bytes (must be 0),checksum
 #ifdef ROOMCUT_BENCH_CUBIC
 #include "CubicResampler.hpp"
 using Resampler = roomcut::CubicResampler;
@@ -57,7 +59,8 @@ int main(int argc, char** argv) {
     const double preparationStart = threadTime();
     resampler.prepare(inputRate, outputRate, 2);
     const double preparationNs = threadTime() - preparationStart;
-    recordingAllocations = false;
+    const std::size_t preparationBytes = allocatedBytes;
+    allocatedBytes = 0;
     const auto scratchFrames = static_cast<uint32_t>(std::ceil(block * resampler.ratio())) + 8;
     std::vector<float> output(block * 2), scratch(scratchFrames * 2);
     for (uint32_t n = 0; n < static_cast<uint32_t>(outputRate * 0.02 / block) + 1; ++n)
@@ -66,6 +69,9 @@ int main(int argc, char** argv) {
     std::vector<double> times;
     times.reserve(blocks);
     double checksum = 0;
+    // Warm-up and the harness's own buffers are done; anything counted from here
+    // is an allocation on the render path.
+    allocatedBytes = 0;
     const double start = threadTime();
     for (uint32_t n = 0; n < blocks; ++n) {
         const auto begin = std::chrono::steady_clock::now();
@@ -74,8 +80,9 @@ int main(int argc, char** argv) {
         for (float sample : output) checksum += sample;
     }
     const double cpuNs = threadTime() - start;
+    recordingAllocations = false;
     std::sort(times.begin(), times.end());
-    std::printf("%.3f,%.3f,%u,%.3f,%.3f,%.3f,%zu,%.9f\n", inputRate, outputRate, block,
+    std::printf("%.3f,%.3f,%u,%.3f,%.3f,%.3f,%zu,%zu,%.9f\n", inputRate, outputRate, block,
                 cpuNs / (blocks * block), times[static_cast<std::size_t>(blocks * 0.99)],
-                preparationNs / 1e6, allocatedBytes, checksum);
+                preparationNs / 1e6, preparationBytes, allocatedBytes, checksum);
 }

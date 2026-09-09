@@ -2,8 +2,8 @@
 
 `python3 scripts/update-development-docs.py`로 생성합니다. 직접 수정하지 마세요.
 
-총 435개 파일: 텍스트 원문 423개, 바이너리 12개.
-텍스트 총 62512행.
+총 438개 파일: 텍스트 원문 426개, 바이너리 12개.
+텍스트 총 62677행.
 
 추적 파일과 Git에서 무시하지 않는 미추적 파일의 **현재 작업 트리**를 수집합니다.
 로컬 `AGENTS.md`도 포함합니다. 원문은 `source/`에 바이트 그대로 보존합니다.
@@ -30,7 +30,7 @@
 | [docs/development/issues](inventory/docs/development/issues/index.md) | 1 |
 | [docs/development/plan](inventory/docs/development/plan/index.md) | 1 |
 | [docs/development/references](inventory/docs/development/references/index.md) | 1 |
-| [docs/development/verification](inventory/docs/development/verification/index.md) | 18 |
+| [docs/development/verification](inventory/docs/development/verification/index.md) | 19 |
 | [docs/development/verification/raw/2026-09-08](inventory/docs/development/verification/raw/2026-09-08/index.md) | 10 |
 | [docs/development/verification/raw/2026-09-08-app-polling](inventory/docs/development/verification/raw/2026-09-08-app-polling/index.md) | 7 |
 | [docs/development/verification/raw/2026-09-08-bypass-ownership](inventory/docs/development/verification/raw/2026-09-08-bypass-ownership/index.md) | 8 |
@@ -46,6 +46,7 @@
 | [docs/development/verification/raw/2026-09-08-roomtune-input](inventory/docs/development/verification/raw/2026-09-08-roomtune-input/index.md) | 7 |
 | [docs/development/verification/raw/2026-09-08-roomtune-lifecycle](inventory/docs/development/verification/raw/2026-09-08-roomtune-lifecycle/index.md) | 6 |
 | [docs/development/verification/raw/2026-09-08-sound-check](inventory/docs/development/verification/raw/2026-09-08-sound-check/index.md) | 22 |
+| [docs/development/verification/raw/2026-09-10-dsp-cost](inventory/docs/development/verification/raw/2026-09-10-dsp-cost/index.md) | 2 |
 | [driver/RoomcutHAL](inventory/driver/RoomcutHAL/index.md) | 2 |
 | [driver/RoomcutHAL/include](inventory/driver/RoomcutHAL/include/index.md) | 2 |
 | [driver/RoomcutHAL/src](inventory/driver/RoomcutHAL/src/index.md) | 4 |

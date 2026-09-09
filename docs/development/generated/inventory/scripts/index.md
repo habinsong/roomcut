@@ -4,7 +4,7 @@
 |---|---|---:|---:|---|
 | [analyze-dump.py](../../../../../scripts/analyze-dump.py) | [원문](../../source/scripts/analyze-dump.py.txt) | 329 | 13612 | `b3b58b09fe087d0c43c7dc263c129ead7aaf197078c2b5927abe6c4b8425ccc9` |
 | [benchmark-dsp.cpp](../../../../../scripts/benchmark-dsp.cpp) | [원문](../../source/scripts/benchmark-dsp.cpp.txt) | 113 | 4342 | `a10b5c0c3ed0251f43b155955c5d03bb30451e18c62ab839c727a864af6c6a18` |
-| [benchmark-resampler.cpp](../../../../../scripts/benchmark-resampler.cpp) | [원문](../../source/scripts/benchmark-resampler.cpp.txt) | 81 | 3449 | `4a6c0bca6883c0feb85ca20ee6e4815ad8d5aeaa5c38c1a3bfa51e37e09b3b2d` |
+| [benchmark-resampler.cpp](../../../../../scripts/benchmark-resampler.cpp) | [원문](../../source/scripts/benchmark-resampler.cpp.txt) | 88 | 3831 | `91b43b640c735500df521a68d131dfb96cd2dbdc26c7245985dbc08c606706da` |
 | [build-app.sh](../../../../../scripts/build-app.sh) | [원문](../../source/scripts/build-app.sh.txt) | 106 | 4562 | `0222c2d8b0055edde888ef0eb5b92ed10e360c40972fca6e3bdd8c53d890448c` |
 | [collect-logs.sh](../../../../../scripts/collect-logs.sh) | [원문](../../source/scripts/collect-logs.sh.txt) | 23 | 805 | `1cc0175195be3387020a9e9e8f3856a14f21ce1f23d7a1bac3f4d8732eefa8a7` |
 | [com.roomcut.engine.plist](../../../../../scripts/com.roomcut.engine.plist) | [원문](../../source/scripts/com.roomcut.engine.plist.txt) | 55 | 1612 | `6ceee6e0f9855434d5a03b819f44cf13196384d09fd0051cddf7f7ae07d5197d` |

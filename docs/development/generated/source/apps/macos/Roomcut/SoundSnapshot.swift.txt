@@ -58,9 +58,9 @@ extension EngineParameters {
         p.eqGainsDb = p.eqGainsDb.map { clamp($0, -24, 24) }
         p.limiterReleaseMs = clamp(p.limiterReleaseMs, 5, 500)
         p.spatialWidth = clamp(p.spatialWidth, -200, 200)
-        p.centerFocus = clamp(p.centerFocus, 0, 100)
+        p.centerFocus = clamp(p.centerFocus, 0, 200)
         p.crossfeed = clamp(p.crossfeed, 0, 100)
-        p.roomReduce = clamp(p.roomReduce, 0, 100)
+        p.roomReduce = clamp(p.roomReduce, 0, 200)
         p.spatialMode = clamp(p.spatialMode, 0, 3).rounded()
         p.highpassHz = clamp(p.highpassHz, 0, 400)
         p.compAmount = clamp(p.compAmount, 0, 100)

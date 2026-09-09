@@ -476,7 +476,7 @@
     {
       "path": "apps/macos/Roomcut/RoomcutViewModel.swift",
       "bytes": 45271,
-      "sha256": "ae371b860a2f19d581e5d3d390c98d3a5e9fc2d1b2ebe57cc4b8798e408732ff",
+      "sha256": "04be3408cb42b10ace34ae10093641c626516e01d409b81bd0ab4448534abb7c",
       "kind": "text",
       "lines": 971,
       "archive": "docs/development/generated/source/apps/macos/Roomcut/RoomcutViewModel.swift.txt"
@@ -540,7 +540,7 @@
     {
       "path": "apps/macos/Roomcut/SoundSnapshot.swift",
       "bytes": 4374,
-      "sha256": "3d81bdab91674bf1ab3033b6f059a978f0c219cc7766d39e4a2268a42a270ddd",
+      "sha256": "1a63a2de1f0689bfc7fb033c3587c63325d0fdfab81924cd03e74aae5f821c33",
       "kind": "text",
       "lines": 84,
       "archive": "docs/development/generated/source/apps/macos/Roomcut/SoundSnapshot.swift.txt"
@@ -548,7 +548,7 @@
     {
       "path": "apps/macos/Roomcut/SpaceTab.swift",
       "bytes": 29539,
-      "sha256": "be213353e2f503d6d8e3227aebfb89e7c04633c55ea7826fc1aeb7ad41764adb",
+      "sha256": "891e4e47e8aadc23a70aea74bd581557cd358f4ce3ce5807ebb73527b667282f",
       "kind": "text",
       "lines": 586,
       "archive": "docs/development/generated/source/apps/macos/Roomcut/SpaceTab.swift.txt"
@@ -852,7 +852,7 @@
     {
       "path": "core/dsp/Spatial.hpp",
       "bytes": 30225,
-      "sha256": "edc43897dfd3e9b36eb8560594e27e3394d37e66218cf4cad8d3c44db3f57f26",
+      "sha256": "9614e19515a7a0d80896ff3008232d0d295535df9b6c336c0bfcf298d41eb798",
       "kind": "text",
       "lines": 502,
       "archive": "docs/development/generated/source/core/dsp/Spatial.hpp.txt"
@@ -867,10 +867,10 @@
     },
     {
       "path": "core/presets/PresetValidator.hpp",
-      "bytes": 8586,
-      "sha256": "f0e00a1de1daeadcfb39857a1f57289a532958b3ecbb303565e74812d0d4082e",
+      "bytes": 8691,
+      "sha256": "e53a50e4bf50a50c265ed65c5f630cd6f5fc00ac037423f092dd6df5783216a0",
       "kind": "text",
-      "lines": 148,
+      "lines": 149,
       "archive": "docs/development/generated/source/core/presets/PresetValidator.hpp.txt"
     },
     {
@@ -955,8 +955,8 @@
     },
     {
       "path": "core/tests/test_presets.cpp",
-      "bytes": 4788,
-      "sha256": "0a946cf053b69884fa5c39c89f0df6ec0fcbb63fad6c43b5119b4366f1d74018",
+      "bytes": 4787,
+      "sha256": "025f37e856464dd4a7986ee18667f1b13d8fbafcf7cb42d5ea71c56402adc3bd",
       "kind": "text",
       "lines": 121,
       "archive": "docs/development/generated/source/core/tests/test_presets.cpp.txt"
@@ -971,10 +971,10 @@
     },
     {
       "path": "core/tests/test_spatial.cpp",
-      "bytes": 21401,
-      "sha256": "0f9c6366fc1e77e66c96bd257494fd4260437729ddcf48a7a18b7fa8e3c4958b",
+      "bytes": 23566,
+      "sha256": "99953b5287af2f890b873ffa32aa8c7c41f65a01dd4d4789cdf116e7ecc378a3",
       "kind": "text",
-      "lines": 439,
+      "lines": 481,
       "archive": "docs/development/generated/source/core/tests/test_spatial.cpp.txt"
     },
     {
@@ -1027,10 +1027,10 @@
     },
     {
       "path": "docs/development/README.md",
-      "bytes": 7219,
-      "sha256": "270cd2a274968fb4067e89ab1cb452040aa1c048bb1e116222e4d4735ba4fe18",
+      "bytes": 7362,
+      "sha256": "ebfc209c38e36e2a66d50c29d3da2a20f1dd9263808226654eef37d2204a5f9f",
       "kind": "text",
-      "lines": 75,
+      "lines": 76,
       "archive": "docs/development/generated/source/docs/development/README.md.txt"
     },
     {
@@ -1043,26 +1043,26 @@
     },
     {
       "path": "docs/development/continuation.md",
-      "bytes": 6454,
-      "sha256": "acebb03233d2f5fe50d78712d317887261002e4757ca978d095351375e735e6c",
+      "bytes": 6452,
+      "sha256": "24cda963cf2b3910a822fc0b9fcfe11c3abbdfa391c6c5d33994199d03b93fd3",
       "kind": "text",
       "lines": 50,
       "archive": "docs/development/generated/source/docs/development/continuation.md.txt"
     },
     {
       "path": "docs/development/issues/current.md",
-      "bytes": 8960,
-      "sha256": "40b1bb0d664a8a816e0dc832950e307d5927b837ed2d5a5335775762874ab8c6",
+      "bytes": 9078,
+      "sha256": "c8cb0fd736c5d9070b496670be6bd03597be439415ef42dfaedef91026c0c1ec",
       "kind": "text",
       "lines": 35,
       "archive": "docs/development/generated/source/docs/development/issues/current.md.txt"
     },
     {
       "path": "docs/development/plan/roadmap.md",
-      "bytes": 10079,
-      "sha256": "8ff95e38bb9975b4df57f7c2a68531fdcdbe2fae74f2803fde27ccc995c14de5",
+      "bytes": 10140,
+      "sha256": "b36915f56ec25e0b3e8fe118e8ecd3fdf3f0f91bd6eb8d9b60abc4d36a2e3838",
       "kind": "text",
-      "lines": 103,
+      "lines": 104,
       "archive": "docs/development/generated/source/docs/development/plan/roadmap.md.txt"
     },
     {
@@ -1208,6 +1208,14 @@
       "kind": "text",
       "lines": 42,
       "archive": "docs/development/generated/source/docs/development/verification/2026-09-09-roomtune-round.md.txt"
+    },
+    {
+      "path": "docs/development/verification/2026-09-10-dsp-cost.md",
+      "bytes": 3255,
+      "sha256": "efd749ba125d9cb9dd2ad46a537203c7a3090e4d3a6e3eb2c727ca001db955c0",
+      "kind": "text",
+      "lines": 51,
+      "archive": "docs/development/generated/source/docs/development/verification/2026-09-10-dsp-cost.md.txt"
     },
     {
       "path": "docs/development/verification/2026-09-10-engine-boundaries.md",
@@ -2362,6 +2370,22 @@
       "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-08-sound-check/validation.txt.txt"
     },
     {
+      "path": "docs/development/verification/raw/2026-09-10-dsp-cost/dsp.csv",
+      "bytes": 3261,
+      "sha256": "0937d6b010df7f03086315dc9edf5ac2abb782ec1d5a8934edff39aff521a171",
+      "kind": "text",
+      "lines": 41,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-10-dsp-cost/dsp.csv.txt"
+    },
+    {
+      "path": "docs/development/verification/raw/2026-09-10-dsp-cost/resampler.csv",
+      "bytes": 1476,
+      "sha256": "07e1826eab3767d4febf168ac50e44465ff39059ddbbb9157c8a148056435264",
+      "kind": "text",
+      "lines": 21,
+      "archive": "docs/development/generated/source/docs/development/verification/raw/2026-09-10-dsp-cost/resampler.csv.txt"
+    },
+    {
       "path": "driver/RoomcutHAL/CMakeLists.txt",
       "bytes": 2647,
       "sha256": "08fad6f10187708be2a2ec8e098b32ac1896b159222ff5212ee764d704ad02e7",
@@ -3243,10 +3267,10 @@
     },
     {
       "path": "scripts/benchmark-resampler.cpp",
-      "bytes": 3449,
-      "sha256": "4a6c0bca6883c0feb85ca20ee6e4815ad8d5aeaa5c38c1a3bfa51e37e09b3b2d",
+      "bytes": 3831,
+      "sha256": "91b43b640c735500df521a68d131dfb96cd2dbdc26c7245985dbc08c606706da",
       "kind": "text",
-      "lines": 81,
+      "lines": 88,
       "archive": "docs/development/generated/source/scripts/benchmark-resampler.cpp.txt"
     },
     {

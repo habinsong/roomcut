@@ -12,6 +12,6 @@
 | [test_graphic_eq.cpp](../../../../../../core/tests/test_graphic_eq.cpp) | [원문](../../../source/core/tests/test_graphic_eq.cpp.txt) | 134 | 4839 | `5d315bed95ea85e2ace0872613bb2f6bf39c49ff75f15f49ed83b493927152fd` |
 | [test_limiter.cpp](../../../../../../core/tests/test_limiter.cpp) | [원문](../../../source/core/tests/test_limiter.cpp.txt) | 132 | 5102 | `0cd5774b23894e2f9602ec243be4f42cbea5db980c258c386a08ddfb72c8663b` |
 | [test_parametric.cpp](../../../../../../core/tests/test_parametric.cpp) | [원문](../../../source/core/tests/test_parametric.cpp.txt) | 76 | 2695 | `3fc12278bcaec817719bb38d1fd111e2b00bd891061520731e0bb690bbb75043` |
-| [test_presets.cpp](../../../../../../core/tests/test_presets.cpp) | [원문](../../../source/core/tests/test_presets.cpp.txt) | 121 | 4788 | `0a946cf053b69884fa5c39c89f0df6ec0fcbb63fad6c43b5119b4366f1d74018` |
+| [test_presets.cpp](../../../../../../core/tests/test_presets.cpp) | [원문](../../../source/core/tests/test_presets.cpp.txt) | 121 | 4787 | `025f37e856464dd4a7986ee18667f1b13d8fbafcf7cb42d5ea71c56402adc3bd` |
 | [test_ring.c](../../../../../../core/tests/test_ring.c) | [원문](../../../source/core/tests/test_ring.c.txt) | 251 | 8922 | `9d985d4beb079686b61b0e850dc5267fb1805bb16b23f0b0bf3748e81f4a5854` |
-| [test_spatial.cpp](../../../../../../core/tests/test_spatial.cpp) | [원문](../../../source/core/tests/test_spatial.cpp.txt) | 439 | 21401 | `0f9c6366fc1e77e66c96bd257494fd4260437729ddcf48a7a18b7fa8e3c4958b` |
+| [test_spatial.cpp](../../../../../../core/tests/test_spatial.cpp) | [원문](../../../source/core/tests/test_spatial.cpp.txt) | 481 | 23566 | `99953b5287af2f890b873ffa32aa8c7c41f65a01dd4d4789cdf116e7ecc378a3` |

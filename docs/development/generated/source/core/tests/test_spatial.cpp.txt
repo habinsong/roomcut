@@ -187,6 +187,46 @@ static void test_width_range_extends_past_100() {
     CHECK_NEAR(sideRmsAntiPhase(-400.0, 0.0, 0.0, 0.0), narrow200, 1e-6, "width clamps at -200");
 }
 
+// Center and Damping reach 200 as well; Crosstalk 3D deliberately does not. Both
+// extended controls keep cutting the side past 100 and stay clamped at their end.
+static void test_center_and_damping_reach_200() {
+    const double side100 = sideRmsAntiPhase(0.0, 100.0, 0.0, 0.0);
+    const double side200 = sideRmsAntiPhase(0.0, 200.0, 0.0, 0.0);
+    CHECK(side200 < side100 * 0.6, "Center past 100 keeps pulling the side in");
+    CHECK(side200 > 0.0, "the side is attenuated, never inverted");
+    CHECK_NEAR(sideRmsAntiPhase(0.0, 400.0, 0.0, 0.0), side200, 1e-6, "Center clamps at 200");
+
+    const double room100 = sideRmsAntiPhase(0.0, 0.0, 0.0, 100.0);
+    const double room200 = sideRmsAntiPhase(0.0, 0.0, 0.0, 200.0);
+    CHECK(room200 < room100 * 0.6, "Damping past 100 keeps cutting the room");
+    CHECK(room200 > 0.0, "damped side stays positive");
+    CHECK_NEAR(sideRmsAntiPhase(0.0, 0.0, 0.0, 400.0), room200, 1e-6, "Damping clamps at 200");
+}
+
+// The headphone blend is a crossfade: a coefficient at or past 1 would flip the
+// direct signal's polarity. Crosstalk 3D stays on its old 0..100 range, so the
+// blend stays under 1 — and a side-only source keeps its sign at the top.
+static void test_crossfeed_range_is_unchanged_and_never_inverts() {
+    auto sideSign = [](double crossfeed) {
+        Spatial s;
+        s.prepare(48000.0);
+        s.setParams(0.0, 0.0, crossfeed, 0.0, 1.0);   // headphone
+        double correlation = 0.0;
+        const int n = 48000;
+        for (int i = 0; i < n; ++i) {
+            const float v = (float)(0.25 * std::sin(2.0 * M_PI * 440.0 * i / 48000.0));
+            float frame[2] = {v, -v};
+            const double in = v;
+            s.processFrame(frame, 2);
+            const double out = (frame[0] - frame[1]) * 0.5;
+            if (i > 2400) correlation += in * out;
+        }
+        return correlation;
+    };
+    CHECK(sideSign(100.0) > 0.0, "a side source keeps its polarity at full Crosstalk 3D");
+    CHECK_NEAR(sideSign(200.0), sideSign(100.0), 1e-6, "Crosstalk 3D still clamps at 100");
+}
+
 static void test_adaptive_width_lifts_correlated_stereo() {
     // side-out / side-in ratio for a 2 kHz tone after the correlation envelope settles.
     auto settledSideGain = [](double rScale) {
@@ -418,6 +458,8 @@ int main() {
     test_speaker_xtc_drives_opposite_antiphase();
     test_width_is_frequency_dependent();
     test_width_range_extends_past_100();
+    test_center_and_damping_reach_200();
+    test_crossfeed_range_is_unchanged_and_never_inverts();
     test_adaptive_width_lifts_correlated_stereo();
     test_widen_lifts_centre_to_keep_vocal_present();
     test_room_attenuates_side_block();

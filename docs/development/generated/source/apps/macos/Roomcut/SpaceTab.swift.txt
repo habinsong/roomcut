@@ -73,13 +73,13 @@ struct SpaceTab: View {
 
             RoomcutSection("") {
                 slider(L("Damping", "Damping", "ダンピング", "Amortissement", "Dämpfung"),
-                       "house", model.roomReduce, 0...100, tint: accentColor) { model.setRoomReduce($0) }
+                       "house", model.roomReduce, 0...200, tint: accentColor) { model.setRoomReduce($0) }
                 RoomcutDivider()
                 slider(L("Space", "Space", "空間", "Espace", "Raum"),
                        "arrow.left.and.right", model.spatialWidth, -200...200, tint: accentColor) { model.setSpatialWidth($0) }
                 RoomcutDivider()
                 slider(L("Center", "Center", "センター", "Centre", "Mitte"),
-                       "dot.scope", model.centerFocus, 0...100, tint: accentColor) { model.setCenterFocus($0) }
+                       "dot.scope", model.centerFocus, 0...200, tint: accentColor) { model.setCenterFocus($0) }
                 RoomcutDivider()
                 slider(model.spatialOutputIsHeadphone ? "Crossfeed" : "Crosstalk 3D",
                        model.spatialOutputIsHeadphone ? "headphones" : "hifispeaker.2",
@@ -296,9 +296,9 @@ private struct SpatialFieldMetrics {
         self.w = w; self.h = h
         self.widthAmount = CGFloat(min(1, abs(width) / 200))
         let tw = CGFloat((width + 200) / 400)                 // 0 narrow … 1 wide
-        self.center01 = CGFloat(min(1, max(0, center / 100)))
+        self.center01 = CGFloat(min(1, max(0, center / 200)))
         self.cross01 = CGFloat(min(1, max(0, crossfeed / 100)))
-        self.room01 = CGFloat(min(1, max(0, room / 100)))
+        self.room01 = CGFloat(min(1, max(0, room / 200)))
         let spreadFrac = 0.13 + 0.25 * tw
         let ty = h * 0.33
         let hy = h * 0.85

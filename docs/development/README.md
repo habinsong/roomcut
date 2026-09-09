@@ -21,6 +21,7 @@
 | [1.0.9 빌드·패키지 확인](verification/2026-09-09-release.md) | 로컬 CTest/XCTest, 앱 서명 구조, `.pkg`·`.dmg`의 버전·체크섬 범위 |
 | [최근 실제 앱/사운드 검사](verification/2026-09-08-sound-check.md) | 설치 엔진/iFi 실제 경로의 재생·처리/우회·복구·한계 |
 | [바이패스 소유권 검사](verification/2026-09-08-bypass-ownership.md) | 직접 선택과 측정 복구의 경합·쓰기 순서·평가용 요청 추적 |
+| [DSP 비용 재측정](verification/2026-09-10-dsp-cost.md) | 체인·비교·리샘플러의 블록 주기 대비 여유와 렌더 할당 |
 | [엔진 경계 분리](verification/2026-09-10-engine-boundaries.md) | 진단·서비스 수명·드라이버 급전 감시의 분리와 새 네이티브 검사 |
 | [Room Tune 회차 중단·기한](verification/2026-09-09-roomtune-round.md) | 캡처/재생 중단, 기한 뒤 완료, 느린 정지와 녹음 소실의 검사 범위 |
 | [Room Tune 수명 검사](verification/2026-09-08-roomtune-lifecycle.md) | 권한·취소·우회 복구·회차 정리와 평가용 UI |
