@@ -51,7 +51,7 @@ static void test_clamp_coerces_into_range() {
     bad.eqGainsDb[5] = 60.0;
     bad.eqGainsDb[6] = -60.0;
     bad.spatialWidth = 400.0;
-    bad.centerFocus = 140.0;
+    bad.centerFocus = 400.0;
     ValidationResult cr;
     ChainParams c = PresetValidator::clamp(bad, &cr);
     CHECK(!cr.ok, "clamp reports it changed things");
@@ -59,7 +59,7 @@ static void test_clamp_coerces_into_range() {
     CHECK(c.eqGainsDb[5] == PresetBounds::kEqGainMaxDb, "eq band clamped to +24");
     CHECK(c.eqGainsDb[6] == PresetBounds::kEqGainMinDb, "eq band clamped to -24");
     CHECK(c.spatialWidth == PresetBounds::kSpatialWidthMax, "width clamped to +200");
-    CHECK(c.centerFocus == PresetBounds::kSpatialAmountMax, "center clamped to +100");
+    CHECK(c.centerFocus == PresetBounds::kSpatialDepthMax, "center clamped to +200");
     // After clamping, the result must validate cleanly.
     CHECK(PresetValidator::validate(c).ok, "clamped preset validates");
 }

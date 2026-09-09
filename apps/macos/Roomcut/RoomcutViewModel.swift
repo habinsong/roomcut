@@ -634,7 +634,7 @@ public final class RoomcutViewModel: ObservableObject {
 
     public func setCenterFocus(_ value: Double) {
         guard ensureSpatialAvailable() else { return }
-        centerFocus = Self.clamp(value, 0, 100)
+        centerFocus = Self.clamp(value, 0, 200)
         schedulePushParams(preservingPresetSelection: true)
     }
 
@@ -646,16 +646,16 @@ public final class RoomcutViewModel: ObservableObject {
 
     public func setRoomReduce(_ value: Double) {
         guard ensureSpatialAvailable() else { return }
-        roomReduce = Self.clamp(value, 0, 100)
+        roomReduce = Self.clamp(value, 0, 200)
         schedulePushParams(preservingPresetSelection: true)
     }
 
     public func setSpatialValues(width: Double, centerFocus: Double, crossfeed: Double, roomReduce: Double) {
         guard ensureSpatialAvailable() else { return }
         spatialWidth = Self.clamp(width, -200, 200)
-        self.centerFocus = Self.clamp(centerFocus, 0, 100)
+        self.centerFocus = Self.clamp(centerFocus, 0, 200)
         self.crossfeed = Self.clamp(crossfeed, 0, 100)
-        self.roomReduce = Self.clamp(roomReduce, 0, 100)
+        self.roomReduce = Self.clamp(roomReduce, 0, 200)
         schedulePushParams(preservingPresetSelection: true)
     }
 

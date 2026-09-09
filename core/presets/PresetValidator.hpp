@@ -43,7 +43,8 @@ struct PresetBounds {
     static constexpr double kSpatialWidthMin = -200.0;
     static constexpr double kSpatialWidthMax =  200.0;
     static constexpr double kSpatialAmountMin =   0.0;
-    static constexpr double kSpatialAmountMax = 100.0;
+    static constexpr double kSpatialAmountMax = 100.0;   // crossfeed / crosstalk
+    static constexpr double kSpatialDepthMax  = 200.0;   // center focus, damping
     static constexpr double kHighpassMinHz =   0.0;   // 0 = off
     static constexpr double kHighpassMaxHz = 400.0;
     static constexpr double kCompAmountMin =   0.0;
@@ -76,9 +77,9 @@ public:
         checkRange(r, p.limiterReleaseMs, PresetBounds::kLimiterReleaseMinMs, PresetBounds::kLimiterReleaseMaxMs, "limiterReleaseMs");
         checkRange(r, p.outputGainDb, PresetBounds::kOutputGainMinDb, PresetBounds::kOutputGainMaxDb, "outputGainDb");
         checkRange(r, p.spatialWidth, PresetBounds::kSpatialWidthMin, PresetBounds::kSpatialWidthMax, "spatialWidth");
-        checkRange(r, p.centerFocus, PresetBounds::kSpatialAmountMin, PresetBounds::kSpatialAmountMax, "centerFocus");
+        checkRange(r, p.centerFocus, PresetBounds::kSpatialAmountMin, PresetBounds::kSpatialDepthMax, "centerFocus");
         checkRange(r, p.crossfeed, PresetBounds::kSpatialAmountMin, PresetBounds::kSpatialAmountMax, "crossfeed");
-        checkRange(r, p.roomReduce, PresetBounds::kSpatialAmountMin, PresetBounds::kSpatialAmountMax, "roomReduce");
+        checkRange(r, p.roomReduce, PresetBounds::kSpatialAmountMin, PresetBounds::kSpatialDepthMax, "roomReduce");
         checkRange(r, p.spatialMode, 0.0, 3.0, "spatialMode");
         if (std::isfinite(p.spatialMode) && p.spatialMode != std::round(p.spatialMode)) r.fail("spatialMode is not an integer");
         checkRange(r, p.highpassHz, PresetBounds::kHighpassMinHz, PresetBounds::kHighpassMaxHz, "highpassHz");
@@ -106,9 +107,9 @@ public:
         p.limiterReleaseMs = clampField(r, p.limiterReleaseMs, PresetBounds::kLimiterReleaseMinMs, PresetBounds::kLimiterReleaseMaxMs, "limiterReleaseMs");
         p.outputGainDb = clampField(r, p.outputGainDb, PresetBounds::kOutputGainMinDb, PresetBounds::kOutputGainMaxDb, "outputGainDb");
         p.spatialWidth = clampField(r, p.spatialWidth, PresetBounds::kSpatialWidthMin, PresetBounds::kSpatialWidthMax, "spatialWidth");
-        p.centerFocus = clampField(r, p.centerFocus, PresetBounds::kSpatialAmountMin, PresetBounds::kSpatialAmountMax, "centerFocus");
+        p.centerFocus = clampField(r, p.centerFocus, PresetBounds::kSpatialAmountMin, PresetBounds::kSpatialDepthMax, "centerFocus");
         p.crossfeed = clampField(r, p.crossfeed, PresetBounds::kSpatialAmountMin, PresetBounds::kSpatialAmountMax, "crossfeed");
-        p.roomReduce = clampField(r, p.roomReduce, PresetBounds::kSpatialAmountMin, PresetBounds::kSpatialAmountMax, "roomReduce");
+        p.roomReduce = clampField(r, p.roomReduce, PresetBounds::kSpatialAmountMin, PresetBounds::kSpatialDepthMax, "roomReduce");
         p.spatialMode = clampField(r, p.spatialMode, 0.0, 3.0, "spatialMode");
         if (p.spatialMode != std::round(p.spatialMode)) r.fail("spatialMode rounded to an integer");
         p.spatialMode = std::round(p.spatialMode);
