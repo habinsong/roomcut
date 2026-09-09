@@ -13,8 +13,10 @@ UNINSTALL
   sudo bash /Library/Application\ Support/Roomcut/uninstall.sh
 
 SIGNING
-  This build is ad-hoc signed and is not notarized. If macOS blocks the package,
-  Control-click it, choose Open, then approve it in Privacy & Security if asked.
+  This build is ad-hoc signed and is not notarized. If macOS blocks it, open it
+  once anyway, then go to System Settings > Privacy & Security > Open Anyway.
+  That button appears only after the blocked attempt. Terminal works too:
+  sudo installer -pkg Roomcut-<version>.pkg -target /
 
 LICENSE
   Roomcut is licensed under the Apache License 2.0. The installed copy includes

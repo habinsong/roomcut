@@ -25,7 +25,8 @@ enum class BiquadType {
     HighShelf,
     HighPass,
     LowPass,
-    Notch
+    Notch,
+    BandPass    // 0 dB peak gain; detector-only, not offered as a user band type
 };
 
 // Up to this many channels of independent filter state. MVP is stereo (2).
@@ -106,6 +107,17 @@ public:
                 b0 =  1;
                 b1 = -2 * cosw0;
                 b2 =  1;
+                a0 =  1 + alpha;
+                a1 = -2 * cosw0;
+                a2 =  1 - alpha;
+                break;
+            }
+            case BiquadType::BandPass: {
+                // Constant 0 dB peak gain, so a detector reads the band's own
+                // level rather than a level scaled by Q.
+                b0 =  alpha;
+                b1 =  0;
+                b2 = -alpha;
                 a0 =  1 + alpha;
                 a1 = -2 * cosw0;
                 a2 =  1 - alpha;
