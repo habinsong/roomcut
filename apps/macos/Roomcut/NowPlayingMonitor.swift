@@ -54,7 +54,7 @@ final class NowPlayingMonitor: ObservableObject {
     }
 
     private var streamProcess: Process?
-    private var lineBuffer = Data()
+    private var lines = NowPlayingLineReader()
     private var ticker: Timer?
     private var lyricTimer: Timer?
     private var lyricLines: [LyricLine] = []
@@ -80,9 +80,7 @@ final class NowPlayingMonitor: ObservableObject {
     )?
 
     // Baseline for elapsed estimation: elapsedTime captured at `baselineDate`.
-    private var baselineElapsed: Double = 0
-    private var baselineDate = Date()
-    private var baselinePlaying = false
+    private var clock = NowPlayingClock()
 
     // MARK: Paths
 
@@ -153,7 +151,7 @@ final class NowPlayingMonitor: ObservableObject {
         adjacencyStore = NowPlayingAdjacencyStore()
         lyricsPrefetchRequested = []
         pendingNavigation = nil
-        lineBuffer.removeAll()
+        lines.reset()
     }
 
     deinit {
@@ -208,11 +206,8 @@ final class NowPlayingMonitor: ObservableObject {
     }
 
     private func ingest(_ data: Data) {
-        lineBuffer.append(data)
-        while let nl = lineBuffer.firstIndex(of: 0x0A) {
-            let lineData = lineBuffer.subdata(in: lineBuffer.startIndex..<nl)
-            lineBuffer.removeSubrange(lineBuffer.startIndex...nl)
-            if !lineData.isEmpty { decodeLine(lineData) }
+        for line in lines.take(data) {
+            decodeLine(line)
         }
     }
 
@@ -689,17 +684,12 @@ final class NowPlayingMonitor: ObservableObject {
 
     private func rebaseline(from snap: Snapshot) {
         // elapsedTime was current at snap.timestamp; advance to now if playing.
-        baselineElapsed = snap.elapsedTime
-        baselineDate = snap.timestamp
-        baselinePlaying = snap.playing
+        clock.rebaseline(elapsed: snap.elapsedTime, at: snap.timestamp)
         elapsedNow = currentElapsed(snap)
     }
 
     private func currentElapsed(_ snap: Snapshot) -> Double {
-        guard snap.playing else { return baselineElapsed }
-        let delta = Date().timeIntervalSince(baselineDate) * snap.playbackRate
-        let value = baselineElapsed + max(0, delta)
-        return snap.duration > 0 ? min(value, snap.duration) : value
+        clock.position(playing: snap.playing, rate: snap.playbackRate, duration: snap.duration)
     }
 
     private func startTicker() {
@@ -889,10 +879,10 @@ final class NowPlayingMonitor: ObservableObject {
         // Optimistic update: reflect the new position immediately so the bar
         // doesn't snap back while we wait for the next stream notification.
         if var snap = snapshot {
-            baselineElapsed = clamped
-            baselineDate = Date()
+            let moment = Date()
+            clock.rebaseline(elapsed: clamped, at: moment)
             snap.elapsedTime = clamped
-            snap.timestamp = baselineDate
+            snap.timestamp = moment
             snapshot = snap
             elapsedNow = clamped
         }
