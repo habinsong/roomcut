@@ -54,6 +54,18 @@ if [[ "${missing}" -eq 1 ]]; then
   exit 1
 fi
 
+# A bundle whose signature no longer seals its own Info.plist installs fine and is
+# then refused by coreaudiod, so no Roomcut output device appears. Catch it here
+# instead of in a release someone has already downloaded.
+for bundle in "${APP_SRC}" "${DRIVER_SRC}"; do
+  if ! codesign --verify --strict "${bundle}" >/dev/null 2>&1; then
+    echo "error: invalid code signature: ${bundle}" >&2
+    codesign --verify --strict "${bundle}" 2>&1 | sed 's/^/  /' >&2
+    echo "  rebuild it (cmake --build build --config Release, bash scripts/build-app.sh release)" >&2
+    exit 1
+  fi
+done
+
 if [[ -z "${VERSION}" ]]; then
   VERSION="$(plutil -extract CFBundleShortVersionString raw "${APP_SRC}/Contents/Info.plist" 2>/dev/null || echo "0.0.0")"
 fi
