@@ -57,12 +57,12 @@ final class NowPlayingMonitor: ObservableObject {
     private var lines = NowPlayingLineReader()
     private var ticker: Timer?
     private var lyricTimer: Timer?
-    private var lyricLines: [LyricLine] = []
-    private var lyricsCache: [String: [LyricLine]] = [:]   // by trackKey — never refetched
-    private var lyricsTrackKey: String?
-    private var lyricsInFlight: Set<String> = []
-    private var lyricsRequestedForCurrentTrack = false
-    private var lyricsStartTask: Task<Void, Never>?
+    private lazy var lyrics = NowPlayingLyrics { track in
+        let synced = await LRCLIBClient.fetchSyncedLyrics(
+            title: track.title, artist: track.artist, album: track.album, duration: track.duration)
+        return synced.map(LyricsParsing.parse) ?? []
+    }
+    private var lyricLines: [LyricLine] { lyrics.lines }
     private var restartAttempted = false
     private var artworkProcess: Process?
     private var artworkTrackKey: String?
@@ -117,6 +117,7 @@ final class NowPlayingMonitor: ObservableObject {
             return
         }
         available = true
+        connectLyrics()
         startStream(paths: paths)
     }
 
@@ -125,9 +126,7 @@ final class NowPlayingMonitor: ObservableObject {
         ticker = nil
         lyricTimer?.invalidate()
         lyricTimer = nil
-        lyricsStartTask?.cancel()
-        lyricsStartTask = nil
-        lyricLines = []
+        lyrics.stop()
         currentLyric = nil
         nextLyric = nil
         if let p = streamProcess, p.isRunning {
@@ -292,13 +291,10 @@ final class NowPlayingMonitor: ObservableObject {
             queueAttemptCount = 0
             startAdjacentLyricsPrefetch(for: snap.trackKey)
             fetchQueue(for: snap.trackKey)
-            lyricLines = []
             currentLyric = nil
             nextLyric = nil
-            lyricsTrackKey = snap.trackKey
-            lyricsRequestedForCurrentTrack = false
-            lyricsStartTask?.cancel()
-            lyricsStartTask = nil
+            lyrics.trackChanged(to: lyricsTrack(snap))
+            return
         }
         scheduleLyricsFetch(for: snap)
     }
@@ -727,74 +723,18 @@ final class NowPlayingMonitor: ObservableObject {
         if nextLyric != lines.next { nextLyric = lines.next }
     }
 
-    private func scheduleLyricsFetch(for snap: Snapshot) {
-        guard !snap.title.isEmpty else { return }
-        if lyricsCache[snap.trackKey] != nil {
-            fetchLyrics(for: snap)
-            return
-        }
-        guard !lyricsRequestedForCurrentTrack else { return }
-
-        if !snap.album.isEmpty {
-            lyricsStartTask?.cancel()
-            lyricsStartTask = nil
-            fetchLyrics(for: snap)
-            return
-        }
-        guard lyricsStartTask == nil else { return }
-
-        let key = snap.trackKey
-        lyricsStartTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(nanoseconds: 150_000_000)
-            guard !Task.isCancelled,
-                  let self,
-                  let current = self.snapshot,
-                  current.trackKey == key else { return }
-            self.lyricsStartTask = nil
-            self.fetchLyrics(for: current)
-        }
+    private func lyricsTrack(_ snap: Snapshot) -> NowPlayingLyrics.Track {
+        .init(key: snap.trackKey, title: snap.title, artist: snap.artist,
+              album: snap.album, duration: snap.duration)
     }
 
-    private func fetchLyrics(for snap: Snapshot) {
-        let key = snap.trackKey
-        lyricsTrackKey = key
-        if let cached = lyricsCache[key] {
-            lyricLines = cached
-            refreshLyricLine()
-            return
-        }
-        guard !snap.title.isEmpty,
-              !lyricsInFlight.contains(key),
-              !lyricsRequestedForCurrentTrack else { return }
-        lyricsRequestedForCurrentTrack = true
-        lyricsInFlight.insert(key)
-        let (title, artist, album, duration) = (
-            snap.title,
-            snap.artist,
-            snap.album,
-            snap.duration
-        )
-        Task { [weak self] in
-            let synced = await LRCLIBClient.fetchSyncedLyrics(
-                title: title,
-                artist: artist,
-                album: album,
-                duration: duration
-            )
-            let lines = synced.map(LyricsParsing.parse) ?? []
-            await MainActor.run {
-                guard let self else { return }
-                self.lyricsInFlight.remove(key)
-                if !lines.isEmpty {
-                    self.lyricsCache[key] = lines
-                    if self.lyricsTrackKey == key {
-                        self.lyricLines = lines
-                        self.refreshLyricLine()
-                    }
-                }
-                self.startAdjacentLyricsPrefetch(for: key)
-            }
-        }
+    private func connectLyrics() {
+        lyrics.onLines = { [weak self] in self?.refreshLyricLine() }
+        lyrics.onFetched = { [weak self] key in self?.startAdjacentLyricsPrefetch(for: key) }
+    }
+
+    private func scheduleLyricsFetch(for snap: Snapshot) {
+        lyrics.schedule(for: lyricsTrack(snap))
     }
 
     private func startAdjacentLyricsPrefetch(for currentTrackKey: String) {
