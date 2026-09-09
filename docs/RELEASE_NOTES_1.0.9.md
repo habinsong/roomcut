@@ -4,113 +4,101 @@ Released 2026-09-09.
 
 ## English
 
-This release finishes the current A/B comparison path. A and B retain separate
-edit histories, their playback level can be matched before listening, and the
-switch is ramped instead of stepped.
+A and B hold two different settings and you can switch between them while music
+is playing; turn on **Level** and Roomcut measures both on the same passage and
+pulls the louder one down, so switching does not change the volume too.
 
-Device reads, device writes, output recovery, and app polling now keep their
-own order and state. A delayed result should not replace a newer device choice
-or sound edit. Room Tune also cleans up a cancelled or delayed measurement round
-before it returns its temporary bypass.
+Each slot keeps its own edit history: ⌘Z undoes, ⇧⌘Z redoes, and the copy button
+hands the current settings to the other slot.
 
-Download either `Roomcut-1.0.9.pkg` or `Roomcut-1.0.9.dmg`. The disk image holds
-the same package. The payload binaries are ad-hoc signed; this release is not
-notarized. If macOS blocks the package, Control-click it, choose **Open**, then
-approve it in **Privacy & Security** if asked.
+The engine and the app were split into modules, which fixed a late device reply
+overwriting the device or setting you had just picked, output that did not come
+back after a device disappeared, and a cancelled Room Tune measurement leaving
+its temporary bypass in place.
 
-Requires Apple Silicon and macOS 26 (Tahoe) or later.
+Sample-rate conversion moved from the old cubic resampler to a windowed sinc one.
 
-Local checks: native CTest 37/37, Swift XCTest 213/213, app bundle signature
-structure, package version, and disk-image checksum all passed. These checks do
-not replace an install or upgrade test on another Mac, a physical microphone
-measurement, or a listening evaluation.
+Install from `Roomcut-1.0.9.pkg`, or from `Roomcut-1.0.9.dmg`, which holds the
+same package (Apple Silicon, macOS 26 Tahoe or later); the build is not
+notarized, so if macOS blocks it, Control-click and choose **Open**.
 
 ## 한국어
 
-이번 릴리스에서 A/B 비교 경로를 마무리했습니다. A와 B는 각각 편집 이력을 유지하고,
-듣기 전에 재생 레벨을 맞출 수 있습니다. 전환도 계단식으로 바꾸지 않고 짧은 램프를
-거칩니다.
+A와 B에 서로 다른 설정을 담아 재생 중에 바꿔 들을 수 있고, **레벨**을 켜면 같은
+구간으로 양쪽을 재서 큰 쪽을 낮추기 때문에 전환할 때 음량까지 달라지지 않습니다.
 
-장치 읽기·쓰기, 출력 복구, 앱 폴링은 각자 순서와 상태를 관리합니다. 늦게 도착한 결과가
-새 장치 선택이나 새 사운드 편집을 덮어쓰지 않도록 한 변경입니다. Room Tune도 취소되거나
-지연된 측정 회차를 정리한 뒤 임시 바이패스를 되돌립니다.
+편집 이력은 A와 B가 따로 쌓입니다. ⌘Z로 되돌리고, ⇧⌘Z로 다시 실행하고, 복사
+버튼으로 지금 설정을 반대쪽에 넘길 수 있습니다.
 
-`Roomcut-1.0.9.pkg` 또는 `Roomcut-1.0.9.dmg`를 받으면 됩니다. 디스크 이미지는 같은
-패키지를 담고 있습니다. 페이로드 바이너리는 ad-hoc 서명이고 이번 릴리스는 공증되지
-않았습니다. macOS가 패키지를 막으면 Control-클릭 후 **열기**를 선택하고, 필요하면
-**개인정보 보호 및 보안**에서 승인하세요.
+엔진과 앱을 모듈로 나누면서 늦게 도착한 장치 응답이 방금 고른 장치나 설정을
+덮어쓰던 문제, 장치가 사라진 뒤 출력이 돌아오지 않던 문제, Room Tune 측정을
+취소해도 임시 바이패스가 남던 문제를 고쳤습니다.
 
-Apple Silicon과 macOS 26 (Tahoe) 이상이 필요합니다.
+샘플레이트 변환기는 기존 3차 보간 대신 창함수 sinc 방식으로 바꿨습니다.
 
-로컬 검사에서 네이티브 CTest 37/37, Swift XCTest 213/213, 앱 번들 서명 구조,
-패키지 버전, 디스크 이미지 체크섬을 모두 확인했습니다. 이 범위는 다른 Mac에서의 설치·업그레이드,
-실제 마이크 측정, 청취 평가를 대신하지 않습니다.
+설치는 `Roomcut-1.0.9.pkg`나 같은 패키지가 담긴 `Roomcut-1.0.9.dmg`로 하면 되고
+(Apple Silicon, macOS 26 Tahoe 이상), 공증을 받지 않은 빌드라 macOS가 막으면
+Control-클릭 후 **열기**를 선택하세요.
 
 ## 日本語
 
-このリリースで、現在の A/B 比較の経路を仕上げました。A と B はそれぞれ編集履歴を
-持ち、聴く前に再生レベルを合わせられます。切り替えも段階的に変えず、短いランプを
-通します。
+A と B に別々の設定を置いて再生中に切り替えられ、**レベル**を入れると同じ区間で
+両方を測って大きいほうを下げるので、切り替えで音量まで変わることはありません。
 
-デバイスの読み取りと書き込み、出力の復帰、アプリのポーリングは、それぞれ順序と状態を
-管理します。遅れて届いた結果が新しいデバイス選択や音の編集を上書きしないための変更です。
-Room Tune も、キャンセルまたは遅延した測定ラウンドを片付けてから一時バイパスを戻します。
+編集履歴は A と B で別々に残ります。⌘Z で取り消し、⇧⌘Z でやり直し、コピー
+ボタンで今の設定をもう一方に渡せます。
 
-`Roomcut-1.0.9.pkg` または `Roomcut-1.0.9.dmg` をダウンロードしてください。ディスク
-イメージには同じパッケージが入っています。ペイロードのバイナリは ad-hoc 署名で、この
-リリースは公証されていません。macOS がパッケージを止める場合は Control-クリックして
-**開く** を選び、必要なら **プライバシーとセキュリティ** で許可してください。
+エンジンとアプリをモジュールに分け、遅れて届いたデバイス応答が選び直した装置や
+設定を上書きする問題、デバイスが消えたあとに出力が戻らない問題、Room Tune の
+測定を取り消しても一時バイパスが残る問題を直しました。
 
-Apple Silicon と macOS 26 (Tahoe) 以降が必要です。
+サンプルレート変換は、従来の 3 次補間から窓関数付き sinc に変えました。
 
-ローカルでは、ネイティブ CTest 37/37、Swift XCTest 213/213、アプリバンドルの署名構造、
-パッケージのバージョン、ディスクイメージのチェックサムを確認しました。この範囲は、別の Mac
-でのインストールやアップグレード、実際のマイク測定、試聴評価の代わりにはなりません。
+インストールは `Roomcut-1.0.9.pkg`、または同じパッケージが入った
+`Roomcut-1.0.9.dmg` から行い（Apple Silicon、macOS 26 Tahoe 以降）、公証を
+受けていないビルドなので macOS が止めた場合は Control-クリックして**開く**を
+選んでください。
 
 ## Français
 
-Cette version termine le parcours A/B actuel. A et B gardent chacun leur
-historique d'édition, leurs niveaux de lecture peuvent être rapprochés avant
-l'écoute, et la bascule passe par une courte rampe plutôt que par un saut.
+A et B contiennent deux réglages différents et vous passez de l'un à l'autre
+pendant la lecture ; avec **Niveau**, Roomcut mesure les deux sur le même passage
+et baisse le plus fort, pour que le changement ne porte pas aussi sur le volume.
 
-Les lectures et écritures de périphériques, la reprise de sortie et
-l'interrogation de l'app gèrent maintenant leur propre ordre et état. Un résultat
-tardif ne doit plus remplacer un choix récent de périphérique ou un réglage
-sonore. Room Tune nettoie aussi une mesure annulée ou retardée avant de restaurer
-son bypass temporaire.
+Chaque emplacement garde son propre historique : ⌘Z annule, ⇧⌘Z rétablit, et le
+bouton de copie envoie le réglage courant vers l'autre.
 
-Téléchargez `Roomcut-1.0.9.pkg` ou `Roomcut-1.0.9.dmg`; l'image disque contient
-le même paquet. Les binaires du payload sont signés ad-hoc et cette version n'est
-pas notarisée. Si macOS bloque le paquet, faites un Control-clic, choisissez
-**Ouvrir**, puis autorisez-le dans **Confidentialité et sécurité** si nécessaire.
+Le moteur et l'app ont été découpés en modules, ce qui corrige une réponse de
+périphérique arrivée en retard qui écrasait l'appareil ou le réglage tout juste
+choisi, une sortie qui ne revenait pas après la disparition d'un périphérique, et
+une mesure Room Tune annulée qui laissait son bypass temporaire actif.
 
-Apple Silicon et macOS 26 (Tahoe) ou ultérieur sont requis.
+La conversion de fréquence d'échantillonnage passe de l'ancien rééchantillonneur
+cubique à un sinc fenêtré.
 
-En local, CTest natif 37/37, XCTest Swift 213/213, la structure de signature de
-l'app, la version du paquet et la somme de contrôle de l'image disque ont tous
-été vérifiés. Cela ne remplace pas une installation ou une mise à niveau sur un
-autre Mac, une mesure avec microphone réel ou une écoute.
+Installez depuis `Roomcut-1.0.9.pkg`, ou depuis `Roomcut-1.0.9.dmg` qui contient
+le même paquet (Apple Silicon, macOS 26 Tahoe ou ultérieur) ; la build n'est pas
+notarisée, donc si macOS la bloque, faites un Control-clic et choisissez
+**Ouvrir**.
 
 ## Deutsch
 
-Diese Version schließt den aktuellen A/B-Vergleich ab. A und B behalten jeweils
-einen eigenen Bearbeitungsverlauf, ihre Wiedergabepegel lassen sich vor dem Hören
-angleichen, und der Wechsel läuft über eine kurze Rampe statt über einen Sprung.
+A und B halten zwei verschiedene Einstellungen, zwischen denen Sie während der
+Wiedergabe wechseln können; mit **Pegel** misst Roomcut beide an derselben Stelle
+und senkt die lautere ab, damit sich beim Wechsel nicht auch die Lautstärke ändert.
 
-Geräte-Lesen, Geräte-Schreiben, Ausgabewiederherstellung und App-Polling verwalten
-nun jeweils ihre eigene Reihenfolge und ihren Zustand. Ein verspätetes Ergebnis
-soll keine neuere Geräteauswahl oder Klangänderung ersetzen. Room Tune räumt eine
-abgebrochene oder verspätete Messrunde auf, bevor der vorübergehende Bypass
-zurückgenommen wird.
+Jeder Platz führt seinen eigenen Bearbeitungsverlauf: ⌘Z nimmt zurück, ⇧⌘Z stellt
+wieder her, und die Kopiertaste gibt die aktuelle Einstellung an den anderen Platz.
 
-Laden Sie `Roomcut-1.0.9.pkg` oder `Roomcut-1.0.9.dmg` herunter; das Disk-Image
-enthält dasselbe Paket. Die Payload-Binärdateien sind ad-hoc signiert, diese
-Version ist nicht notarisiert. Blockiert macOS das Paket, klicken Sie mit Control
-darauf, wählen **Öffnen** und erlauben es bei Bedarf unter **Datenschutz & Sicherheit**.
+Engine und App wurden in Module zerlegt; behoben sind damit eine verspätete
+Geräteantwort, die das eben gewählte Gerät oder die eben geänderte Einstellung
+überschrieb, eine Ausgabe, die nach dem Verschwinden eines Geräts nicht
+zurückkam, und ein abgebrochener Room-Tune-Durchlauf, der seinen vorübergehenden
+Bypass stehen ließ.
 
-Apple Silicon und macOS 26 (Tahoe) oder neuer sind erforderlich.
+Die Abtastratenwandlung nutzt statt des bisherigen kubischen Resamplers ein
+fenstergewichtetes Sinc-Verfahren.
 
-Lokal wurden der native CTest mit 37/37, Swift XCTest mit 213/213, die
-Signaturstruktur des App-Bundles, die Paketversion und die Prüfsumme des
-Disk-Images geprüft. Das ersetzt keinen Installations- oder Upgrade-Test auf
-einem anderen Mac, keine physische Mikrofonmessung und keine Hörbeurteilung.
+Installieren Sie über `Roomcut-1.0.9.pkg` oder über `Roomcut-1.0.9.dmg` mit
+demselben Paket (Apple Silicon, macOS 26 Tahoe oder neuer); die Builds sind nicht
+notarisiert — blockiert macOS sie, Control-Klick und **Öffnen** wählen.
