@@ -215,7 +215,7 @@ public final class RoomcutViewModel: ObservableObject {
             poller.invalidateDevices()
             var offline = status
             offline.reachable = false
-            if Self.shouldPublishStatus(previous: status, next: offline) {
+            if RefreshPlanner.shouldPublish(previous: status, next: offline) {
                 status = offline
             }
             resetMeterDisplay()
@@ -229,77 +229,58 @@ public final class RoomcutViewModel: ObservableObject {
 
         guard poller.isCurrent(cycle) else { return }
         let refreshDate = Date()
-        let wasOffline = !status.reachable
-        let previousDeviceUID = status.outputDeviceUID
-        let outputDeviceChanged = status.outputDeviceUID != nextStatus.outputDeviceUID
-        if outputDeviceChanged { poller.invalidateDevices() }
-        let needsParams = wasOffline
-            || status.capabilities != nextStatus.capabilities
-            || lastSeenPresetId != nextStatus.presetId
-            || lastSeenRevision != nextStatus.paramsRevision
-        let shouldRefreshDeviceList = poller.isDue(.devices, at: refreshDate, force: wasOffline || outputDeviceChanged)
-        let shouldRefreshControlState = poller.isDue(.controls, at: refreshDate, force: wasOffline || outputDeviceChanged)
+        let plan = RefreshPlanner.plan(.init(
+            previous: status, next: nextStatus,
+            isEditingParams: isEditingParams,
+            editsUnchanged: editRevision == editor.revision && writeRevision == writer.revision,
+            lastSeenPresetId: lastSeenPresetId, lastSeenRevision: lastSeenRevision,
+            deviceAutoPreset: deviceAutoPresetEnabled,
+            mappedPresetToken: presetStore.deviceMap[nextStatus.outputDeviceUID],
+            pickerSelection: presetPickerSelection,
+            didClaimDefault: didClaimDefaultOutput,
+            analyzerVisible: analyzerVisible, hasAnalysis: analysis != nil,
+            comparisonEnabled: comparison.enabled,
+            retryDue: refreshDate >= paramsRetryAfter))
+        if plan.deviceChanged { poller.invalidateDevices() }
+        let shouldRefreshDeviceList = poller.isDue(.devices, at: refreshDate, force: plan.forceDeviceRefresh)
+        let shouldRefreshControlState = poller.isDue(.controls, at: refreshDate, force: plan.forceDeviceRefresh)
 
-        // A dropout worth surfacing = the lifetime counter climbed since the
-        // last poll AND audio is actually flowing (peak above the engine's
-        // silence floor). Idle silence also ticks underruns, so the peak gate
-        // is what keeps the warning from being permanently on.
-        let underrunActiveNow = Self.underrunsActive(
+        let underrunActiveNow = RefreshPlanner.underrunsActive(
             previous: lastUnderruns, current: nextStatus.underruns, peak: nextStatus.peak)
         lastUnderruns = nextStatus.underruns
         updateMeterDisplay(with: nextStatus, underrunActiveNow: underrunActiveNow)
 
-        // Only republish `status` on a MEANINGFUL change. peak/framesRendered/
-        // underruns tick every poll; publishing those would fire objectWillChange
-        // at the poll rate and re-render the whole window (incl. the expensive
-        // full-window background) — a major idle-CPU sink.
-        if Self.shouldPublishStatus(previous: status, next: nextStatus) {
-            status = nextStatus
-        }
+        if plan.publishStatus { status = nextStatus }
         comparison.setSupported(nextStatus.supportsLevelMatch)
 
-        // Per-device presets: react only to a REAL device switch while connected
-        // (both UIDs non-empty, engine previously reachable). First connect is
-        // left alone — the engine already resumed the user's last state, and
-        // stomping it with a mapped preset would surprise.
-        if deviceAutoPresetEnabled && outputDeviceChanged && !wasOffline
-            && !previousDeviceUID.isEmpty && !nextStatus.outputDeviceUID.isEmpty
-            && !isEditingParams,
-           let token = presetStore.deviceMap[nextStatus.outputDeviceUID],
-           token != presetPickerSelection {
-            applyPickerSelection(token)
-        }
+        if let token = plan.devicePresetToken { applyPickerSelection(token) }
 
         // On the first healthy poll, make Roomcut the macOS default output so app
         // audio actually flows through the engine — otherwise the meters sit at
         // silence (−60 dBFS) and the EQ is inaudible whenever macOS has a real
         // device selected as default. One-shot; the user can still switch away.
-        if !didClaimDefaultOutput && nextStatus.state == EngineStatus.running {
+        if plan.claimDefault {
             didClaimDefaultOutput = true
             deviceWriter.submit(.claimDefault)
         }
 
         deviceTicket = deviceReader.request(.init(uid: nextStatus.outputDeviceUID, revision: poller.deviceRevision,
             devices: shouldRefreshDeviceList, controls: shouldRefreshControlState && !deviceWriter.blocksControls))
-        if analyzerVisible
-            && nextStatus.supportsAnalyzer
-            && poller.isDue(.analysis, at: refreshDate) {
+        if plan.wantsAnalysis && poller.isDue(.analysis, at: refreshDate) {
             await refreshAnalysis(in: cycle)
             guard poller.isCurrent(cycle) else { return }
             poller.didRead(.analysis, in: cycle)
-        } else if (!nextStatus.supportsAnalyzer || !analyzerVisible) && analysis != nil {
+        } else if plan.clearAnalysis {
             analysis = nil
         }
 
-        if !needsParams && comparison.enabled && nextStatus.supportsLevelMatch && !isEditingParams
-            && poller.isDue(.comparison, at: refreshDate) {
+        if plan.wantsComparison && poller.isDue(.comparison, at: refreshDate) {
             await refreshComparisonState(in: cycle)
             guard poller.isCurrent(cycle) else { return }
             poller.didRead(.comparison, in: cycle)
         }
 
-        if needsParams && !isEditingParams && editRevision == editor.revision && writeRevision == writer.revision
-            && (wasOffline || refreshDate >= paramsRetryAfter) {
+        if plan.wantsParams {
             do {
                 try await loadParams(in: cycle)
                 guard poller.isCurrent(cycle) else { return }
@@ -940,11 +921,6 @@ public final class RoomcutViewModel: ObservableObject {
     // Pure rule (testable): warn only when the lifetime underrun counter rose
     // AND audio is flowing. First sample (previous == nil) never warns — it just
     // establishes the baseline.
-    static func underrunsActive(previous: UInt64?, current: UInt64, peak: Float) -> Bool {
-        guard let previous else { return false }
-        return current > previous && peak > 1e-4
-    }
-
     private func updateMeterDisplay(with nextStatus: EngineStatus, underrunActiveNow: Bool) {
         guard nextStatus.reachable else {
             meters.reset()
@@ -966,19 +942,6 @@ public final class RoomcutViewModel: ObservableObject {
 
     private func setErrorBanner(_ message: String) {
         if errorBanner != message { errorBanner = message }
-    }
-
-    private static func shouldPublishStatus(previous: EngineStatus, next: EngineStatus) -> Bool {
-        previous.reachable != next.reachable
-            || previous.state != next.state
-            || previous.presetId != next.presetId
-            || previous.manualBypass != next.manualBypass
-            || previous.safeBypass != next.safeBypass
-            || previous.paramsRevision != next.paramsRevision
-            || previous.outputDeviceUID != next.outputDeviceUID
-            || previous.keepDefault != next.keepDefault
-            || previous.capabilities != next.capabilities
-            || previous.volumeBoost != next.volumeBoost
     }
 
     private func currentParameters() -> EngineParameters { editor.snapshot.parameters.supported(by: status) }
