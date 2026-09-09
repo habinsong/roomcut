@@ -1,5 +1,6 @@
 // Build: clang++ -std=c++17 -O3 -DNDEBUG -Icore/dsp scripts/benchmark-dsp.cpp -o build/benchmark-dsp
 // Run: build/benchmark-dsp <sample-rate> <block-frames> <update-ms,0=steady> <full-effects,0|1>
+//      [dynamic-bands] — optional, how many parametric bands run their dynamic side
 #include "DSPChain.hpp"
 #ifdef ROOMCUT_BENCH_COMPARISON_MODE
 #include "ComparisonProcessor.hpp"
@@ -21,11 +22,12 @@
 #endif
 
 int main(int argc, char** argv) {
-    if (argc != 5) return 64;
+    if (argc != 5 && argc != 6) return 64;
     const double fs = std::atof(argv[1]);
     const auto block = static_cast<std::size_t>(std::atoi(argv[2]));
     const double updateMs = std::atof(argv[3]);
     const bool full = std::atoi(argv[4]) != 0;
+    const int dynamicBands = argc == 6 ? std::atoi(argv[5]) : 0;
     if (!(fs >= 44100 && fs <= 768000) || block == 0 || block > 8192 || updateMs < 0) return 64;
 #ifdef __APPLE__
     pthread_set_qos_class_self_np(QOS_CLASS_USER_INTERACTIVE, 0);
@@ -50,6 +52,17 @@ int main(int argc, char** argv) {
             params.eqGainsDb[b] = b % 2 ? 3 : -3;
         for (std::size_t b = 0; b < params.parametric.size(); ++b)
             params.parametric[b] = {true, 0, 100.0 * std::pow(2.0, b), 3, 1};
+    }
+    for (int b = 0; b < dynamicBands && b < (int)params.parametric.size(); ++b) {
+        auto& band = params.parametric[b];
+        band.enabled = true;
+        band.type = 0;
+        if (!full) { band.freqHz = 100.0 * std::pow(2.0, b); band.q = 1; band.gainDb = 3; }
+        band.dynamic = true;
+        band.thresholdDb = -30;
+        band.rangeDb = 9;
+        band.attackMs = 20;
+        band.releaseMs = 200;
     }
 #ifdef ROOMCUT_BENCH_COMPARISON_MODE
     roomcut::ComparisonProcessor chain;
