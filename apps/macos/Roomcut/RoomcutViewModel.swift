@@ -732,6 +732,32 @@ public final class RoomcutViewModel: ObservableObject {
         guard parametric.indices.contains(index) else { return }
         var b = parametric[index]; b.q = q; setParametricBand(index, b)
     }
+    public func setParametricDynamic(_ index: Int, _ on: Bool) {
+        guard parametric.indices.contains(index) else { return }
+        var b = parametric[index]
+        b.dynamic = on
+        // Turning it on with nothing to give away would look broken, so start it
+        // where a resonance actually gets caught.
+        if on && b.rangeDb <= 0 { b.rangeDb = 6 }
+        setParametricBand(index, b)
+    }
+    public func setParametricThreshold(_ index: Int, _ db: Double) {
+        guard parametric.indices.contains(index) else { return }
+        var b = parametric[index]; b.thresholdDb = db; setParametricBand(index, b)
+    }
+    public func setParametricRange(_ index: Int, _ db: Double) {
+        guard parametric.indices.contains(index) else { return }
+        var b = parametric[index]; b.rangeDb = db; setParametricBand(index, b)
+    }
+    public func setParametricAttack(_ index: Int, _ ms: Double) {
+        guard parametric.indices.contains(index) else { return }
+        var b = parametric[index]; b.attackMs = ms; setParametricBand(index, b)
+    }
+    public func setParametricRelease(_ index: Int, _ ms: Double) {
+        guard parametric.indices.contains(index) else { return }
+        var b = parametric[index]; b.releaseMs = ms; setParametricBand(index, b)
+    }
+    public var dynamicEqAvailable: Bool { status.reachable && status.supportsDynamicEq }
 
     private func ensureParametricAvailable() -> Bool {
         guard parametricAvailable else {

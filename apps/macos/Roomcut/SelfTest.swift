@@ -85,15 +85,20 @@ func runSelfTest() -> Int32 {
         let pbands = withUnsafeBytes(of: params.parametric) {
             Array($0.bindMemory(to: RoomcutClientParamBand.self))
         }
+        let pdynamics = withUnsafeBytes(of: params.dynamics) {
+            Array($0.bindMemory(to: RoomcutClientParamDynamics.self))
+        }
         rc = eqBefore.withUnsafeBufferPointer { buf in
             pbands.withUnsafeBufferPointer { pbuf in
-                roomcutClientSetParams(params.preampDb, buf.baseAddress,
-                                       params.limiterReleaseMs,
-                                       params.outputGainDb, params.spatialWidth,
-                                       params.centerFocus, params.crossfeed,
-                                       params.roomReduce, params.spatialMode,
-                                       params.highpassHz, params.compAmount,
-                                       pbuf.baseAddress)
+                pdynamics.withUnsafeBufferPointer { dbuf in
+                    roomcutClientSetParams(params.preampDb, buf.baseAddress,
+                                           params.limiterReleaseMs,
+                                           params.outputGainDb, params.spatialWidth,
+                                           params.centerFocus, params.crossfeed,
+                                           params.roomReduce, params.spatialMode,
+                                           params.highpassHz, params.compAmount,
+                                           pbuf.baseAddress, dbuf.baseAddress)
+                }
             }
         }
         guard rc == 0 else {
