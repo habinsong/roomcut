@@ -32,7 +32,7 @@ static void test_rejects_dangerous_values() {
     ChainParams bad = ChainParams::flat();
     bad.preampDb = 48.0;          // way over +12
     bad.eqGainsDb[5] = 60.0;      // way over +24
-    bad.spatialWidth = 200.0;
+    bad.spatialWidth = 400.0;
     auto r = PresetValidator::validate(bad);
     CHECK(!r.ok, "dangerous preset is rejected");
     CHECK(r.issues.size() >= 3, "each out-of-range field reported");
@@ -50,7 +50,7 @@ static void test_clamp_coerces_into_range() {
     bad.preampDb = 48.0;
     bad.eqGainsDb[5] = 60.0;
     bad.eqGainsDb[6] = -60.0;
-    bad.spatialWidth = 200.0;
+    bad.spatialWidth = 400.0;
     bad.centerFocus = 140.0;
     ValidationResult cr;
     ChainParams c = PresetValidator::clamp(bad, &cr);
@@ -58,7 +58,7 @@ static void test_clamp_coerces_into_range() {
     CHECK(c.preampDb == PresetBounds::kPreampMaxDb, "preamp clamped to +12");
     CHECK(c.eqGainsDb[5] == PresetBounds::kEqGainMaxDb, "eq band clamped to +24");
     CHECK(c.eqGainsDb[6] == PresetBounds::kEqGainMinDb, "eq band clamped to -24");
-    CHECK(c.spatialWidth == PresetBounds::kSpatialWidthMax, "width clamped to +100");
+    CHECK(c.spatialWidth == PresetBounds::kSpatialWidthMax, "width clamped to +200");
     CHECK(c.centerFocus == PresetBounds::kSpatialAmountMax, "center clamped to +100");
     // After clamping, the result must validate cleanly.
     CHECK(PresetValidator::validate(c).ok, "clamped preset validates");

@@ -170,6 +170,23 @@ static void test_width_is_frequency_dependent() {
 // Correlation-adaptive width: narrow-but-genuine stereo (highly correlated channels)
 // must be lifted MORE than already-wide (decorrelated/anti-phase) material at the same
 // Space setting — and a TRUE mono source must stay mono (no fabricated width).
+// Space reaches ±200. The outer half has to do real work: past +100 the side keeps
+// opening, past −100 it keeps collapsing toward mono, and both ends stay clamped.
+// Anti-phase input (correlation −1) gets no adaptive lift, so this measures the set
+// width alone.
+static void test_width_range_extends_past_100() {
+    const double wide100 = sideRmsAntiPhase(100.0, 0.0, 0.0, 0.0);
+    const double wide200 = sideRmsAntiPhase(200.0, 0.0, 0.0, 0.0);
+    CHECK(wide200 > wide100 * 1.3, "widening past +100 keeps opening the side");
+    CHECK_NEAR(sideRmsAntiPhase(400.0, 0.0, 0.0, 0.0), wide200, 1e-6, "width clamps at +200");
+
+    const double narrow100 = sideRmsAntiPhase(-100.0, 0.0, 0.0, 0.0);
+    const double narrow200 = sideRmsAntiPhase(-200.0, 0.0, 0.0, 0.0);
+    CHECK(narrow200 < narrow100, "narrowing past -100 keeps collapsing toward mono");
+    CHECK(narrow200 > 0.0, "narrow side stays positive (never inverts)");
+    CHECK_NEAR(sideRmsAntiPhase(-400.0, 0.0, 0.0, 0.0), narrow200, 1e-6, "width clamps at -200");
+}
+
 static void test_adaptive_width_lifts_correlated_stereo() {
     // side-out / side-in ratio for a 2 kHz tone after the correlation envelope settles.
     auto settledSideGain = [](double rScale) {
@@ -400,6 +417,7 @@ int main() {
     test_headphone_crossfeed_preserves_centre();
     test_speaker_xtc_drives_opposite_antiphase();
     test_width_is_frequency_dependent();
+    test_width_range_extends_past_100();
     test_adaptive_width_lifts_correlated_stereo();
     test_widen_lifts_centre_to_keep_vocal_present();
     test_room_attenuates_side_block();

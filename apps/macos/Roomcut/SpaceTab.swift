@@ -76,7 +76,7 @@ struct SpaceTab: View {
                        "house", model.roomReduce, 0...100, tint: accentColor) { model.setRoomReduce($0) }
                 RoomcutDivider()
                 slider(L("Space", "Space", "空間", "Espace", "Raum"),
-                       "arrow.left.and.right", model.spatialWidth, -100...100, tint: accentColor) { model.setSpatialWidth($0) }
+                       "arrow.left.and.right", model.spatialWidth, -200...200, tint: accentColor) { model.setSpatialWidth($0) }
                 RoomcutDivider()
                 slider(L("Center", "Center", "センター", "Centre", "Mitte"),
                        "dot.scope", model.centerFocus, 0...100, tint: accentColor) { model.setCenterFocus($0) }
@@ -294,8 +294,8 @@ private struct SpatialFieldMetrics {
 
     init(width: Double, center: Double, crossfeed: Double, room: Double, w: CGFloat, h: CGFloat) {
         self.w = w; self.h = h
-        self.widthAmount = CGFloat(min(1, abs(width) / 100))
-        let tw = CGFloat((width + 100) / 200)                 // 0 narrow … 1 wide
+        self.widthAmount = CGFloat(min(1, abs(width) / 200))
+        let tw = CGFloat((width + 200) / 400)                 // 0 narrow … 1 wide
         self.center01 = CGFloat(min(1, max(0, center / 100)))
         self.cross01 = CGFloat(min(1, max(0, crossfeed / 100)))
         self.room01 = CGFloat(min(1, max(0, room / 100)))
@@ -324,7 +324,7 @@ private struct SpatialFieldMetrics {
 // per-frame redraw); the only continuous animation is a cheap 18 fps ring pulse with
 // no blur. Idle CPU stays ~0.
 private struct SpatialFieldView: View {
-    let width: Double      // -100…100  Space
+    let width: Double      // -200…200  Space
     let center: Double     // 0…100     Center
     let crossfeed: Double  // 0…100     Crosstalk 3D / Crossfeed
     let room: Double       // 0…100     Room

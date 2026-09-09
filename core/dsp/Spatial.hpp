@@ -55,13 +55,14 @@ public:
         const bool wasHeadphone = headphone_;
         const bool wasSurround = surround_;
         // Every spatial effect runs at ~2x its previous strength for the same slider
-        // reading. The values keep their displayed range (-100..100 / 0..100); the
+        // reading. The values keep their displayed range (Space -200..200, the rest
+        // 0..100); the
         // doubling lives in the MAPPING CURVES (here and in processFrame), which are
         // multiplicative/asymptotic rather than additive-linear. That keeps every
         // control monotonic across the WHOLE slider — no value saturates into a dead
         // zone — and the side gain stays strictly positive, so narrowing approaches
         // mono instead of crossing zero into an L/R polarity flip.
-        width_ = clamp(width, -100.0, 100.0);
+        width_ = clamp(width, -200.0, 200.0);
         centerFocus_ = clamp(centerFocus, 0.0, 100.0);
         crossfeed_ = clamp(crossfeed, 0.0, 100.0);
         roomReduce_ = clamp(roomReduce, 0.0, 100.0);
@@ -123,6 +124,11 @@ public:
             narrowMode_ = false;
             sgBass_ = (1.0 + 0.4 * w01_) * centerFactor * dBass;
             adaptDepth_ = kAdaptDepthMax;
+            // Ceiling for the correlation lift below: a fixed margin past the width
+            // actually asked for, never under the +100 ceiling. Tying it to w01_ keeps
+            // the upper half of the slider live without touching what the lower half
+            // (the whole pre-1.0.10 range) already sounds like.
+            effWCeil_ = std::max(kAdaptWidthCeil, w01_ + kAdaptWidthHeadroom);
         } else {
             // Narrow collapses the whole upper side toward mono (strictly positive →
             // never inverts); bass narrows gently. No adaptive lift while narrowing.
@@ -206,8 +212,8 @@ public:
         double outSide;
         if (!narrowMode_) {
             // Effective width = set width scaled up for correlated/narrow material, but
-            // capped just past the +100 ceiling so the lift can never run away.
-            const double effW = std::min(kAdaptWidthCeil, w01_ * (1.0 + adaptDepth_ * adaptAmt_));
+            // capped just past the set width so the lift can never run away.
+            const double effW = std::min(effWCeil_, w01_ * (1.0 + adaptDepth_ * adaptAmt_));
             // Per-band widen slopes. Raised from 0.9/1.3/1.9 (v1.0.3-4): the
             // 4-band split had dropped the low-mid/presence side gain (~×1.9/×2.3)
             // well below the old flat ~×2.8 above 250 Hz, so +100 read narrower
@@ -379,7 +385,8 @@ private:
     // applied per frame so the correlation-adaptive lift can ride on cd* (center×damp).
     bool narrowMode_ = false;
     double midGain_ = 1.0;
-    double w01_ = 0.0;                                   // set width, normalised −1..1
+    double w01_ = 0.0;                                   // set width, normalised −2..2
+    double effWCeil_ = kAdaptWidthCeil;                  // cap on the correlation-adaptive lift
     double sgBass_ = 1.0;                                // bass side gain (non-adaptive)
     double cdLowMid_ = 1.0, cdMid_ = 1.0, cdAir_ = 1.0;  // center×damp per upper band
     double sgNarrowLow_ = 1.0, sgNarrowHigh_ = 1.0;      // narrow-mode gains
@@ -391,7 +398,8 @@ private:
     double envLL_ = 0.0, envRR_ = 0.0, envLR_ = 0.0;
     double adaptAmt_ = 0.0;
     static constexpr double kAdaptDepthMax = 0.35;  // up to +35% effective width when fully correlated
-    static constexpr double kAdaptWidthCeil = 1.15; // hard cap just past +100 → lift can't run away / clip
+    static constexpr double kAdaptWidthCeil = 1.15; // floor for that cap: the old +100 ceiling
+    static constexpr double kAdaptWidthHeadroom = 0.15; // how far past the set width the lift may go
     static constexpr double kWidenMidMakeup = 0.25; // mid lift at +100 widen (~+1.9 dB) → vocal stays present
 
     // --- RACE crosstalk canceller (speaker mode) ----------------------------

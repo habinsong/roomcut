@@ -628,7 +628,7 @@ public final class RoomcutViewModel: ObservableObject {
 
     public func setSpatialWidth(_ value: Double) {
         guard ensureSpatialAvailable() else { return }
-        spatialWidth = Self.clamp(value, -100, 100)
+        spatialWidth = Self.clamp(value, -200, 200)
         schedulePushParams(preservingPresetSelection: true)
     }
 
@@ -652,7 +652,7 @@ public final class RoomcutViewModel: ObservableObject {
 
     public func setSpatialValues(width: Double, centerFocus: Double, crossfeed: Double, roomReduce: Double) {
         guard ensureSpatialAvailable() else { return }
-        spatialWidth = Self.clamp(width, -100, 100)
+        spatialWidth = Self.clamp(width, -200, 200)
         self.centerFocus = Self.clamp(centerFocus, 0, 100)
         self.crossfeed = Self.clamp(crossfeed, 0, 100)
         self.roomReduce = Self.clamp(roomReduce, 0, 100)
