@@ -356,6 +356,11 @@ target_include_directories(test_driver_feed PRIVATE ${CMAKE_SOURCE_DIR}/engine/i
 target_compile_options(test_driver_feed PRIVATE -Wall -Wextra)
 add_test(NAME driver_feed COMMAND test_driver_feed)
 
+add_executable(test_output_router ${CMAKE_SOURCE_DIR}/engine/tests/test_output_router.cpp)
+target_include_directories(test_output_router PRIVATE ${CMAKE_SOURCE_DIR}/engine/include)
+target_compile_options(test_output_router PRIVATE -Wall -Wextra)
+add_test(NAME output_router COMMAND test_output_router)
+
 add_executable(test_output_recovery ${CMAKE_SOURCE_DIR}/engine/tests/test_output_recovery.cpp)
 target_include_directories(test_output_recovery PRIVATE ${CMAKE_SOURCE_DIR}/engine/include)
 target_compile_options(test_output_recovery PRIVATE -Wall -Wextra)

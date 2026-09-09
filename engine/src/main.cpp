@@ -24,6 +24,7 @@
 #include "OutputDevice.hpp"
 #include "OutputRecovery.hpp"
 #include "DriverFeedWatchdog.hpp"
+#include "OutputRouter.hpp"
 #include "EngineDiagnostics.hpp"
 #include "ServicePort.hpp"
 #include "RenderProgressWatchdog.hpp"
@@ -495,51 +496,48 @@ int main(int argc, char** argv) {
             "restoring a real device in 3 s unless the driver connects\n");
     }
 
-    OutputRecovery recovery;
-    RenderProgressWatchdog renderWatchdog(std::chrono::steady_clock::now());
+    OutputRouter router(std::chrono::steady_clock::now());
 
-    // Recovery policy owns retry timing; this bridge orders lifecycle, HAL,
-    // render preparation, watcher and persisted-device updates on the control thread.
+    // The router owns the order and the retry policy; these are the HAL calls and
+    // engine-state updates it drives, all on this control thread.
+    OutputRouter::Operations routing{
+        .lost = [&](const char* reason) {
+            std::fprintf(stderr, "[engine] device change: reopening output (%s)\n", reason);
+            ctx.lifecycle.store(engineNext(ctx.lifecycle.load(), EngineEvent::OutputLost),
+                                std::memory_order_relaxed);
+        },
+        .stop = [&] { output.stop(); },
+        .unwatchRate = [&] { watcher.watchSR(kAudioObjectUnknown); },
+        .close = [&] { output.close(); },
+        .open = [&](uint32_t device, bool matchRingRate) {
+            return (int)openOutputOn(ctx, output, device, ringSR, sound.settings(), matchRingRate);
+        },
+        .start = [&] { return (int)output.start(); },
+        .failed = [&](int error) {
+            std::fprintf(stderr, "[engine] output reopen failed: %d (retry scheduled)\n", error);
+            output.close();
+        },
+        .restored = [&](uint32_t device) {
+            watcher.watchSR(device);
+            setSavedReal(deviceUID(device));
+            ctx.volume.setTarget(device);
+            // While the driver feed is stalled the output alone doesn't make us
+            // streaming; the watchdog's DriverReturned promotes when it resumes.
+            if (!driverFeed.stalled()) {
+                ctx.lifecycle.store(engineNext(ctx.lifecycle.load(), EngineEvent::OutputReopened),
+                                    std::memory_order_relaxed);
+            }
+            std::fprintf(stderr, "[engine] output -> '%s' @ %.0f Hz\n",
+                         deviceName(device).c_str(), output.sampleRate());
+        },
+    };
+
     auto recoverOutput = [&](bool force = false) {
-        if (!region.valid() || ringSR == 0) { recovery.reset(); return; }
         const AudioDeviceID pick = pickOutput();
         const bool sameDevice = pick == output.deviceID();
-        const auto decision = recovery.decide({pick, ringSR, output.deviceID(), output.running(),
-            output.sampleRate(), sameDevice && output.running() ? output.currentHardwareRate() : 0.0},
-            std::chrono::steady_clock::now(), force);
-        if (!decision.reopen) return;
-        std::fprintf(stderr, "[engine] device change: reopening output (%s)\n",
-                     force ? "render runaway"
-                           : (sameDevice ? "sample rate changed" : "target device changed"));
-        ctx.lifecycle.store(engineNext(ctx.lifecycle.load(), EngineEvent::OutputLost),
-                            std::memory_order_relaxed);
-        output.stop();
-        watcher.watchSR(kAudioObjectUnknown);
-        output.close();
-
-        OSStatus oerr = openOutputOn(ctx, output, pick, ringSR, sound.settings(),
-                                     decision.matchRingRate);
-        if (oerr == noErr) oerr = output.start();
-        const auto completedAt = std::chrono::steady_clock::now();
-        recovery.completed(completedAt);
-        if (oerr != noErr) {
-            std::fprintf(stderr,
-                "[engine] output reopen failed: %d (retry scheduled)\n", (int)oerr);
-            output.close();
-            return;
-        }
-        renderWatchdog.opened(output.deviceID(), completedAt);
-        watcher.watchSR(output.deviceID());
-        setSavedReal(deviceUID(output.deviceID()));
-        ctx.volume.setTarget(output.deviceID());
-        // While the driver feed is stalled the output alone doesn't make us
-        // streaming; the watchdog's DriverReturned promotes when it resumes.
-        if (!driverFeed.stalled()) {
-            ctx.lifecycle.store(engineNext(ctx.lifecycle.load(), EngineEvent::OutputReopened),
-                                std::memory_order_relaxed);
-        }
-        std::fprintf(stderr, "[engine] output -> '%s' @ %.0f Hz\n",
-                     deviceName(output.deviceID()).c_str(), output.sampleRate());
+        router.reopen({pick, output.deviceID(), output.running(), output.sampleRate(),
+                       sameDevice && output.running() ? output.currentHardwareRate() : 0.0},
+                      ringSR, region.valid(), std::chrono::steady_clock::now(), force, routing);
     };
 
     while (ctx.running.load(std::memory_order_relaxed)) {
@@ -556,7 +554,7 @@ int main(int argc, char** argv) {
         // output/DSP mutation stays on this one control thread.
         const bool devicesChanged = watcher.takeChanges();
         if (devicesChanged) trackRealDefault();
-        if (devicesChanged || recovery.retryDue(std::chrono::steady_clock::now())) recoverOutput();
+        if (devicesChanged || router.retryDue(std::chrono::steady_clock::now())) recoverOutput();
         if (devicesChanged) {
             AudioDeviceID rc = findRoomcutDevice(); // id may change on driver reload
             if (rc != roomcutDev) {
@@ -636,7 +634,7 @@ int main(int argc, char** argv) {
         // the engine stayed broken until the user restarted it by hand. Rebuild
         // the unit instead — a fresh AU comes back at 1.00x.
         if (output.running() && ringSR != 0) {
-            const auto repair = renderWatchdog.observe(ctx.framesRendered.load(std::memory_order_relaxed),
+            const auto repair = router.observeRender(ctx.framesRendered.load(std::memory_order_relaxed),
                 output.sampleRate(), std::chrono::steady_clock::now());
             if (repair.requested) {
                 std::fprintf(stderr,
@@ -801,8 +799,7 @@ int main(int argc, char** argv) {
                 std::fprintf(stderr, "[engine] handed off region (sr=%u cap=%u)\n", sr, cap);
 
                 if (startedNow) {
-                    recovery.reset();
-                    renderWatchdog.opened(output.deviceID(), std::chrono::steady_clock::now());
+                    router.adopt(output.deviceID(), std::chrono::steady_clock::now());
                     watcher.watchSR(output.deviceID());
                     setSavedReal(deviceUID(output.deviceID()));
                     ctx.volume.setTarget(output.deviceID());
