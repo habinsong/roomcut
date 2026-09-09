@@ -7,4 +7,4 @@
 | [README.fr.md](../../../../README.fr.md) | [원문](../../source/docs/README.fr.md.txt) | 200 | 9455 | `a94e2ddbeebb1af305489c462834608e3fe1910413b7bd54db1592c2a706cd3c` |
 | [README.ja.md](../../../../README.ja.md) | [원문](../../source/docs/README.ja.md.txt) | 185 | 10990 | `3d9ec7c6a96395d6f3981d678e1a667689c754e5156a95e2a0061907bda36c63` |
 | [README.ko.md](../../../../README.ko.md) | [원문](../../source/docs/README.ko.md.txt) | 186 | 9925 | `757508cc72670be808634a57b2813c52b91bc976bdd2b6c9766ec5e0b8c265ee` |
-| [RELEASE_NOTES_1.0.9.md](../../../../RELEASE_NOTES_1.0.9.md) | [원문](../../source/docs/RELEASE_NOTES_1.0.9.md.txt) | 116 | 6628 | `d309c2133eb3f1948a1ffec57dab1c7b5077a1960d5ebd993f3e1d9b1923e0da` |
+| [RELEASE_NOTES_1.0.9.md](../../../../RELEASE_NOTES_1.0.9.md) | [원문](../../source/docs/RELEASE_NOTES_1.0.9.md.txt) | 47 | 4858 | `5301ac6e03a2301edc79b8768a9d6b166c0bfc6e48a3859ef3e94fe8c4060d40` |

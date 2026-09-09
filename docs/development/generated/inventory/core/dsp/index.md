@@ -15,4 +15,4 @@
 | [KWeightedLevel.hpp](../../../../../../core/dsp/KWeightedLevel.hpp) | [원문](../../../source/core/dsp/KWeightedLevel.hpp.txt) | 73 | 2794 | `c39db855616b8f81933bfb99a2fffa90721ebd33ad6dff42678c8e1a0ce34b97` |
 | [Limiter.hpp](../../../../../../core/dsp/Limiter.hpp) | [원문](../../../source/core/dsp/Limiter.hpp.txt) | 193 | 7532 | `1ac1e7b6fd4da62e1c7b9ddb0ce6c41c2401c81818045bab8f23e4bc246db842` |
 | [ParametricEQ.hpp](../../../../../../core/dsp/ParametricEQ.hpp) | [원문](../../../source/core/dsp/ParametricEQ.hpp.txt) | 111 | 3698 | `16e1fc3c205510e60f8d77b6a5ab9415d348906b966c18d40bd4e1a0a5138bbf` |
-| [Spatial.hpp](../../../../../../core/dsp/Spatial.hpp) | [원문](../../../source/core/dsp/Spatial.hpp.txt) | 494 | 29621 | `36d332411da485306f88438d156ec7a05ca2773cc648dc05eaf3d08b1bf89a59` |
+| [Spatial.hpp](../../../../../../core/dsp/Spatial.hpp) | [원문](../../../source/core/dsp/Spatial.hpp.txt) | 502 | 30225 | `edc43897dfd3e9b36eb8560594e27e3394d37e66218cf4cad8d3c44db3f57f26` |

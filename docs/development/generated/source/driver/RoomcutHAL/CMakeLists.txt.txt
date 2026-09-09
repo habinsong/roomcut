@@ -42,11 +42,18 @@ set_target_properties(RoomcutHAL PROPERTIES
   # CFBundlePackageType BNDL (not the default APPL) for a plug-in bundle.
   MACOSX_BUNDLE_BUNDLE_NAME "Roomcut")
 
+# A changed Info.plist is copied into the bundle without relinking, which would
+# leave the signature below sealing the previous plist — coreaudiod then refuses
+# the driver. Tie the plist to the link step so signing always follows it.
+set_property(TARGET RoomcutHAL APPEND PROPERTY
+  LINK_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist")
+
 # Ad-hoc sign the finished bundle so coreaudiod will at least load it locally.
 # Override ROOMCUT_CODESIGN_IDENTITY with a Developer ID for distribution.
 set(ROOMCUT_CODESIGN_IDENTITY "-" CACHE STRING "codesign identity for Roomcut.driver")
 add_custom_command(TARGET RoomcutHAL POST_BUILD
   COMMAND codesign --force --sign "${ROOMCUT_CODESIGN_IDENTITY}"
           --timestamp=none "$<TARGET_BUNDLE_DIR:RoomcutHAL>"
+  COMMAND codesign --verify --strict "$<TARGET_BUNDLE_DIR:RoomcutHAL>"
   COMMENT "Code-signing Roomcut.driver (identity: ${ROOMCUT_CODESIGN_IDENTITY})"
   VERBATIM)

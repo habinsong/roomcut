@@ -40,8 +40,8 @@ struct PresetBounds {
     static constexpr double kLimiterReleaseMaxMs = 500.0;
     static constexpr double kOutputGainMinDb = -24.0;
     static constexpr double kOutputGainMaxDb =  12.0;
-    static constexpr double kSpatialWidthMin = -100.0;
-    static constexpr double kSpatialWidthMax =  100.0;
+    static constexpr double kSpatialWidthMin = -200.0;
+    static constexpr double kSpatialWidthMax =  200.0;
     static constexpr double kSpatialAmountMin =   0.0;
     static constexpr double kSpatialAmountMax = 100.0;
     static constexpr double kHighpassMinHz =   0.0;   // 0 = off

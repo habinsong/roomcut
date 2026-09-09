@@ -10,7 +10,7 @@
 | [com.roomcut.engine.plist](../../../../../scripts/com.roomcut.engine.plist) | [원문](../../source/scripts/com.roomcut.engine.plist.txt) | 55 | 1612 | `6ceee6e0f9855434d5a03b819f44cf13196384d09fd0051cddf7f7ae07d5197d` |
 | [install-driver.sh](../../../../../scripts/install-driver.sh) | [원문](../../source/scripts/install-driver.sh.txt) | 49 | 1859 | `72d1db3a1c7ed56dce0b5f377135cc4fbae9bb9ea549111ab52489bfbb8cac38` |
 | [install-engine.sh](../../../../../scripts/install-engine.sh) | [원문](../../source/scripts/install-engine.sh.txt) | 373 | 13309 | `3e34b84289bc816aec22908de51e64a8b6ba4fdb5157130407b62ec35150ea6f` |
-| [package-release.sh](../../../../../scripts/package-release.sh) | [원문](../../source/scripts/package-release.sh.txt) | 155 | 6476 | `1e60f514b48589343764277b22646b569ddc3cb1d02158b7f23eb1b8f6ec627f` |
+| [package-release.sh](../../../../../scripts/package-release.sh) | [원문](../../source/scripts/package-release.sh.txt) | 167 | 7061 | `cab2bd021515256c2aad8eb85584b6a19e740ac7429377132f233917f47c2d1c` |
 | [reset-audio-output.sh](../../../../../scripts/reset-audio-output.sh) | [원문](../../source/scripts/reset-audio-output.sh.txt) | 10 | 468 | `9a67151f50d5ef563fdef95dcdc92fdf89920b6a7c9f1701d9c26207b7f5712b` |
 | [restart-coreaudiod.sh](../../../../../scripts/restart-coreaudiod.sh) | [원문](../../source/scripts/restart-coreaudiod.sh.txt) | 15 | 488 | `d624ec10f28bdce2e89a6ab1a658b7ee73be3cd19b17ba2afe074193ba28e85f` |
 | [uninstall-driver.sh](../../../../../scripts/uninstall-driver.sh) | [원문](../../source/scripts/uninstall-driver.sh.txt) | 27 | 761 | `81591983e9e15054df8c1b09d5c021b13942e78fe45436905b44205904ce6bd7` |

@@ -71,10 +71,7 @@ public final class RoomTuneRound {
             }
             stopped = true
             try Task.checkCancellation()
-            guard let saved else {
-                throw NSError(domain: "Roomcut.RoomTune", code: 1,
-                              userInfo: [NSLocalizedDescriptionKey: "녹음 분석 실패"])
-            }
+            guard let saved else { throw RoomTuneRoundError.recordingFailed }
             let analyze = self.analyze
             let response = try await work.perform { try analyze(saved) }
             try Task.checkCancellation()
