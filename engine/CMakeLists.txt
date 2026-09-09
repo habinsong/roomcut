@@ -32,7 +32,9 @@ set(ROOMCUT_ENGINE_SERVICES
   ${CMAKE_CURRENT_SOURCE_DIR}/src/EngineStateStore.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/AnalysisWorker.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/OutputDevice.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/DeviceSelection.cpp)
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/DeviceSelection.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/EngineDiagnostics.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/ServicePort.cpp)
 
 find_library(AudioUnit_FRAMEWORK AudioUnit REQUIRED)
 find_library(CoreAudio_FRAMEWORK CoreAudio REQUIRED)

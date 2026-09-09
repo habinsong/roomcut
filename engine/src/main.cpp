@@ -23,6 +23,9 @@
 #include "RealtimeParams.hpp"
 #include "OutputDevice.hpp"
 #include "OutputRecovery.hpp"
+#include "DriverFeedWatchdog.hpp"
+#include "EngineDiagnostics.hpp"
+#include "ServicePort.hpp"
 #include "RenderProgressWatchdog.hpp"
 #include "DeviceWatcher.hpp"
 #include "VolumeController.hpp"
@@ -294,90 +297,6 @@ bool restoreDefaultIfRoomcut(const std::string& savedRealUID) {
 // Acquire the receive right for ROOMCUT_MACH_SERVICE_NAME. Returns
 // MACH_PORT_NULL on failure. `outRegistered` is set true if we had to register
 // the name ourselves (dev path) vs. checking in with launchd (production path).
-mach_port_t acquireServicePort(bool* outRegistered) {
-    *outRegistered = false;
-
-    mach_port_t bp = MACH_PORT_NULL;
-    if (task_get_bootstrap_port(mach_task_self(), &bp) != KERN_SUCCESS ||
-        bp == MACH_PORT_NULL) {
-        std::fprintf(stderr, "[engine] no bootstrap port\n");
-        return MACH_PORT_NULL;
-    }
-
-    // Production path: launchd already owns the receive right; claim it.
-    mach_port_t service = MACH_PORT_NULL;
-    kern_return_t kr = bootstrap_check_in(bp, ROOMCUT_MACH_SERVICE_NAME, &service);
-    if (kr == KERN_SUCCESS && service != MACH_PORT_NULL) {
-        std::fprintf(stderr, "[engine] bootstrap_check_in OK (launchd-provided)\n");
-        return service;
-    }
-    std::fprintf(stderr, "[engine] bootstrap_check_in failed (%s); trying dev register\n",
-                 bootstrap_strerror(kr));
-
-    // Dev path: allocate a receive right + a send right and register the name so
-    // a driver-sim in the same session can bootstrap_look_up it. bootstrap_register
-    // is deprecated (launchd MachServices check-in is the production path) but
-    // still works in a login session for local testing, so suppress the warning
-    // for this one intentional dev-only call.
-    mach_port_t self = mach_task_self();
-    if (mach_port_allocate(self, MACH_PORT_RIGHT_RECEIVE, &service) != KERN_SUCCESS) {
-        return MACH_PORT_NULL;
-    }
-    if (mach_port_insert_right(self, service, service, MACH_MSG_TYPE_MAKE_SEND) != KERN_SUCCESS) {
-        mach_port_mod_refs(self, service, MACH_PORT_RIGHT_RECEIVE, -1);
-        return MACH_PORT_NULL;
-    }
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    kr = bootstrap_register(bp, const_cast<char*>(ROOMCUT_MACH_SERVICE_NAME), service);
-#pragma clang diagnostic pop
-    if (kr != KERN_SUCCESS) {
-        std::fprintf(stderr, "[engine] bootstrap_register failed (%s)\n",
-                     bootstrap_strerror(kr));
-        mach_port_mod_refs(self, service, MACH_PORT_RIGHT_RECEIVE, -1);
-        return MACH_PORT_NULL;
-    }
-    std::fprintf(stderr, "[engine] bootstrap_register OK (dev path)\n");
-    *outRegistered = true;
-    return service;
-}
-
-// Capture cap for the --dump diagnostic (covers the 30 s soak with margin).
-constexpr uint32_t kDumpMaxSeconds = 35;
-
-// Minimal RIFF/WAVE writer for --dump: 32-bit float PCM (wFormatTag=3),
-// interleaved. Little-endian host assumed (macOS).
-bool writeWavF32(const char* path, const float* samples, uint32_t frames,
-                 uint32_t channels, uint32_t sampleRate) {
-    FILE* f = std::fopen(path, "wb");
-    if (f == nullptr) return false;
-    const uint32_t dataBytes  = frames * channels * (uint32_t)sizeof(float);
-    const uint32_t riffBytes  = 36u + dataBytes;
-    const uint32_t byteRate   = sampleRate * channels * (uint32_t)sizeof(float);
-    const uint16_t blockAlign = (uint16_t)(channels * sizeof(float));
-    const uint32_t fmtSize    = 16u;
-    const uint16_t fmtFloat   = 3u;
-    const uint16_t bits       = 32u;
-    const uint16_t ch16       = (uint16_t)channels;
-    bool ok = std::fwrite("RIFF", 1, 4, f) == 4
-           && std::fwrite(&riffBytes, 4, 1, f) == 1
-           && std::fwrite("WAVE", 1, 4, f) == 4
-           && std::fwrite("fmt ", 1, 4, f) == 4
-           && std::fwrite(&fmtSize, 4, 1, f) == 1
-           && std::fwrite(&fmtFloat, 2, 1, f) == 1
-           && std::fwrite(&ch16, 2, 1, f) == 1
-           && std::fwrite(&sampleRate, 4, 1, f) == 1
-           && std::fwrite(&byteRate, 4, 1, f) == 1
-           && std::fwrite(&blockAlign, 2, 1, f) == 1
-           && std::fwrite(&bits, 2, 1, f) == 1
-           && std::fwrite("data", 1, 4, f) == 4
-           && std::fwrite(&dataBytes, 4, 1, f) == 1;
-    if (ok && dataBytes > 0) {
-        ok = std::fwrite(samples, 1, dataBytes, f) == dataBytes;
-    }
-    return std::fclose(f) == 0 && ok;
-}
-
 // Resolve the Roomcut Output device we own (re-resolved on device-world changes;
 // the id is cached for cheap per-tick volume reads).
 AudioDeviceID findRoomcutDevice() {
@@ -398,34 +317,15 @@ int main(int argc, char** argv) {
     // --eq <g0,g1,...,g9>: dev-only — band gains in dB (GraphicEQ::kCenters
     // order) so DSP curves are verifiable end-to-end before the app exists.
     // Absent flag = flat, identical to the default chain.
-    const char* dumpPath = nullptr;
-    ChainParams chainParams = ChainParams::flat();
-    bool eqGiven = false;
-    for (int i = 1; i < argc; ++i) {
-        if (std::strcmp(argv[i], "--dump") == 0 && i + 1 < argc) {
-            dumpPath = argv[++i];
-        } else if (std::strcmp(argv[i], "--eq") == 0 && i + 1 < argc) {
-            const char* s = argv[++i];
-            char* end = nullptr;
-            bool ok = true;
-            for (std::size_t b = 0; b < GraphicEQ::kNumBands && ok; ++b) {
-                chainParams.eqGainsDb[b] = std::strtod(s, &end);
-                ok = end != s
-                  && (b + 1 == GraphicEQ::kNumBands ? *end == '\0' : *end == ',');
-                s = end + 1;
-            }
-            if (!ok) {
-                std::fprintf(stderr, "bad --eq: need %zu comma-separated dB values\n",
-                             GraphicEQ::kNumBands);
-                return 2;
-            }
-            eqGiven = true;
-        } else {
-            std::fprintf(stderr, "usage: %s [--dump out.wav] [--eq g0,g1,...,g9]\n",
-                         argv[0]);
-            return 2;
-        }
+    EngineOptions options;
+    std::string optionError;
+    if (!parseEngineOptions(argc, argv, options, optionError)) {
+        std::fprintf(stderr, "%s\n", optionError.c_str());
+        return 2;
     }
+    const char* dumpPath = options.dumping() ? options.dumpPath.c_str() : nullptr;
+    ChainParams chainParams = options.params;
+    const bool eqGiven = options.eqGiven;
     if (eqGiven) {
         std::fprintf(stderr, "[engine] dev EQ curve (dB):");
         for (double g : chainParams.eqGainsDb) std::fprintf(stderr, " %.1f", g);
@@ -474,12 +374,12 @@ int main(int argc, char** argv) {
     std::signal(SIGTERM, handleSignal);
     std::signal(SIGUSR1, handleSigUsr1);
 
-    bool registered = false;
-    mach_port_t service = acquireServicePort(&registered);
-    if (service == MACH_PORT_NULL) {
+    ServicePort servicePort;
+    if (!servicePort.acquire(ROOMCUT_MACH_SERVICE_NAME)) {
         std::fprintf(stderr, "[engine] could not acquire service port; exiting\n");
         return 1;
     }
+    const mach_port_t service = servicePort.port();
     ctx.lifecycle.store(engineNext(ROOMCUT_ENGINE_STARTING, EngineEvent::ServicePublished),
                         std::memory_order_relaxed);
     std::fprintf(stderr, "[engine] service '%s' up; waiting for driver HELLO\n",
@@ -574,10 +474,7 @@ int main(int argc, char** argv) {
     // exactly the healthy production state.
     int  lastBypassToggles = 0;
     bool safeBypassLogged  = false;
-    uint64_t lastWriteIndex   = 0;
-    auto     lastWriteAdvance = std::chrono::steady_clock::now();
-    auto     lastDriverBeat   = std::chrono::steady_clock::now(); // last HELLO/HEALTH_CHECK
-    bool     driverStalled    = false;
+    DriverFeedWatchdog driverFeed(std::chrono::steady_clock::now());
     AudioDeviceID roomcutDev  = findRoomcutDevice(); // for system-volume mirroring
     ctx.volume.setSource(roomcutDev);
     bool restoreArmed = false;
@@ -629,7 +526,7 @@ int main(int argc, char** argv) {
         ctx.volume.setTarget(output.deviceID());
         // While the driver feed is stalled the output alone doesn't make us
         // streaming; the watchdog's DriverReturned promotes when it resumes.
-        if (!driverStalled) {
+        if (!driverFeed.stalled()) {
             ctx.lifecycle.store(engineNext(ctx.lifecycle.load(), EngineEvent::OutputReopened),
                                 std::memory_order_relaxed);
         }
@@ -694,13 +591,9 @@ int main(int argc, char** argv) {
         // lost only when the feed is frozen AND the heartbeat went quiet;
         // announce the return when the feed advances again.
         if (RoomcutRingHeader* h = ctx.ring.current()) {
-            uint64_t w = __atomic_load_n(&h->writeIndex, __ATOMIC_ACQUIRE);
-            auto now = std::chrono::steady_clock::now();
-            if (w != lastWriteIndex) {
-                lastWriteIndex = w;
-                lastWriteAdvance = now;
-                if (driverStalled) {
-                    driverStalled = false;
+            const uint64_t w = __atomic_load_n(&h->writeIndex, __ATOMIC_ACQUIRE);
+            switch (driverFeed.observe(w, std::chrono::steady_clock::now())) {
+                case DriverFeedWatchdog::Event::Returned:
                     if (output.running()) {
                         ctx.lifecycle.store(engineNext(ctx.lifecycle.load(), EngineEvent::DriverReturned),
                                             std::memory_order_relaxed);
@@ -712,16 +605,15 @@ int main(int argc, char** argv) {
                         std::fprintf(stderr,
                             "[engine] driver feed resumed; waiting for output reopen\n");
                     }
-                }
-            } else if (!driverStalled &&
-                       now - lastWriteAdvance > std::chrono::seconds(2) &&
-                       now - lastDriverBeat > std::chrono::milliseconds(3500)) {
-                // 3500 ms ≈ three missed beats of the driver's ~1 s cadence.
-                driverStalled = true;
-                ctx.lifecycle.store(engineNext(ctx.lifecycle.load(), EngineEvent::DriverLost),
-                                    std::memory_order_relaxed);
-                std::fprintf(stderr, "[engine] driver feed stalled and heartbeat lost; "
-                                     "rendering silence (wire: RECOVER)\n");
+                    break;
+                case DriverFeedWatchdog::Event::Lost:
+                    ctx.lifecycle.store(engineNext(ctx.lifecycle.load(), EngineEvent::DriverLost),
+                                        std::memory_order_relaxed);
+                    std::fprintf(stderr, "[engine] driver feed stalled and heartbeat lost; "
+                                         "rendering silence (wire: RECOVER)\n");
+                    break;
+                case DriverFeedWatchdog::Event::None:
+                    break;
             }
         }
 
@@ -776,7 +668,7 @@ int main(int argc, char** argv) {
 
                 ctx.lifecycle.store(engineNext(ctx.lifecycle.load(), EngineEvent::HelloReceived),
                                     std::memory_order_relaxed);
-                lastDriverBeat = std::chrono::steady_clock::now();
+                driverFeed.heartbeat(std::chrono::steady_clock::now());
                 restoreArmed = false; // driver is alive — Roomcut-as-default is healthy
 
                 const uint32_t sr = granted.sampleRate;
@@ -935,7 +827,7 @@ int main(int argc, char** argv) {
                     mach_msg_destroy(&rx.health.request.header);
                     break;
                 }
-                lastDriverBeat = std::chrono::steady_clock::now();
+                driverFeed.heartbeat(std::chrono::steady_clock::now());
                 const auto coarse = presentedEngineState(ctx.lifecycle.load(),
                     ctx.bypassRequested.load(std::memory_order_relaxed), ctx.safeBypass.load(std::memory_order_relaxed));
                 // Carry the real output device's rates so the driver can correct
@@ -1117,10 +1009,6 @@ int main(int argc, char** argv) {
     // soon-to-be-silent Roomcut device.
     restoreDefaultIfRoomcut(savedRealUID);
 
-    mach_port_t self = mach_task_self();
-    if (registered) {
-        // Dev path: we created the receive right.
-        mach_port_mod_refs(self, service, MACH_PORT_RIGHT_RECEIVE, -1);
-    }
+    servicePort.release();
     return 0;
 }

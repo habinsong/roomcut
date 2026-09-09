@@ -323,6 +323,28 @@ target_link_libraries(test_device_services PRIVATE Threads::Threads)
 add_test(NAME device_services COMMAND test_device_services)
 set_tests_properties(device_services PROPERTIES TIMEOUT 30)
 
+add_executable(test_service_port
+  ${CMAKE_SOURCE_DIR}/engine/tests/test_service_port.cpp
+  ${CMAKE_SOURCE_DIR}/engine/src/ServicePort.cpp)
+target_include_directories(test_service_port PRIVATE ${CMAKE_SOURCE_DIR}/engine/include)
+target_compile_options(test_service_port PRIVATE -Wall -Wextra)
+add_test(NAME service_port COMMAND test_service_port)
+set_tests_properties(service_port PROPERTIES TIMEOUT 30)
+
+add_executable(test_engine_diagnostics
+  ${CMAKE_SOURCE_DIR}/engine/tests/test_engine_diagnostics.cpp
+  ${CMAKE_SOURCE_DIR}/engine/src/EngineDiagnostics.cpp)
+target_include_directories(test_engine_diagnostics PRIVATE
+  ${CMAKE_SOURCE_DIR}/engine/include ${CMAKE_SOURCE_DIR}/core)
+target_link_libraries(test_engine_diagnostics PRIVATE RoomcutCore)
+target_compile_options(test_engine_diagnostics PRIVATE -Wall -Wextra)
+add_test(NAME engine_diagnostics COMMAND test_engine_diagnostics)
+
+add_executable(test_driver_feed ${CMAKE_SOURCE_DIR}/engine/tests/test_driver_feed.cpp)
+target_include_directories(test_driver_feed PRIVATE ${CMAKE_SOURCE_DIR}/engine/include)
+target_compile_options(test_driver_feed PRIVATE -Wall -Wextra)
+add_test(NAME driver_feed COMMAND test_driver_feed)
+
 add_executable(test_output_recovery ${CMAKE_SOURCE_DIR}/engine/tests/test_output_recovery.cpp)
 target_include_directories(test_output_recovery PRIVATE ${CMAKE_SOURCE_DIR}/engine/include)
 target_compile_options(test_output_recovery PRIVATE -Wall -Wextra)

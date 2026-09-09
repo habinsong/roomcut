@@ -875,10 +875,10 @@
     },
     {
       "path": "core/tests/CMakeLists.txt",
-      "bytes": 17636,
-      "sha256": "18347ba07f8e6490ac55e125cf89830006345cc38c5f1ddb3dbf49518b25f9e6",
+      "bytes": 18816,
+      "sha256": "0144dfa14f625731823d403f8e332823f88b60cafb2e2986de29256295136ddd",
       "kind": "text",
-      "lines": 344,
+      "lines": 366,
       "archive": "docs/development/generated/source/core/tests/CMakeLists.txt.txt"
     },
     {
@@ -1027,42 +1027,42 @@
     },
     {
       "path": "docs/development/README.md",
-      "bytes": 7054,
-      "sha256": "9d3fa0b3d41506b044be6cdb250c6703654592eb970ce91fa5cb58753ff35ea2",
+      "bytes": 7219,
+      "sha256": "270cd2a274968fb4067e89ab1cb452040aa1c048bb1e116222e4d4735ba4fe18",
       "kind": "text",
-      "lines": 74,
+      "lines": 75,
       "archive": "docs/development/generated/source/docs/development/README.md.txt"
     },
     {
       "path": "docs/development/architecture/current.md",
-      "bytes": 10390,
-      "sha256": "b2fd56ba4d453170ff8fb6fea168d201e85ad34e64df4c6d11fda182e82169ea",
+      "bytes": 10419,
+      "sha256": "22e2b3471ddddc48cdc72837111a27727b3da9639ae0b3e7da53d0d6eac6d8b5",
       "kind": "text",
       "lines": 76,
       "archive": "docs/development/generated/source/docs/development/architecture/current.md.txt"
     },
     {
       "path": "docs/development/continuation.md",
-      "bytes": 6452,
-      "sha256": "9b16ef0447bd4cd267a1a238c323e125bb7f01fec117fd6efd68b5c7155d9130",
+      "bytes": 6454,
+      "sha256": "acebb03233d2f5fe50d78712d317887261002e4757ca978d095351375e735e6c",
       "kind": "text",
       "lines": 50,
       "archive": "docs/development/generated/source/docs/development/continuation.md.txt"
     },
     {
       "path": "docs/development/issues/current.md",
-      "bytes": 8877,
-      "sha256": "f255ea0bd5f40115fb7c301d8bc55be9040bebbd251a8ad0f0a13368d3cbb8e3",
+      "bytes": 8960,
+      "sha256": "40b1bb0d664a8a816e0dc832950e307d5927b837ed2d5a5335775762874ab8c6",
       "kind": "text",
       "lines": 35,
       "archive": "docs/development/generated/source/docs/development/issues/current.md.txt"
     },
     {
       "path": "docs/development/plan/roadmap.md",
-      "bytes": 9950,
-      "sha256": "0ccc5d4a40a1fba3ea82937e336d4ed9278294e6da355e79c879ff8e9d2228c6",
+      "bytes": 10079,
+      "sha256": "8ff95e38bb9975b4df57f7c2a68531fdcdbe2fae74f2803fde27ccc995c14de5",
       "kind": "text",
-      "lines": 102,
+      "lines": 103,
       "archive": "docs/development/generated/source/docs/development/plan/roadmap.md.txt"
     },
     {
@@ -1208,6 +1208,14 @@
       "kind": "text",
       "lines": 42,
       "archive": "docs/development/generated/source/docs/development/verification/2026-09-09-roomtune-round.md.txt"
+    },
+    {
+      "path": "docs/development/verification/2026-09-10-engine-boundaries.md",
+      "bytes": 2886,
+      "sha256": "b34dbb30210d021fc397d4d2bf8f5e21238b8ae7045083cf6ab1dd172967542c",
+      "kind": "text",
+      "lines": 41,
+      "archive": "docs/development/generated/source/docs/development/verification/2026-09-10-engine-boundaries.md.txt"
     },
     {
       "path": "docs/development/verification/raw/2026-09-08/app-build.txt",
@@ -2419,10 +2427,10 @@
     },
     {
       "path": "engine/CMakeLists.txt",
-      "bytes": 4302,
-      "sha256": "0dceb5d01204e66d79cf6174bec8d635ded8aaea9bfd531e7e6742218e7c719c",
+      "bytes": 4408,
+      "sha256": "b008193d0082167fb75cf9420d9009e407a2b9ca7ab9bf27b032b43ca450e43a",
       "kind": "text",
-      "lines": 90,
+      "lines": 92,
       "archive": "docs/development/generated/source/engine/CMakeLists.txt.txt"
     },
     {
@@ -2544,6 +2552,22 @@
       "kind": "text",
       "lines": 20,
       "archive": "docs/development/generated/source/engine/include/DeviceWatcher.hpp.txt"
+    },
+    {
+      "path": "engine/include/DriverFeedWatchdog.hpp",
+      "bytes": 1781,
+      "sha256": "36c0e48587bebc9f48b3d643845be27fbb88903e6c9760da329956139cd54e3a",
+      "kind": "text",
+      "lines": 51,
+      "archive": "docs/development/generated/source/engine/include/DriverFeedWatchdog.hpp.txt"
+    },
+    {
+      "path": "engine/include/EngineDiagnostics.hpp",
+      "bytes": 1307,
+      "sha256": "c44c82be6bffd91f5f898ceaabe74197ef24f69e64f6c570d41e2a79f2599699",
+      "kind": "text",
+      "lines": 34,
+      "archive": "docs/development/generated/source/engine/include/EngineDiagnostics.hpp.txt"
     },
     {
       "path": "engine/include/EngineReplies.hpp",
@@ -2690,6 +2714,14 @@
       "archive": "docs/development/generated/source/engine/include/RingRegion.hpp.txt"
     },
     {
+      "path": "engine/include/ServicePort.hpp",
+      "bytes": 1180,
+      "sha256": "b48ee0be1ae0f6f878b84dc68ab9faf81ce690ac4cc43ec5e0a4c8df7f8c6388",
+      "kind": "text",
+      "lines": 35,
+      "archive": "docs/development/generated/source/engine/include/ServicePort.hpp.txt"
+    },
+    {
       "path": "engine/include/SincResampler.hpp",
       "bytes": 8892,
       "sha256": "5d08a7b815eb28509c0c928e4c05fbce9f7a075de8e4c3e2a5fa95ee395f578c",
@@ -2762,6 +2794,14 @@
       "archive": "docs/development/generated/source/engine/src/DeviceWatcher.cpp.txt"
     },
     {
+      "path": "engine/src/EngineDiagnostics.cpp",
+      "bytes": 2949,
+      "sha256": "10c274b6d1f1f026348f6ef944c94b332febff373eb175d60e698a06b6f05a24",
+      "kind": "text",
+      "lines": 74,
+      "archive": "docs/development/generated/source/engine/src/EngineDiagnostics.cpp.txt"
+    },
+    {
       "path": "engine/src/EngineReplies.cpp",
       "bytes": 4321,
       "sha256": "857858567be3f567a5992dabde12cf39d55bc41d85c8ecd80635241b13f6a6a8",
@@ -2826,6 +2866,14 @@
       "archive": "docs/development/generated/source/engine/src/RingRegion.cpp.txt"
     },
     {
+      "path": "engine/src/ServicePort.cpp",
+      "bytes": 2505,
+      "sha256": "389ccafb41618997a52c442f8cb83adf18220956576cb5b7a55337391a9e3286",
+      "kind": "text",
+      "lines": 66,
+      "archive": "docs/development/generated/source/engine/src/ServicePort.cpp.txt"
+    },
+    {
       "path": "engine/src/SoundCommands.cpp",
       "bytes": 958,
       "sha256": "582c8a57162854e107f19cd805ae605ee1f058d8132113e9fd77fd31d707138e",
@@ -2843,10 +2891,10 @@
     },
     {
       "path": "engine/src/main.cpp",
-      "bytes": 55363,
-      "sha256": "96787ad81bcd592489c7b46b6d61b259414e5094717be2ff8063cc82d1fe68c7",
+      "bytes": 50320,
+      "sha256": "094a825b10d3426c79fc5a3214ea7824cd733f4118b7bfa71470b3198418b244",
       "kind": "text",
-      "lines": 1126,
+      "lines": 1014,
       "archive": "docs/development/generated/source/engine/src/main.cpp.txt"
     },
     {
@@ -2946,6 +2994,14 @@
       "archive": "docs/development/generated/source/engine/tests/test_device_volume.cpp.txt"
     },
     {
+      "path": "engine/tests/test_driver_feed.cpp",
+      "bytes": 4359,
+      "sha256": "8c174f8e4cd6e4ce85c0e25f0ebdb34bfbd327afb433d46eb1e494432a5f0613",
+      "kind": "text",
+      "lines": 94,
+      "archive": "docs/development/generated/source/engine/tests/test_driver_feed.cpp.txt"
+    },
+    {
       "path": "engine/tests/test_engine_commands.cpp",
       "bytes": 14923,
       "sha256": "df0c077a4f76dfbd33f0065f879cde4519f195aa2c92ebad98c076179db90267",
@@ -2960,6 +3016,14 @@
       "kind": "text",
       "lines": 247,
       "archive": "docs/development/generated/source/engine/tests/test_engine_connection.cpp.txt"
+    },
+    {
+      "path": "engine/tests/test_engine_diagnostics.cpp",
+      "bytes": 5017,
+      "sha256": "8ed7c29321493ff5d698919e0f8dc0038b81cbf35c651add09744f54b17ea319",
+      "kind": "text",
+      "lines": 111,
+      "archive": "docs/development/generated/source/engine/tests/test_engine_diagnostics.cpp.txt"
     },
     {
       "path": "engine/tests/test_engine_state.cpp",
@@ -3072,6 +3136,14 @@
       "kind": "text",
       "lines": 91,
       "archive": "docs/development/generated/source/engine/tests/test_ring_region.cpp.txt"
+    },
+    {
+      "path": "engine/tests/test_service_port.cpp",
+      "bytes": 4285,
+      "sha256": "f3131e77e6c821a0cb709f67e2271eeadca09611403881d78df56f8f204581a1",
+      "kind": "text",
+      "lines": 99,
+      "archive": "docs/development/generated/source/engine/tests/test_service_port.cpp.txt"
     },
     {
       "path": "engine/tests/test_volume_ramp.cpp",
