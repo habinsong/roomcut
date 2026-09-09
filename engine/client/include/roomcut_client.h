@@ -38,6 +38,7 @@ enum {
 #define ROOMCUT_CLIENT_CAP_VOLUME_BOOST   0x00000008u
 #define ROOMCUT_CLIENT_CAP_DYNAMICS       0x00000010u
 #define ROOMCUT_CLIENT_CAP_LEVEL_MATCH    0x00000020u
+#define ROOMCUT_CLIENT_CAP_DYNAMIC_EQ     0x00000040u
 #define ROOMCUT_CLIENT_ANALYSIS_SPECTRUM_BINS 24
 
 /* One parametric-EQ band (mirrors RoomcutParamBand on the wire). `type` indexes
@@ -49,6 +50,17 @@ typedef struct {
     double   gainDb;
     double   q;
 } RoomcutClientParamBand;
+
+/* Optional dynamic behaviour for the band at the same index (mirrors
+ * RoomcutParamDynamics). enabled = 0 is the static band. */
+typedef struct {
+    uint32_t enabled;      /* 0/1 */
+    uint32_t _pad0;
+    double   thresholdDb;  /* band RMS where reduction starts */
+    double   rangeDb;      /* most it may take off */
+    double   attackMs;
+    double   releaseMs;
+} RoomcutClientParamDynamics;
 
 typedef struct {
     uint32_t state;                  /* ROOMCUT_CLIENT_STATE_* */
@@ -79,6 +91,7 @@ typedef struct {
     double highpassHz;    /* dynamics: 0 = off */
     double compAmount;    /* dynamics: 0..100 leveling amount, 0 = off */
     RoomcutClientParamBand parametric[ROOMCUT_CLIENT_PARAM_BANDS];
+    RoomcutClientParamDynamics dynamics[ROOMCUT_CLIENT_PARAM_BANDS];
 } RoomcutClientParams;
 
 typedef struct {
@@ -235,7 +248,8 @@ int roomcutClientSetParams(double preampDb,
                            double centerFocus, double crossfeed,
                            double roomReduce, double spatialMode,
                            double highpassHz, double compAmount,
-                           const RoomcutClientParamBand parametric[ROOMCUT_CLIENT_PARAM_BANDS]);
+                           const RoomcutClientParamBand parametric[ROOMCUT_CLIENT_PARAM_BANDS],
+                           const RoomcutClientParamDynamics dynamics[ROOMCUT_CLIENT_PARAM_BANDS]);
 
 /* Builtin preset enumeration (no engine connection needed). */
 int roomcutClientPresetCount(void);

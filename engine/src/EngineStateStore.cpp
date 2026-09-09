@@ -31,6 +31,7 @@ PersistentState EngineStateStore::load() const {
         else if (key == "preset") state.presetId = value;
         else if (key == "params") state.paramsLine = value;
         else if (key == "parametric") state.parametricLine = value;
+        else if (key == "dynamics") state.dynamicsLine = value;
         else if (key == "keepDefault") state.keepRoomcutDefault = value == "1";
         else if (key == "volumeBoost") state.volumeBoost = clampVolumeBoost(std::strtod(value.c_str(), nullptr));
     }
@@ -44,7 +45,7 @@ bool EngineStateStore::save(const PersistentState& state) const {
         return false;
     };
     for (const auto* text : {&state.realOutputUID, &state.preferredOutputUID, &state.presetId,
-                             &state.paramsLine, &state.parametricLine}) {
+                             &state.paramsLine, &state.parametricLine, &state.dynamicsLine}) {
         if (text->find_first_of("\r\n") != std::string::npos || text->find('\0') != std::string::npos) return failed();
     }
     const auto path = std::filesystem::path(path_);
@@ -73,6 +74,7 @@ bool EngineStateStore::save(const PersistentState& state) const {
     put("preset", state.presetId);
     if (!state.presetId.empty()) put("params", state.paramsLine);
     put("parametric", state.parametricLine);
+    put("dynamics", state.dynamicsLine);
     if (std::fclose(output) != 0) ok = false;
     if (ok && std::rename(temporary.data(), path_.c_str()) == 0) return true;
     ::unlink(temporary.data());

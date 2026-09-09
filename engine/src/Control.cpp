@@ -168,6 +168,7 @@ kern_return_t controlSetParams(mach_port_t servicePort,
                                double roomReduce, double spatialMode,
                                double highpassHz, double compAmount,
                                const RoomcutParamBand* parametric,
+                               const RoomcutParamDynamics* dynamics,
                                uint32_t timeoutMs, uint32_t* outStatus) {
     if (eqGainsDb == nullptr) {
         return KERN_INVALID_ARGUMENT;
@@ -190,6 +191,9 @@ kern_return_t controlSetParams(mach_port_t servicePort,
     req.compAmount       = compAmount;
     if (parametric != nullptr) {
         for (int b = 0; b < ROOMCUT_PARAM_BANDS; ++b) req.parametric[b] = parametric[b];
+    }
+    if (dynamics != nullptr) {
+        for (int b = 0; b < ROOMCUT_PARAM_BANDS; ++b) req.dynamics[b] = dynamics[b];
     }
 
     RoomcutControlMsgBuffer buf;

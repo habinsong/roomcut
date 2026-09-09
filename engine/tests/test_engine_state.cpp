@@ -31,10 +31,30 @@ static void testParameterCodec() {
     params.parametric[1].gainDb = -2.5;
     params.parametric[1].q = 0.75;
     params.parametric[3].freqHz = 400; // disabled edits must also survive restart
+    params.parametric[1].dynamic = true;
+    params.parametric[1].thresholdDb = -18.25;
+    params.parametric[1].rangeDb = 7.5;
+    params.parametric[1].attackMs = 12.5;
+    params.parametric[1].releaseMs = 240.0;
     ChainParams restored;
     CHECK(parseParamsLine(serializeParamsLine(params), &restored), "scalar state decodes");
     CHECK(parseParametricLine(serializeParametricLine(params), &restored), "parametric state decodes");
+    CHECK(parseDynamicsLine(serializeDynamicsLine(params), &restored), "dynamic state decodes");
     CHECK(restored == params, "all current controls round-trip through the legacy file format");
+
+    // A state file written before the dynamic side existed has no such line, and
+    // has to come back as the static bands it described.
+    auto staticOnly = params;
+    for (auto& band : staticOnly.parametric) {
+        band.dynamic = false;
+        band.thresholdDb = -24.0; band.rangeDb = 0.0; band.attackMs = 20.0; band.releaseMs = 200.0;
+    }
+    ChainParams older;
+    CHECK(parseParamsLine(serializeParamsLine(staticOnly), &older), "older scalar state decodes");
+    CHECK(parseParametricLine(serializeParametricLine(staticOnly), &older), "older parametric state decodes");
+    CHECK(serializeDynamicsLine(staticOnly).empty(), "a bank with no dynamic band writes no line");
+    CHECK(parseDynamicsLine("", &older), "a missing dynamics line is not an error");
+    CHECK(older == staticOnly, "and leaves every band static");
 
     auto precise = params;
     precise.preampDb = -3.123456789012;
@@ -74,11 +94,19 @@ static void testStore(const std::filesystem::path& directory) {
     state.keepRoomcutDefault = true;
     state.volumeBoost = 1.5;
     state.paramsLine = serializeParamsLine(ChainParams::flat());
+    auto dynamic = ChainParams::flat();
+    dynamic.parametric[0] = {true, 0, 900.0, -3.0, 1.2, true, -20.0, 6.0, 25.0, 150.0};
+    state.parametricLine = serializeParametricLine(dynamic);
+    state.dynamicsLine = serializeDynamicsLine(dynamic);
     CHECK(store.save(state), "complete state is saved");
     auto restored = store.load();
     CHECK(restored.realOutputUID == state.realOutputUID && restored.preferredOutputUID == state.preferredOutputUID
           && restored.presetId == state.presetId && restored.paramsLine == state.paramsLine
           && restored.volumeBoost == 1.5 && restored.keepRoomcutDefault, "stored device and DSP state round-trip");
+    ChainParams reloaded;
+    CHECK(parseParametricLine(restored.parametricLine, &reloaded)
+          && parseDynamicsLine(restored.dynamicsLine, &reloaded), "the saved file reloads its bands");
+    CHECK(reloaded.parametric[0] == dynamic.parametric[0], "a dynamic band survives the file");
 
     auto invalid = state;
     invalid.realOutputUID = "device\npreset=injected";

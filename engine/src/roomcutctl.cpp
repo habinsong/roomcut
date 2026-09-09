@@ -327,16 +327,18 @@ int main(int argc, char** argv) {
                                             releaseMs, outDb,
                                             width, center, crossfeed, room, mode,
                                             hpf, comp,
-                                            nullptr, kTimeoutMs, &status);
+                                            nullptr, nullptr, kTimeoutMs, &status);
         if (kr != KERN_SUCCESS || status != 0) {
             std::fprintf(stderr, "roomcutctl: params failed (%d)\n", kr);
         } else {
             std::printf("params -> custom\n");
             rc = 0;
         }
-    } else if (std::strcmp(cmd, "peq") == 0 && argc == 6) {
-        // peq <type> <freqHz> <gainDb> <q>: set parametric band 0 (others off),
-        // everything else flat — to verify the parametric stage end-to-end.
+    } else if (std::strcmp(cmd, "peq") == 0 && (argc == 6 || argc == 10)) {
+        // peq <type> <freqHz> <gainDb> <q> [thresholdDb rangeDb attackMs releaseMs]
+        // Sets parametric band 0 (others off), everything else flat — to verify the
+        // parametric stage end-to-end. With the four extra values the band's dynamic
+        // side is switched on as well.
         // type: 0 Bell 1 LowShelf 2 HighShelf 3 HighPass 4 LowPass 5 Notch.
         RoomcutParamBand bands[ROOMCUT_PARAM_BANDS];
         std::memset(bands, 0, sizeof(bands));
@@ -345,13 +347,22 @@ int main(int argc, char** argv) {
         bands[0].freqHz  = std::strtod(argv[3], nullptr);
         bands[0].gainDb  = std::strtod(argv[4], nullptr);
         bands[0].q       = std::strtod(argv[5], nullptr);
+        RoomcutParamDynamics dynamics[ROOMCUT_PARAM_BANDS];
+        std::memset(dynamics, 0, sizeof(dynamics));
+        if (argc == 10) {
+            dynamics[0].enabled     = 1;
+            dynamics[0].thresholdDb = std::strtod(argv[6], nullptr);
+            dynamics[0].rangeDb     = std::strtod(argv[7], nullptr);
+            dynamics[0].attackMs    = std::strtod(argv[8], nullptr);
+            dynamics[0].releaseMs   = std::strtod(argv[9], nullptr);
+        }
         double flatGains[10] = {0,0,0,0,0,0,0,0,0,0};
         uint32_t status = 1;
         kern_return_t kr = controlSetParams(service, 0.0, flatGains,
                                             100.0, 0.0,
                                             0.0, 0.0, 0.0, 0.0, 0.0,
                                             0.0, 0.0,
-                                            bands, kTimeoutMs, &status);
+                                            bands, dynamics, kTimeoutMs, &status);
         if (kr != KERN_SUCCESS || status != 0) {
             std::fprintf(stderr, "roomcutctl: peq failed (%d)\n", kr);
         } else {

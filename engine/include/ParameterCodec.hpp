@@ -22,7 +22,10 @@ template<class Wire> ChainParams decodeParameters(const Wire& value) {
     result.compAmount = value.compAmount;
     for (std::size_t b = 0; b < result.parametric.size(); ++b) {
         const auto& band = value.parametric[b];
-        result.parametric[b] = {band.enabled != 0, static_cast<int>(band.type), band.freqHz, band.gainDb, band.q};
+        const auto& dyn = value.dynamics[b];
+        result.parametric[b] = {band.enabled != 0, static_cast<int>(band.type), band.freqHz,
+                                band.gainDb, band.q, dyn.enabled != 0, dyn.thresholdDb,
+                                dyn.rangeDb, dyn.attackMs, dyn.releaseMs};
     }
     return result;
 }
@@ -46,6 +49,12 @@ template<class Wire> void encodeParameters(const ChainParams& value, Wire& resul
         result.parametric[b].freqHz = band.freqHz;
         result.parametric[b].gainDb = band.gainDb;
         result.parametric[b].q = band.q;
+        result.dynamics[b].enabled = band.dynamic ? 1 : 0;
+        result.dynamics[b]._pad0 = 0;
+        result.dynamics[b].thresholdDb = band.thresholdDb;
+        result.dynamics[b].rangeDb = band.rangeDb;
+        result.dynamics[b].attackMs = band.attackMs;
+        result.dynamics[b].releaseMs = band.releaseMs;
     }
 }
 } // namespace roomcut

@@ -126,6 +126,12 @@ void* serverThread(void* arg) {
                 CHECK(buf.setParams.parametric[1].type == 0, "server received parametric type");
                 CHECK(std::fabs(buf.setParams.parametric[1].freqHz - 1200.0) < 0.001, "server received parametric freq");
                 CHECK(std::fabs(buf.setParams.parametric[1].gainDb - 5.0) < 0.001, "server received parametric gain");
+                CHECK(buf.setParams.dynamics[0].enabled == 0, "a static band carries no dynamics");
+                CHECK(buf.setParams.dynamics[1].enabled == 1, "server received the dynamic flag");
+                CHECK(std::fabs(buf.setParams.dynamics[1].thresholdDb - -21.5) < 0.001, "server received the threshold");
+                CHECK(std::fabs(buf.setParams.dynamics[1].rangeDb - 7.5) < 0.001, "server received the range");
+                CHECK(std::fabs(buf.setParams.dynamics[1].attackMs - 15.0) < 0.001, "server received the attack");
+                CHECK(std::fabs(buf.setParams.dynamics[1].releaseMs - 180.0) < 0.001, "server received the release");
                 kr = roomcut::controlReplyAck(buf.setParams.header, ROOMCUT_MSG_SET_PARAMS, 0);
                 CHECK(kr == KERN_SUCCESS, "server replied set params");
                 break;
@@ -274,9 +280,16 @@ int main() {
     sendBands[1].freqHz = 1200.0;
     sendBands[1].gainDb = 5.0;
     sendBands[1].q = 1.4;
+    RoomcutParamDynamics sendDynamics[ROOMCUT_PARAM_BANDS];
+    std::memset(sendDynamics, 0, sizeof(sendDynamics));
+    sendDynamics[1].enabled = 1;
+    sendDynamics[1].thresholdDb = -21.5;
+    sendDynamics[1].rangeDb = 7.5;
+    sendDynamics[1].attackMs = 15.0;
+    sendDynamics[1].releaseMs = 180.0;
     kr = roomcut::controlSetParams(service, -6.0, gains, 75.0, 1.0,
                                    -25.0, 30.0, 10.0, 45.0, 1.0 /* mode */,
-                                   90.0, 60.0 /* dynamics */, sendBands, 2000, &status);
+                                   90.0, 60.0 /* dynamics */, sendBands, sendDynamics, 2000, &status);
     CHECK(kr == KERN_SUCCESS, "client set params");
     CHECK(status == 0, "set params status");
 

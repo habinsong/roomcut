@@ -348,6 +348,9 @@ int main(int argc, char** argv) {
             if (resumed && !pstate.parametricLine.empty()) {
                 resumed = parseParametricLine(pstate.parametricLine, &restored);
             }
+            if (resumed && !pstate.dynamicsLine.empty()) {
+                resumed = parseDynamicsLine(pstate.dynamicsLine, &restored);
+            }
             if (resumed) chainParams = restored;
         } else {
             for (const auto& bp : builtinPresets()) {

@@ -45,7 +45,8 @@ inline bool normalizeControlRequest(RoomcutControlMsgBuffer& buffer) {
     case ROOMCUT_MSG_SET_PARAMS:
         valid = sizeMatches(size, sizeof(RoomcutSetParamsRequest), {
             offsetof(RoomcutSetParamsRequest, spatialWidth), offsetof(RoomcutSetParamsRequest, spatialMode),
-            offsetof(RoomcutSetParamsRequest, parametric), offsetof(RoomcutSetParamsRequest, highpassHz)});
+            offsetof(RoomcutSetParamsRequest, parametric), offsetof(RoomcutSetParamsRequest, highpassHz),
+            offsetof(RoomcutSetParamsRequest, dynamics)});
         break;
     case ROOMCUT_MSG_STATE: case ROOMCUT_MSG_GET_PARAMS: case ROOMCUT_MSG_GET_ANALYSIS:
         valid = sizeMatches(size, sizeof(RoomcutStateRequest), {sizeof(mach_msg_header_t) + sizeof(uint32_t)});
@@ -82,7 +83,8 @@ inline bool normalizeControlReply(RoomcutControlMsgBuffer& buffer, uint32_t expe
     case ROOMCUT_MSG_GET_PARAMS:
         valid = sizeMatches(size, sizeof(RoomcutGetParamsReply), {
             offsetof(RoomcutGetParamsReply, spatialWidth), offsetof(RoomcutGetParamsReply, spatialMode),
-            offsetof(RoomcutGetParamsReply, parametric), offsetof(RoomcutGetParamsReply, highpassHz)});
+            offsetof(RoomcutGetParamsReply, parametric), offsetof(RoomcutGetParamsReply, highpassHz),
+            offsetof(RoomcutGetParamsReply, dynamics)});
         break;
     case ROOMCUT_MSG_GET_ANALYSIS: valid = sizeMatches(size, sizeof(RoomcutAnalysisReply)); break;
     case ROOMCUT_MSG_GET_COMPARISON:

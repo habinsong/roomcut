@@ -27,7 +27,7 @@ static void requestBoundaries() {
     auto changed = valid;
     changed.raw.header.msgh_size -= 8;
     CHECK(!roomcut::normalizeControlRequest(changed), "a partial reference cannot be accepted");
-    changed = valid; changed.comparisonRequest.version = 2;
+    changed = valid; changed.comparisonRequest.version = ROOMCUT_COMPARISON_VERSION + 1;
     CHECK(!roomcut::normalizeControlRequest(changed), "unknown comparison versions are rejected");
     changed = valid; changed.comparisonRequest.enabled = 2;
     CHECK(!roomcut::normalizeControlRequest(changed), "comparison flags are validated");
