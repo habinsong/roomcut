@@ -54,6 +54,14 @@ if [[ "${missing}" -eq 1 ]]; then
   exit 1
 fi
 
+# Settings ▸ "Reinstall Driver" installs from the app's own copy, so a release
+# whose app predates the driver build would ship a dead button.
+if [[ ! -d "${APP_SRC}/Contents/PlugIns/Roomcut.driver" ]]; then
+  echo "error: ${APP_SRC} carries no bundled driver (Contents/PlugIns/Roomcut.driver)" >&2
+  echo "  rebuild the app after the driver: bash scripts/build-app.sh release" >&2
+  exit 1
+fi
+
 # A bundle whose signature no longer seals its own Info.plist installs fine and is
 # then refused by coreaudiod, so no Roomcut output device appears. Catch it here
 # instead of in a release someone has already downloaded.
@@ -113,8 +121,9 @@ cp "${REPO_ROOT}/THIRD_PARTY_NOTICES.md" "${PAYLOAD}/Library/Application Support
 
 SCRIPTS="${WORK}/scripts"
 mkdir -p "${SCRIPTS}"
+cp "${RELEASE_DIR}/preinstall"  "${SCRIPTS}/preinstall"
 cp "${RELEASE_DIR}/postinstall" "${SCRIPTS}/postinstall"
-chmod +x "${SCRIPTS}/postinstall"
+chmod +x "${SCRIPTS}/preinstall" "${SCRIPTS}/postinstall"
 
 # Disable bundle relocation so the app/driver always install to the fixed paths,
 # even if a stale copy exists elsewhere on the user's Mac (pkgbuild defaults apps

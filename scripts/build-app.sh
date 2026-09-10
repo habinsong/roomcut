@@ -54,7 +54,7 @@ cat > "${APP}/Contents/Info.plist" <<'PLIST'
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.0.9</string>
+    <string>1.1.0</string>
     <key>LSMinimumSystemVersion</key>
     <string>26.0</string>
     <key>LSUIElement</key>
@@ -100,6 +100,18 @@ if [[ -f "${ICON_SRC}" ]]; then
   rm -rf "$(dirname "${ICONSET}")"
 else
   echo "build-app: note — ${ICON_SRC} not found; building without an app icon." >&2
+fi
+
+# Ship the HAL driver inside the app so Settings ▸ "Reinstall Driver" can put a
+# known-good copy back without the release zip. Contents/PlugIns is the location
+# codesign treats as nested code, so the app still passes --verify --strict; the
+# driver keeps the ad-hoc signature CMake gave it (we do NOT re-sign it here).
+DRIVER_SRC="${REPO_ROOT}/build/driver/RoomcutHAL/Roomcut.driver"
+if [[ -d "${DRIVER_SRC}" ]]; then
+  mkdir -p "${APP}/Contents/PlugIns"
+  cp -R "${DRIVER_SRC}" "${APP}/Contents/PlugIns/Roomcut.driver"
+else
+  echo "build-app: note — ${DRIVER_SRC} not found; app ships without the reinstall payload." >&2
 fi
 
 codesign --force --sign - "${APP}"

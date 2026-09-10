@@ -1,0 +1,33 @@
+#!/bin/bash
+# preinstall — runs as root BEFORE the .pkg lays down its payload. It takes any
+# previous Roomcut off the machine so the new one never inherits stale files:
+# pkgbuild MERGES into an existing bundle instead of replacing it, and one
+# leftover file inside Roomcut.app / Roomcut.driver breaks the ad-hoc seal — a
+# driver whose signature no longer covers its own contents is silently refused by
+# coreaudiod, which is exactly how 1.0.9 shipped without a "Roomcut Output".
+# Must always `exit 0` — a nonzero status aborts the whole install.
+
+LABEL="com.roomcut.engine"
+INSTALL_ROOT="/Library/Application Support/Roomcut"
+HAL_DRIVER="/Library/Audio/Plug-Ins/HAL/Roomcut.driver"
+APP="/Applications/Roomcut.app"
+
+# Drop a dev-install sudoers rule FIRST: without it the app we are about to quit
+# cannot boot the daemon out from under the new install on its way down.
+rm -f /etc/sudoers.d/roomcut-engine 2>/dev/null || true
+
+# Quit a running menu-bar app so it isn't overwritten under its own feet.
+/usr/bin/pkill -f "Roomcut.app/Contents/MacOS/Roomcut" 2>/dev/null || true
+sleep 1
+
+# Stop the old engine daemon; postinstall bootstraps the new one.
+/bin/launchctl bootout "system/${LABEL}" 2>/dev/null || true
+
+# Remove the previous bundles and binaries outright. engine.state stays, so the
+# user's sound settings survive the upgrade; per-user prefs and the lyrics cache
+# live in ~/Library and are never touched here.
+rm -rf "${APP}" 2>/dev/null || true
+rm -rf "${HAL_DRIVER}" 2>/dev/null || true
+rm -rf "${INSTALL_ROOT}/bin" 2>/dev/null || true
+
+exit 0
