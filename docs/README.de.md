@@ -36,8 +36,10 @@ BlackHole oder Soundflower brauchst du nicht darunter.
 
 **EQ.** Zehn grafische Bänder von 31 Hz bis 16 kHz, darüber sechs parametrische: Bell, Low-
 und High-Shelf, Hochpass, Tiefpass, Notch. Fünf Makros — Bass, Warmth, Vocal, Clarity, Air —
-schieben ganze Bandgruppen, wenn du gerade nicht in Frequenzen denken willst. Am Ende der
-Kette sitzt ein Limiter mit 2 ms Lookahead. Mehr Latenz fügt Roomcut absichtlich nicht hinzu.
+schieben ganze Bandgruppen, wenn du gerade nicht in Frequenzen denken willst. Jedes Bell- oder
+Shelf-Band lässt sich dynamisch schalten: gib ihm einen Schwellwert und einen Bereich, und es
+senkt nur ab, solange dieses Band wirklich laut ist — gut gegen eine Resonanz, die erst bei
+bestimmten Tönen stört. Am Ende der Kette sitzt ein Limiter mit 2 ms Lookahead.
 
 **Stereobreite.** Aktuelle Master sind breit gemischt, und auf Notebook-Lautsprechern rutscht
 die Stimme dann schon mal aus der Mitte. Focus zieht die Seiten zusammen, bis sie wieder da
@@ -45,8 +47,9 @@ sitzt; Space geht in die andere Richtung. Beide wirken nur auf das Seitensignal,
 mittige Stimme kommt also bei jeder Reglerstellung unverändert heraus. Diese Bedingung hat
 eine Neufassung gekostet: die erste Version verbreiterte mit einer phasengedrehten Kopie des
 Mid — monokompatibel, aber nicht bildstabil, und die Stimme wanderte nach links, je weiter man
-aufdrehte. Center, Damping, Crossfeed und der Umschalter Lautsprecher/Kopfhörer liegen im
-selben Tab.
+aufdrehte. Space reicht bis ±200, Center und Damping bis 200, bei unveränderten Kurven: ein
+Wert, den du schon magst, klingt weiter so. Crossfeed und der Umschalter Lautsprecher/Kopfhörer
+liegen im selben Tab.
 
 **A/B mit Pegelabgleich.** Zwei Plätze, jeder mit eigenem Bearbeitungsverlauf. `⌘Z` und `⇧⌘Z`
 gelten für die aktive Seite, die Kopiertaste reicht die aktuelle Einstellung an die andere
@@ -64,15 +67,17 @@ einstecken, richtige Kurve zurück.
 
 **Now Playing und Inspect.** Das Menüleistenfenster zeigt Cover, Transportsteuerung und
 synchrone Texte von [LRCLIB](https://lrclib.net). Inspect liest nur: Peak, RMS, Stereobreite,
-Korrelation, Abtastrate, Gerätelatenz, Limiter-Aktivität, Aussetzer.
+Korrelation, Abtastrate, Limiter-Aktivität, Aussetzer — und zwei getrennte Latenzen: die des
+Geräts und die, die Roomcut selbst hinzufügt (Limiter-Lookahead plus Ratenwandlung, falls eine
+stattfindet).
 
 Oberflächensprachen: Englisch, Koreanisch, Japanisch, Französisch, Deutsch. Roomcut folgt der
 Systemsprache, solange du in Settings keine andere wählst.
 
 ## Installation
 
-Hol dir `Roomcut-1.0.9.pkg` aus den [Releases](https://github.com/habinsong/roomcut/releases).
-`Roomcut-1.0.9.dmg` ist dasselbe Paket in einem Disk-Image.
+Hol dir `Roomcut-1.1.0.pkg` aus den [Releases](https://github.com/habinsong/roomcut/releases).
+`Roomcut-1.1.0.dmg` ist dasselbe Paket in einem Disk-Image.
 
 Diese Builds sind ad-hoc signiert. Kein Developer-ID-Zertifikat dahinter, keine Notarisierung —
 macOS stoppt den ersten Start also. Öffne es trotzdem einmal, dann geh in
@@ -82,17 +87,17 @@ nach dem blockierten Versuch auf, und genau daran scheitern die meisten.
 Am Gatekeeper vorbei geht es auch, `installer` fragt ihn nicht:
 
 ```sh
-sudo installer -pkg Roomcut-1.0.9.pkg -target /
+sudo installer -pkg Roomcut-1.1.0.pkg -target /
 ```
 
 Sagt macOS statt „nicht überprüfbar“ das Paket sei **beschädigt**, ist das etwas anderes: der
 Download ist kaputt oder die Signatur. Prüf zuerst, was du da hast:
 
 ```sh
-shasum -a 256 Roomcut-1.0.9.pkg
-# 3636c8022857088b020798a3ac80b7bd63aaaf15ec069ab9579adb8fb56a8139
-shasum -a 256 Roomcut-1.0.9.dmg
-# 3382f6c434660624a0d02bb81576dac4fecaf20f55b90b3b90380f0423e760c2
+shasum -a 256 Roomcut-1.1.0.pkg
+# 2f45b09f446f42c3c8f3f7649dccf910f6a629785f25152d045b635b7431d693
+shasum -a 256 Roomcut-1.1.0.dmg
+# b0337c5df3b7a45c36785d27597d61f67719532fb1b3db2137d2eea110fe1cdb
 ```
 
 Der Installer legt die App nach `/Applications`, den Treiber in den HAL-Ordner des Systems und
@@ -175,7 +180,7 @@ cmake --build build
 ctest --test-dir build --output-on-failure
 ```
 
-40 native und 218 Swift-Tests bei diesem Commit. Was sie nicht abdecken: ein echter Raum, ein
+43 native und 257 Swift-Tests bei diesem Commit. Was sie nicht abdecken: ein echter Raum, ein
 echtes Mikrofon, ein zweiter Mac. Die Prüfprotokolle je Bereich und die noch offenen Grenzen
 stehen in [docs/development](development/README.md).
 

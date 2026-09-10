@@ -36,16 +36,19 @@ this repo, so there is no BlackHole or Soundflower underneath it.
 
 **EQ.** Ten graphic bands from 31 Hz to 16 kHz, and six parametric bands on top of them —
 bell, low/high shelf, high/low pass, notch. Five macro knobs (Bass, Warmth, Vocal, Clarity,
-Air) move groups of bands for you when you don't want to think in frequencies. A limiter sits
-at the end with 2 ms of lookahead, which is the only latency Roomcut adds on purpose.
+Air) move groups of bands for you when you don't want to think in frequencies. Any bell or
+shelf band can be made dynamic: give it a threshold and a range, and it only comes down while
+that band is actually loud — useful on a resonance that is fine until the wrong note hits it.
+A limiter closes the chain with 2 ms of lookahead.
 
 **Stereo space.** Recent masters are mixed wide, and on laptop speakers the vocal can slide
 out of the middle. Focus pulls the sides back until it sits there again; Space goes the other
 way. Both act on the side signal only, so a dead-centre vocal comes out untouched at any
 setting. That was the constraint, and it cost a rewrite: the first version widened by adding
 a phase-rotated copy of the mid, which is mono-safe but not image-safe, and the vocal drifted
-left as you pushed the slider. Center, Damping, Crossfeed and a speaker/headphone switch are
-in the same tab.
+left as you pushed the slider. Space runs to ±200 and Center and Damping to 200, with the same
+curves as before, so a number you already like still sounds the way it did. Crossfeed and a
+speaker/headphone switch are in the same tab.
 
 **A/B with matched level.** Two slots, each with its own undo history. `⌘Z` and `⇧⌘Z` apply
 to the side you're on, and the copy button hands the current settings to the other side.
@@ -63,15 +66,17 @@ brings back the right curve.
 
 **Now Playing and Inspect.** The menu-bar window shows artwork, transport controls and timed
 lyrics from [LRCLIB](https://lrclib.net). Inspect is read-only: peak, RMS, stereo width,
-correlation, sample rate, device latency, limiter activity, dropouts.
+correlation, sample rate, limiter activity, dropouts, and two separate latency numbers — the
+device's, and the one Roomcut adds itself (the limiter's look-ahead plus rate conversion, when
+there is any).
 
 Interface languages: English, Korean, Japanese, French, German. It follows the system
 language unless you pick one in Settings.
 
 ## Install
 
-Grab `Roomcut-1.0.9.pkg` from [Releases](https://github.com/habinsong/roomcut/releases), or
-`Roomcut-1.0.9.dmg`, which is the same package inside a disk image.
+Grab `Roomcut-1.1.0.pkg` from [Releases](https://github.com/habinsong/roomcut/releases), or
+`Roomcut-1.1.0.dmg`, which is the same package inside a disk image.
 
 These builds are ad-hoc signed. There is no Developer ID certificate behind them and they are
 not notarized, so macOS will stop the first launch. Open it once anyway, then go to
@@ -81,17 +86,17 @@ blocked attempt, which is the part that trips people up.
 Or skip Gatekeeper altogether, since `installer` doesn't consult it:
 
 ```sh
-sudo installer -pkg Roomcut-1.0.9.pkg -target /
+sudo installer -pkg Roomcut-1.1.0.pkg -target /
 ```
 
 If macOS says the package is *damaged* instead of unverified, that's a different thing — the
 download is corrupt, or the signature is broken. Check what you got:
 
 ```sh
-shasum -a 256 Roomcut-1.0.9.pkg
-# 3636c8022857088b020798a3ac80b7bd63aaaf15ec069ab9579adb8fb56a8139
-shasum -a 256 Roomcut-1.0.9.dmg
-# 3382f6c434660624a0d02bb81576dac4fecaf20f55b90b3b90380f0423e760c2
+shasum -a 256 Roomcut-1.1.0.pkg
+# 2f45b09f446f42c3c8f3f7649dccf910f6a629785f25152d045b635b7431d693
+shasum -a 256 Roomcut-1.1.0.dmg
+# b0337c5df3b7a45c36785d27597d61f67719532fb1b3db2137d2eea110fe1cdb
 ```
 
 The installer puts the app in `/Applications`, the driver in the system HAL folder, and a
@@ -173,7 +178,7 @@ cmake --build build
 ctest --test-dir build --output-on-failure
 ```
 
-40 native tests and 218 Swift tests at this commit. What they don't cover is a real room, a
+43 native tests and 257 Swift tests at this commit. What they don't cover is a real room, a
 real microphone, or a second Mac — [docs/development](docs/development/README.md) has the
 per-area verification records, including which limits are still open.
 
