@@ -125,7 +125,7 @@ struct RoomTuneTab: View {
     private var compactActions: some View {
         HStack(spacing: 6) {
             iconAction(L("새로고침", "Refresh", "更新", "Actualiser", "Aktualisieren"),
-                       "arrow.clockwise") { scanner.refresh() }
+                       "arrow.counterclockwise") { scanner.refresh() }
             iconAction(L("사운드 입력 설정", "Sound Input Settings", "サウンド入力設定",
                          "Réglages d'entrée audio", "Toneingabe-Einstellungen"),
                        "gearshape") { openSoundInputSettings() }
