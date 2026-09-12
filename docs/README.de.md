@@ -51,11 +51,11 @@ aufdrehte. Space reicht bis ±200, Center und Damping bis 200, bei unveränderte
 Wert, den du schon magst, klingt weiter so. Crossfeed und der Umschalter Lautsprecher/Kopfhörer
 liegen im selben Tab.
 
-**A/B mit Pegelabgleich.** Zwei Plätze, jeder mit eigenem Bearbeitungsverlauf. `⌘Z` und `⇧⌘Z`
-gelten für die aktive Seite, die Kopiertaste reicht die aktuelle Einstellung an die andere
-weiter. Schalte Pegel ein, und beide Ketten — Limiter eingeschlossen — werden an derselben
-Stelle mit K-Bewertung gemessen; die lautere wird abgesenkt. Damit vergleichst du den Klang
-und nicht die Lautstärke. Der Wechsel läuft über eine Rampe von 15 ms.
+**A/B mit Pegelabgleich.** Zwei Plätze mit jeweils eigenem Bearbeitungsverlauf. `⌘Z` und `⇧⌘Z`
+gelten für die aktive Seite, und die Kopiertaste übergibt die aktuelle Einstellung an die andere
+Seite. Das Umschalten läuft über eine 15-ms-Rampe. Ist der Pegelabgleich aktiv, werden beide
+Signalwege samt Limiter am selben Punkt mit K-Bewertung gemessen; der lautere wird abgesenkt.
+So vergleichst du den Klang statt der Lautstärke.
 
 **Room Tune.** Ein iPhone dient über Continuity Camera als Messmikrofon. Roomcut spielt Sweeps,
 sucht deutliche Resonanzen, schlägt ausschließlich Absenkungen vor und legt das Ergebnis als
@@ -127,7 +127,7 @@ unangetastet bleiben soll — bis dahin schreibt alles nur nach `build/`.
 - **Intel-Macs und ältere Systeme.** Apple Silicon und macOS 26 (Tahoe) aufwärts, mehr nicht.
 - **Mehrkanal.** Das virtuelle Gerät ist stereo. Surround mischt macOS herunter, bevor Roomcut
   es überhaupt sieht.
-- **Pro App verarbeiten.** Entweder die ganze Systemausgabe oder gar nichts.
+- **Pro App verarbeiten.** Gilt immer für die gesamte Systemausgabe. Einzelne Apps lassen sich nicht separat aktivieren oder deaktivieren.
 - **Ernsthafte Raumkorrektur.** Room Tune misst mit einem Telefonmikrofon an einem Punkt im
   Raum. Das Mikrofon ist nicht linear, ein Punkt ist nicht der Raum, und das Ergebnis ist ein
   Startpunkt, den deine Ohren bestätigen müssen.
@@ -158,18 +158,18 @@ Systemaudio
 Das Audio gehört der Engine, nicht der App. Sie läuft als LaunchDaemon, führt ihre eigene
 Statusdatei und beobachtet Schreibindex und Herzschlag des Treibers zugleich — anders lässt
 sich „es spielt gerade nichts“ nicht von „der Treiber ist weg“ unterscheiden. Ein Ausfall am
-2026-08-01 hat eine zweite Überwachung nötig gemacht: ein iFi-DAC öffnete mit 48 kHz, direkt
-danach erneut mit 384 kHz, und der Render-Callback lief plötzlich mit 3,37-facher
-Echtzeitgeschwindigkeit, der Ring leerte sich, die Aussetzer stapelten sich. Gerät und Rate
-sahen unverändert aus, also fiel es nirgends auf. Jetzt misst die Engine, wie schnell Frames
-tatsächlich hinausgehen, und baut die Ausgabeeinheit neu, wenn die Zahl nicht stimmt.
+2026-08-01 brachte eine zusätzliche Überwachung: Ein iFi-DAC öffnete sich mit 48 kHz, wechselte
+sofort auf 384 kHz, und ab da lief der Render-Callback mit 3,37-facher Echtzeit. Der Ring lief
+leer, Underruns häuften sich. Weil Gerät und nominale Rate unverändert schienen, schlug kein
+Test an. Heute misst Roomcut den tatsächlichen Durchsatz der Frames und initialisiert die
+Ausgabeeinheit neu, sobald die Werte kippen.
 
-## Datenschutz
+## Privatsphäre
 
-Audio verlässt den Mac nicht. In den Protokollen stehen Zähler und Gerätenamen, keine Samples.
-Room Tune öffnet das iPhone-Mikrofon nur während einer Messung. Der einzige Netzwerkaufruf sind
-die Liedtexte: Titel, Künstler und Dauer gehen an LRCLIB, die Antwort landet im Cache unter
-`~/Library/Caches/com.habinsong.roomcut/lyrics.json`.
+Kein Audiosignal verlässt deinen Mac. Logs enthalten Zähler und Gerätenamen, keine Audiodaten.
+Room Tune greift ausschließlich während einer Messung auf das iPhone-Mikrofon zu. Netzwerk
+braucht nur die Textsuche: Titel, Interpret und Laufzeit gehen an LRCLIB, das Ergebnis landet
+im Cache unter `~/Library/Caches/com.habinsong.roomcut/lyrics.json`.
 
 ## Bauen und testen
 

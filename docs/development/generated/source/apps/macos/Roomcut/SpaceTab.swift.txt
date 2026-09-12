@@ -71,15 +71,18 @@ struct SpaceTab: View {
                     .overlay(alignment: .topTrailing) { resetButton.padding(12) }
             }
 
+            // Damping / Space / Center keep the engine's 0…200 (Space ±200) reach, but
+            // the dials read HALF of it — 0…100 and ±100 — and double on the way out.
+            // Same sound at a given slider position, a scale that fits the readout.
             RoomcutSection("") {
                 slider(L("Damping", "Damping", "ダンピング", "Amortissement", "Dämpfung"),
-                       "house", model.roomReduce, 0...200, tint: accentColor) { model.setRoomReduce($0) }
+                       "house", model.roomReduce / 2, 0...100, tint: accentColor) { model.setRoomReduce($0 * 2) }
                 RoomcutDivider()
                 slider(L("Space", "Space", "空間", "Espace", "Raum"),
-                       "arrow.left.and.right", model.spatialWidth, -200...200, tint: accentColor) { model.setSpatialWidth($0) }
+                       "arrow.left.and.right", model.spatialWidth / 2, -100...100, tint: accentColor) { model.setSpatialWidth($0 * 2) }
                 RoomcutDivider()
                 slider(L("Center", "Center", "センター", "Centre", "Mitte"),
-                       "dot.scope", model.centerFocus, 0...200, tint: accentColor) { model.setCenterFocus($0) }
+                       "dot.scope", model.centerFocus / 2, 0...100, tint: accentColor) { model.setCenterFocus($0 * 2) }
                 RoomcutDivider()
                 slider(model.spatialOutputIsHeadphone ? "Crossfeed" : "Crosstalk 3D",
                        model.spatialOutputIsHeadphone ? "headphones" : "hifispeaker.2",

@@ -17,6 +17,8 @@ struct SettingsTab: View {
     @State private var lyricsCacheCount = 0
     @State private var lyricsCacheCleared = false
     @State private var presetTransferNote: String?
+    @State private var maintenanceBusy = false
+    @State private var driverReinstalled = false
     private let lyricsCachePath = "~/Library/Caches/com.habinsong.roomcut/lyrics.json"
 
     private var enabledBinding: Binding<Bool> {
@@ -30,104 +32,17 @@ struct SettingsTab: View {
     }
 
     var body: some View {
-        // Tighter than the other tabs (smaller section gaps + denser rows + no inner
-        // dividers) so the whole list — including Quit — fits above the tab bar.
+        // Tighter than the other tabs (smaller section gaps + denser rows) so the
+        // whole list — including Quit — fits above the tab bar. Appearance, output
+        // and behaviour share ONE card; full-width rules mark the group breaks that
+        // used to be separate titled sections.
         RoomcutTabScreen(spacing: 10, bottomPadding: 80) {
-            RoomcutSection(L("Appearance", "Appearance", "外観", "Apparence", "Erscheinungsbild")) {
-                appearanceSelector
-                themeSelector
-                layoutSelector
-                languageSelector
-                RoomcutRow(L("축소 모드에도 테마 적용", "Apply Theme in Compact Mode", "コンパクト表示でもテーマを適用",
-                             "Appliquer le thème en mode compact", "Thema auch im Kompaktmodus"),
-                           systemImage: "rectangle.on.rectangle") {
-                    settingsSwitch(Binding(get: { model.themeSyncEnabled },
-                                           set: { model.setThemeSync($0) }))
-                }
-            }
-
-            RoomcutSection(L("Output", "Output", "出力", "Sortie", "Ausgabe")) {
-                RoomcutRow(L("출력 장치", "Output Device", "出力デバイス", "Périphérique de sortie", "Ausgabegerät"),
-                           systemImage: "hifispeaker") {
-                    glassMenu(title: selectedDeviceName, maxTitleWidth: 184,
-                              disabled: !model.status.reachable) {
-                        ForEach(model.outputDevices) { device in
-                            Button { model.selectDevice(device.uid) } label: {
-                                checkmarkLabel(device.name, on: device.uid == model.selectedDeviceUID)
-                            }
-                        }
-                    }
-                }
-                if !model.availableSampleRates.isEmpty || !model.availableBitDepths.isEmpty {
-                    RoomcutRow(L("포맷", "Format", "フォーマット", "Format", "Format"),
-                               systemImage: "dot.radiowaves.left.and.right") {
-                        HStack(spacing: 8) {
-                            if !model.availableBitDepths.isEmpty {
-                                glassMenu(title: bitDepthLabel(model.audioFormat?.bitDepth),
-                                          disabled: !model.status.reachable) {
-                                    ForEach(model.availableBitDepths, id: \.self) { bits in
-                                        Button { model.selectBitDepth(bits) } label: {
-                                            checkmarkLabel(bitDepthLabel(bits),
-                                                           on: bits == model.audioFormat?.bitDepth)
-                                        }
-                                    }
-                                }
-                            }
-                            if !model.availableSampleRates.isEmpty {
-                                glassMenu(title: rateLabel(model.audioFormat?.sampleRate),
-                                          disabled: !model.status.reachable) {
-                                    ForEach(model.availableSampleRates, id: \.self) { sr in
-                                        Button { model.selectSampleRate(sr) } label: {
-                                            checkmarkLabel(rateLabel(sr),
-                                                           on: sr == model.audioFormat?.sampleRate)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                if model.hasVolumeControl {
-                    RoomcutRow(L("볼륨", "Volume", "音量", "Volume", "Lautstärke"),
-                               systemImage: "speaker.wave.2") {
-                        HStack(spacing: 8) {
-                            Slider(value: Binding(get: { model.volume }, set: { model.setVolume($0) }),
-                                   in: 0...RoomcutViewModel.maxVolume,
-                                   onEditingChanged: { $0 ? model.beginVolumeEdit() : model.endVolumeEdit() })
-                                .tint(RoomcutTokens.blue(scheme))
-                                .frame(width: 130)
-                            Text("\(Int((model.volume * 100).rounded()))%")
-                                .font(.system(size: 12, weight: .medium).monospacedDigit())
-                                .foregroundStyle(.secondary).frame(width: 38, alignment: .trailing)
-                        }
-                    }
-                }
-            }
-
             RoomcutSection("") {
-                RoomcutRow(L("Roomcut 처리 켜기", "Enable Roomcut", "Roomcut 処理を有効化",
-                             "Activer Roomcut", "Roomcut aktivieren"), systemImage: "power") {
-                    settingsSwitch(enabledBinding)
-                        .disabled(!model.status.reachable)
-                }
-                RoomcutRow(L("기본 출력으로 유지", "Keep as Default Output", "デフォルト出力に保持",
-                             "Conserver comme sortie par défaut", "Als Standardausgabe behalten"),
-                           systemImage: "pin") {
-                    settingsSwitch(Binding(get: { model.keepDefault },
-                                           set: { model.setKeepDefault($0) }))
-                        .disabled(!model.status.reachable)
-                }
-                RoomcutRow(L("기기별 프리셋 기억", "Per-Device Presets", "デバイス別プリセット",
-                             "Préréglages par appareil", "Presets pro Gerät"),
-                           systemImage: "arrow.triangle.2.circlepath") {
-                    settingsSwitch(Binding(get: { model.deviceAutoPresetEnabled },
-                                           set: { model.setDeviceAutoPreset($0) }))
-                }
-                RoomcutRow(L("로그인 시 자동 실행", "Launch at Login", "ログイン時に起動",
-                             "Lancer à la connexion", "Beim Anmelden starten"),
-                           systemImage: "arrow.right.circle") {
-                    settingsSwitch(Binding(get: { launchAtLogin }, set: { setLaunchAtLogin($0) }))
-                }
+                appearanceGroup
+                groupRule
+                outputGroup
+                groupRule
+                behaviorGroup
             }
 
             RoomcutSection("") {
@@ -173,9 +88,121 @@ struct SettingsTab: View {
                 }
             }
             .buttonStyle(.plain)
+
+            maintenanceCard
         }
         .environment(\.roomcutRowVPadding, 8)
     }
+
+    // The merged card's three groups live in their own properties: each stays
+    // inside ViewBuilder's 10-child limit, and `Group` flattens into the card's
+    // stack so the rows still sit flush against each other.
+    private var appearanceGroup: some View {
+        Group {
+            appearanceSelector
+            themeSelector
+            layoutSelector
+            languageSelector
+            RoomcutRow(L("축소 모드에도 테마 적용", "Apply Theme in Compact Mode", "コンパクト表示でもテーマを適用",
+                         "Appliquer le thème en mode compact", "Thema auch im Kompaktmodus"),
+                       systemImage: "rectangle.on.rectangle") {
+                settingsSwitch(Binding(get: { model.themeSyncEnabled },
+                                       set: { model.setThemeSync($0) }))
+            }
+        }
+    }
+
+    private var outputGroup: some View {
+        Group {
+            RoomcutRow(L("출력 장치", "Output Device", "出力デバイス", "Périphérique de sortie", "Ausgabegerät"),
+                       systemImage: "hifispeaker") {
+                glassMenu(title: selectedDeviceName, maxTitleWidth: 184,
+                          disabled: !model.status.reachable) {
+                    ForEach(model.outputDevices) { device in
+                        Button { model.selectDevice(device.uid) } label: {
+                            checkmarkLabel(device.name, on: device.uid == model.selectedDeviceUID)
+                        }
+                    }
+                }
+            }
+            if !model.availableSampleRates.isEmpty || !model.availableBitDepths.isEmpty {
+                RoomcutRow(L("포맷", "Format", "フォーマット", "Format", "Format"),
+                           systemImage: "dot.radiowaves.left.and.right") {
+                    HStack(spacing: 8) {
+                        if !model.availableBitDepths.isEmpty {
+                            glassMenu(title: bitDepthLabel(model.audioFormat?.bitDepth),
+                                      disabled: !model.status.reachable) {
+                                ForEach(model.availableBitDepths, id: \.self) { bits in
+                                    Button { model.selectBitDepth(bits) } label: {
+                                        checkmarkLabel(bitDepthLabel(bits),
+                                                       on: bits == model.audioFormat?.bitDepth)
+                                    }
+                                }
+                            }
+                        }
+                        if !model.availableSampleRates.isEmpty {
+                            glassMenu(title: rateLabel(model.audioFormat?.sampleRate),
+                                      disabled: !model.status.reachable) {
+                                ForEach(model.availableSampleRates, id: \.self) { sr in
+                                    Button { model.selectSampleRate(sr) } label: {
+                                        checkmarkLabel(rateLabel(sr),
+                                                       on: sr == model.audioFormat?.sampleRate)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if model.hasVolumeControl {
+                RoomcutRow(L("볼륨", "Volume", "音量", "Volume", "Lautstärke"),
+                           systemImage: "speaker.wave.2") {
+                    HStack(spacing: 8) {
+                        Slider(value: Binding(get: { model.volume }, set: { model.setVolume($0) }),
+                               in: 0...RoomcutViewModel.maxVolume,
+                               onEditingChanged: { $0 ? model.beginVolumeEdit() : model.endVolumeEdit() })
+                            .tint(RoomcutTokens.blue(scheme))
+                            .frame(width: 130)
+                        Text("\(Int((model.volume * 100).rounded()))%")
+                            .font(.system(size: 12, weight: .medium).monospacedDigit())
+                            .foregroundStyle(.secondary).frame(width: 38, alignment: .trailing)
+                    }
+                }
+            }
+        }
+    }
+
+    private var behaviorGroup: some View {
+        Group {
+            RoomcutRow(L("Roomcut 처리 켜기", "Enable Roomcut", "Roomcut 処理を有効化",
+                         "Activer Roomcut", "Roomcut aktivieren"), systemImage: "power") {
+                settingsSwitch(enabledBinding)
+                    .disabled(!model.status.reachable)
+            }
+            RoomcutRow(L("기본 출력으로 유지", "Keep as Default Output", "デフォルト出力に保持",
+                         "Conserver comme sortie par défaut", "Als Standardausgabe behalten"),
+                       systemImage: "pin") {
+                settingsSwitch(Binding(get: { model.keepDefault },
+                                       set: { model.setKeepDefault($0) }))
+                    .disabled(!model.status.reachable)
+            }
+            RoomcutRow(L("기기별 프리셋 기억", "Per-Device Presets", "デバイス別プリセット",
+                         "Préréglages par appareil", "Presets pro Gerät"),
+                       systemImage: "arrow.triangle.2.circlepath") {
+                settingsSwitch(Binding(get: { model.deviceAutoPresetEnabled },
+                                       set: { model.setDeviceAutoPreset($0) }))
+            }
+            RoomcutRow(L("로그인 시 자동 실행", "Launch at Login", "ログイン時に起動",
+                         "Lancer à la connexion", "Beim Anmelden starten"),
+                       systemImage: "arrow.right.circle") {
+                settingsSwitch(Binding(get: { launchAtLogin }, set: { setLaunchAtLogin($0) }))
+            }
+        }
+    }
+
+    // A group break inside the merged card: full width, unlike RoomcutDivider's
+    // inset row separator, so it reads as "these used to be separate cards".
+    private var groupRule: some View { Divider().opacity(0.4) }
 
     // Native Liquid-Glass segmented theme selector (glass capsule + a morphing
     // selection pill), instead of the boxy menu dropdown.
@@ -456,6 +483,130 @@ struct SettingsTab: View {
         bits.map { "\($0)-bit" } ?? "—"
     }
 
+    // Driver maintenance, in the same card shape as Quit but split down the middle:
+    // reinstall on the left, full removal on the right, one hairline between them.
+    // Both halves need root, so each runs a single privileged shell command.
+    private var maintenanceCard: some View {
+        RoomcutCard {
+            HStack(spacing: 0) {
+                maintenanceButton(
+                    systemImage: driverReinstalled ? "checkmark.circle.fill" : "arrow.counterclockwise",
+                    title: driverReinstalled
+                        ? L("재설치 완료", "Reinstalled", "再インストール完了", "Réinstallé", "Neu installiert")
+                        : L("드라이버 재설치", "Reinstall Driver", "ドライバ再インストール",
+                            "Réinstaller", "Neu installieren"),
+                    tint: driverReinstalled ? RoomcutTokens.green : RoomcutTokens.blue(scheme),
+                    action: reinstallDriver)
+                Divider().frame(height: 26).opacity(0.5)
+                maintenanceButton(
+                    systemImage: "trash",
+                    title: L("Roomcut 제거", "Remove Roomcut", "Roomcut を削除",
+                             "Supprimer Roomcut", "Roomcut entfernen"),
+                    tint: RoomcutTokens.red,
+                    action: removeRoomcut)
+            }
+        }
+        .disabled(maintenanceBusy)
+    }
+
+    // Half-width button: the padding lives inside so each half is tappable across
+    // the whole row height. `minimumScaleFactor` keeps the longest translations on
+    // one line instead of truncating them.
+    private func maintenanceButton(systemImage: String, title: String, tint: Color,
+                                   action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Label(title, systemImage: systemImage)
+                .font(.system(size: 13, weight: .bold))
+                .foregroundStyle(tint)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12).padding(.horizontal, 10)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .help(title)
+    }
+
+    private func reinstallDriver() {
+        guard !maintenanceBusy else { return }
+        maintenanceBusy = true
+        Task {
+            let outcome = await Task.detached { DriverMaintenance.reinstallDriver() }.value
+            maintenanceBusy = false
+            switch outcome {
+            case .cancelled:
+                break
+            case .done:
+                withAnimation { driverReinstalled = true }
+                try? await Task.sleep(nanoseconds: 2_000_000_000)
+                withAnimation { driverReinstalled = false }
+            default:
+                showMaintenanceFailure(
+                    L("드라이버 재설치 실패", "Reinstall failed", "再インストールに失敗",
+                      "Échec de la réinstallation", "Neuinstallation fehlgeschlagen"),
+                    unavailable: L("이 복사본에는 드라이버가 들어 있지 않습니다. 설치 패키지로 다시 설치해 주세요.",
+                                   "This copy of the app carries no driver. Reinstall from the installer package.",
+                                   "このアプリにはドライバが含まれていません。インストーラから入れ直してください。",
+                                   "Cette copie de l'app ne contient aucun pilote. Réinstallez depuis le programme d'installation.",
+                                   "Diese App-Kopie enthält keinen Treiber. Bitte über das Installationspaket neu installieren."),
+                    outcome: outcome)
+            }
+        }
+    }
+
+    private func removeRoomcut() {
+        guard !maintenanceBusy else { return }
+        let confirm = NSAlert()
+        confirm.alertStyle = .critical
+        confirm.messageText = L("Roomcut을 제거할까요?", "Remove Roomcut?", "Roomcut を削除しますか？",
+                                "Supprimer Roomcut ?", "Roomcut entfernen?")
+        confirm.informativeText = L(
+            "드라이버, 엔진, 앱이 모두 삭제되고 Roomcut이 종료됩니다.",
+            "The driver, the engine and the app are all removed, then Roomcut quits.",
+            "ドライバ・エンジン・アプリをすべて削除し、Roomcut を終了します。",
+            "Le pilote, le moteur et l'app sont supprimés, puis Roomcut quitte.",
+            "Treiber, Engine und App werden entfernt, danach beendet sich Roomcut.")
+        confirm.addButton(withTitle: L("제거", "Remove", "削除", "Supprimer", "Entfernen"))
+        confirm.addButton(withTitle: L("취소", "Cancel", "キャンセル", "Annuler", "Abbrechen"))
+        guard confirm.runModal() == .alertFirstButtonReturn else { return }
+
+        maintenanceBusy = true
+        Task {
+            let outcome = await Task.detached { DriverMaintenance.removeRoomcut() }.value
+            maintenanceBusy = false
+            switch outcome {
+            case .done:
+                NSApp.terminate(nil)
+            case .cancelled:
+                break
+            default:
+                showMaintenanceFailure(
+                    L("제거 실패", "Removal failed", "削除に失敗", "Échec de la suppression",
+                      "Entfernen fehlgeschlagen"),
+                    unavailable: L("제거 스크립트를 찾을 수 없습니다: \(DriverMaintenance.uninstaller)",
+                                   "Uninstaller not found: \(DriverMaintenance.uninstaller)",
+                                   "アンインストーラが見つかりません: \(DriverMaintenance.uninstaller)",
+                                   "Programme de désinstallation introuvable : \(DriverMaintenance.uninstaller)",
+                                   "Deinstallationsprogramm nicht gefunden: \(DriverMaintenance.uninstaller)"),
+                    outcome: outcome)
+            }
+        }
+    }
+
+    private func showMaintenanceFailure(_ title: String, unavailable: String,
+                                        outcome: DriverMaintenance.Outcome) {
+        let alert = NSAlert()
+        alert.alertStyle = .warning
+        alert.messageText = title
+        switch outcome {
+        case .unavailable:      alert.informativeText = unavailable
+        case .failed(let why):  alert.informativeText = why
+        default:                return
+        }
+        alert.runModal()
+    }
+
     private func setLaunchAtLogin(_ on: Bool) {
         do {
             if on { try SMAppService.mainApp.register() }
@@ -466,4 +617,81 @@ struct SettingsTab: View {
         }
     }
 
+}
+
+// Driver-level maintenance: reinstalling the HAL plug-in and removing Roomcut
+// both write to /Library, so each runs ONE privileged shell command through
+// `osascript … with administrator privileges` — a single system auth prompt, and
+// no sudoers rule to install (unlike EngineService's launchctl verbs).
+enum DriverMaintenance {
+    enum Outcome {
+        case done
+        case cancelled          // user dismissed the authorization prompt
+        case unavailable        // the payload this action needs isn't on disk
+        case failed(String)     // anything else; carries osascript's stderr
+    }
+
+    static let halDriver = "/Library/Audio/Plug-Ins/HAL/Roomcut.driver"
+    static let uninstaller = "/Library/Application Support/Roomcut/uninstall.sh"
+
+    // The driver copy shipped inside the app (Contents/PlugIns, where codesign
+    // seals a nested bundle), so a reinstall needs nothing but the app itself.
+    static var bundledDriver: URL? {
+        guard let url = Bundle.main.builtInPlugInsURL?
+            .appendingPathComponent("Roomcut.driver"),
+              FileManager.default.fileExists(atPath: url.path) else { return nil }
+        return url
+    }
+
+    // Replace the installed plug-in with the bundled one and restart coreaudiod so
+    // it reloads — the same steps as scripts/install-driver.sh, minus the engine
+    // (this action is scoped to the driver; the daemon keeps running).
+    static func reinstallDriver() -> Outcome {
+        guard let src = bundledDriver else { return .unavailable }
+        let dest = quoted(halDriver)
+        let command = [
+            "/bin/rm -rf \(dest)",
+            "/bin/cp -R \(quoted(src.path)) \(dest)",
+            "/usr/sbin/chown -R root:wheel \(dest)",
+            "(/usr/bin/xattr -dr com.apple.quarantine \(dest) 2>/dev/null || true)",
+            "(/usr/bin/killall -9 coreaudiod 2>/dev/null || true)",
+        ].joined(separator: " && ")
+        return runPrivileged(command)
+    }
+
+    // The uninstaller dropped next to the install by install.sh / the pkg. It
+    // removes the driver, the engine daemon and /Applications/Roomcut.app.
+    static func removeRoomcut() -> Outcome {
+        guard FileManager.default.isReadableFile(atPath: uninstaller) else { return .unavailable }
+        return runPrivileged("/bin/bash \(quoted(uninstaller))")
+    }
+
+    private static func quoted(_ path: String) -> String {
+        "'" + path.replacingOccurrences(of: "'", with: "'\\''") + "'"
+    }
+
+    // Call off the main thread: the authorization prompt blocks until dismissed.
+    private static func runPrivileged(_ command: String) -> Outcome {
+        let escaped = command
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\"", with: "\\\"")
+        let p = Process()
+        p.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
+        p.arguments = ["-e", "do shell script \"\(escaped)\" with administrator privileges"]
+        let errPipe = Pipe()
+        p.standardOutput = FileHandle.nullDevice
+        p.standardError = errPipe
+        do {
+            try p.run()
+            let stderr = String(decoding: errPipe.fileHandleForReading.readDataToEndOfFile(),
+                                as: UTF8.self)
+            p.waitUntilExit()
+            if p.terminationStatus == 0 { return .done }
+            // -128 is AppleScript's "user cancelled" — not a failure worth alerting.
+            if stderr.contains("-128") { return .cancelled }
+            return .failed(stderr.trimmingCharacters(in: .whitespacesAndNewlines))
+        } catch {
+            return .failed(error.localizedDescription)
+        }
+    }
 }

@@ -37,8 +37,10 @@ dans ce dépôt, donc pas de BlackHole ni de Soundflower à installer en dessous
 **EQ.** Dix bandes graphiques de 31 Hz à 16 kHz, et six bandes paramétriques par-dessus :
 cloche, shelf grave et aigu, passe-haut, passe-bas, notch. Cinq macros — Bass, Warmth, Vocal,
 Clarity, Air — déplacent des groupes de bandes quand vous n'avez pas envie de raisonner en
-fréquences. Un limiteur ferme la marche, avec 2 ms de lookahead : c'est la seule latence que
-Roomcut ajoute volontairement.
+fréquences. Toute bande cloche ou shelf peut devenir dynamique : donnez-lui un seuil et une
+plage, et elle ne descend que pendant que cette bande est réellement forte — pratique sur une
+résonance qui ne pose problème que sur certaines notes. Un limiteur ferme la marche, avec 2 ms
+de lookahead.
 
 **Espace stéréo.** Les masters récents sont larges, et sur les haut-parleurs d'un portable la
 voix décroche parfois du centre. Focus resserre les côtés jusqu'à ce qu'elle y revienne ;
@@ -46,14 +48,16 @@ Space fait l'inverse. Les deux n'agissent que sur le signal de côté, donc une 
 parfaitement centrée ressort intacte quel que soit le réglage. Cette contrainte a coûté une
 réécriture : la première version élargissait en ajoutant une copie du mid à phase tournée,
 compatible mono mais pas stable en image, et la voix partait vers la gauche à mesure qu'on
-poussait le curseur. Center, Damping, Crossfeed et le sélecteur enceintes/casque sont dans le
-même onglet.
+poussait le curseur. Space va jusqu'à ±200, Center et Damping jusqu'à 200, avec les mêmes
+courbes qu'avant : un réglage que vous aimiez sonne toujours pareil. Crossfeed et le sélecteur
+enceintes/casque sont dans le même onglet.
 
-**A/B à niveau égal.** Deux emplacements, chacun avec son propre historique. `⌘Z` et `⇧⌘Z`
-agissent sur le côté actif, et le bouton de copie envoie le réglage courant vers l'autre.
-Activez Niveau et les deux chaînes — limiteurs compris — sont mesurées sur le même passage
-avec une pondération K, puis la plus forte est abaissée. L'idée est de juger le son, pas le
-volume. La bascule passe par une rampe de 15 ms.
+**A/B à niveau égalisé.** Deux emplacements avec un historique de modification indépendant.
+`⌘Z` et `⇧⌘Z` s'appliquent au côté affiché, et le bouton de copie transmet le réglage actuel à
+l'autre côté. La bascule s'effectue via une rampe de 15 ms. Lorsque l'égalisation de niveau est
+activée, les deux chaînes — limiteur compris — sont mesurées sur le même intervalle avec une
+pondération K, et la plus forte est atténuée. Le but est de comparer le timbre sans être trompé
+par le volume.
 
 **Room Tune.** Un iPhone sert de micro de mesure via Continuity Camera. Roomcut joue des
 balayages, cherche les résonances nettes, propose uniquement des atténuations et enregistre le
@@ -65,16 +69,17 @@ le casque ramène la bonne courbe.
 
 **Now Playing et Inspect.** La fenêtre de la barre des menus affiche la pochette, les commandes
 de lecture et les paroles synchronisées de [LRCLIB](https://lrclib.net). Inspect ne fait que
-lire : crête, RMS, largeur stéréo, corrélation, fréquence d'échantillonnage, latence du
-périphérique, activité du limiteur, décrochages.
+lire : crête, RMS, largeur stéréo, corrélation, fréquence d'échantillonnage, activité du
+limiteur, décrochages, et deux latences distinctes — celle du périphérique, et celle que
+Roomcut ajoute lui-même (le lookahead du limiteur, plus la conversion de fréquence s'il y en a).
 
 Langues de l'interface : anglais, coréen, japonais, français, allemand. Roomcut suit la langue
 du système, sauf si vous en choisissez une dans Settings.
 
 ## Installation
 
-Prenez `Roomcut-1.0.9.pkg` dans [Releases](https://github.com/habinsong/roomcut/releases).
-`Roomcut-1.0.9.dmg` contient exactement le même paquet dans une image disque.
+Prenez `Roomcut-1.1.0.pkg` dans [Releases](https://github.com/habinsong/roomcut/releases).
+`Roomcut-1.1.0.dmg` contient exactement le même paquet dans une image disque.
 
 Ces builds sont signés ad-hoc. Aucun certificat Developer ID derrière, pas de notarisation :
 macOS bloquera le premier lancement. Ouvrez le paquet une fois quand même, puis allez dans
@@ -84,17 +89,17 @@ qu'après le blocage, et c'est là que la plupart des gens s'arrêtent.
 Vous pouvez aussi contourner Gatekeeper, `installer` ne le consulte pas :
 
 ```sh
-sudo installer -pkg Roomcut-1.0.9.pkg -target /
+sudo installer -pkg Roomcut-1.1.0.pkg -target /
 ```
 
 Si macOS dit que le paquet est **endommagé** plutôt que non vérifié, le problème est ailleurs :
 téléchargement corrompu ou signature cassée. Vérifiez d'abord ce que vous avez :
 
 ```sh
-shasum -a 256 Roomcut-1.0.9.pkg
-# 3636c8022857088b020798a3ac80b7bd63aaaf15ec069ab9579adb8fb56a8139
-shasum -a 256 Roomcut-1.0.9.dmg
-# 3382f6c434660624a0d02bb81576dac4fecaf20f55b90b3b90380f0423e760c2
+shasum -a 256 Roomcut-1.1.0.pkg
+# 2f45b09f446f42c3c8f3f7649dccf910f6a629785f25152d045b635b7431d693
+shasum -a 256 Roomcut-1.1.0.dmg
+# b0337c5df3b7a45c36785d27597d61f67719532fb1b3db2137d2eea110fe1cdb
 ```
 
 L'installateur place l'app dans `/Applications`, le pilote dans le dossier HAL du système et un
@@ -124,7 +129,7 @@ votre configuration audio : jusque-là, tout reste dans `build/`.
 - **Les Mac Intel et les anciens systèmes.** Apple Silicon et macOS 26 (Tahoe) minimum.
 - **Le multicanal.** Le périphérique virtuel est stéréo. macOS mixe le surround avant que
   Roomcut ne le voie.
-- **Le traitement par application.** C'est la sortie système entière, ou rien.
+- **Le traitement par application.** S'applique à l'ensemble de la sortie système. Il n'est pas possible d'activer ou désactiver le traitement application par application.
 - **La correction acoustique sérieuse.** Room Tune mesure avec le micro d'un téléphone, à un
   point de la pièce. Le micro n'est pas plat, un point n'est pas une pièce, et le résultat est
   un point de départ que vos oreilles valident ou non.
@@ -153,21 +158,22 @@ Audio système
 | `RoomcutCore` | DSP, analyse, préréglages | C++ |
 | `RoomcutNowPlaying.dylib` | Pont Now Playing | Objective-C |
 
-C'est le moteur qui possède l'audio, pas l'app. Il tourne en LaunchDaemon, garde son propre
-fichier d'état, et surveille à la fois l'index d'écriture du pilote et son battement — sinon
-impossible de distinguer « rien ne joue » de « le pilote a disparu ». Une panne du 2026-08-01 a
-ajouté une seconde surveillance : un DAC iFi s'est ouvert à 48 kHz, s'est rouvert à 384 kHz
-dans la foulée, et le callback de rendu s'est mis à tourner à 3,37× le temps réel, le tampon se
-vidant et les décrochages s'accumulant. Le périphérique et la fréquence semblaient inchangés,
-donc rien ne l'attrapait. Le moteur mesure maintenant la vitesse réelle de sortie des trames et
-reconstruit l'unité de sortie quand le compte est faux.
+C'est le moteur qui possède l'audio, pas l'app. Il tourne en LaunchDaemon, conserve son propre
+fichier d'état et surveille à la fois l'index d'écriture et le heartbeat du pilote. C'est la
+seule façon de distinguer « rien ne joue » de « le pilote a disparu ». Une panne le
+2026-08-01 a motivé une surveillance supplémentaire : un DAC iFi s'est ouvert en 48 kHz puis
+immédiatement réouvert en 384 kHz, et à partir de là le rappel de rendu tournait à 3,37 fois le
+temps réel. Le tampon s'est vidé, les coupures se sont accumulées. Périphérique inchangé, taux
+d'échantillonnage inchangé en apparence : aucun contrôle ne bronchait. Maintenant le moteur mesure
+le débit réel des trames et reconstruit l'unité de sortie si les chiffres deviennent incohérents.
 
-## Vie privée
+## Confidentialité
 
-L'audio ne quitte pas le Mac. Les journaux gardent des compteurs et des noms de périphériques,
-pas d'échantillons. Room Tune n'ouvre le micro de l'iPhone que pendant une mesure. Le seul
-appel réseau, ce sont les paroles : titre, artiste et durée partent chez LRCLIB, et la réponse
-est mise en cache dans `~/Library/Caches/com.habinsong.roomcut/lyrics.json`.
+Aucun signal audio ne quitte votre Mac. Les journaux ne contiennent que des compteurs et des
+noms de périphériques, jamais d'échantillons audio. Room Tune n'active le micro de l'iPhone que
+pendant une mesure. Le réseau ne sert qu'à la récupération des paroles : le titre, l'artiste et
+la durée sont envoyés à LRCLIB, et la réponse est mise en cache dans
+`~/Library/Caches/com.habinsong.roomcut/lyrics.json`.
 
 ## Compiler et tester
 
@@ -178,7 +184,7 @@ cmake --build build
 ctest --test-dir build --output-on-failure
 ```
 
-40 tests natifs et 218 tests Swift à ce commit. Ce qu'ils ne couvrent pas : une vraie pièce, un
+43 tests natifs et 257 tests Swift à ce commit. Ce qu'ils ne couvrent pas : une vraie pièce, un
 vrai micro, un second Mac. [docs/development](development/README.md) contient les rapports de
 vérification par domaine, y compris les limites encore ouvertes.
 

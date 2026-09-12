@@ -12,10 +12,10 @@ Float32/Float64/Int16/Int32 × mono/stereo × interleaved/non-interleaved의 16�
 Float64의 일부 패턴에서는 샘플 절대 오차가 2.5였습니다.
 [수정 전 검사](raw/2026-09-08-roomtune-input/pcm-before.txt).
 
-`RoomTunePCM`은 CoreMedia가 제공하는 PCM 복사를 사용해 형식과 채널 배치를 보존하고,
+`RoomTunePCM`은 CoreMedia의 PCM 복사 함수를 써서 형식과 채널 배치를 보존하고,
 AVAudioConverter의 채널 맵 0으로 첫 채널만 Float32로 변환합니다.
 같은 형식에서는 변환기를 재사용하며 캡처 큐가 직렬로 소유합니다.
-샘플레이트 변환은 이 단계에서 수행하지 않고 기존 `RoomTuneAudioFile`의 48kHz 변환에 남겨 두었습니다.
+샘플레이트 변환은 이 단계에서 하지 않고 기존 `RoomTuneAudioFile`의 48kHz 변환에 남겨 두었습니다.
 
 메타데이터의 프레임/바이트 수와 실제 데이터 길이를 확인한 뒤 버퍼를 할당합니다.
 준비되지 않았거나 무효화된 버퍼, 잘린 데이터, 비정상 숫자는 거절합니다.
@@ -97,7 +97,7 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer ASAN_OPTIONS=detect_lea
 [REW 측정 지침](https://www.roomeqwizard.com/betahelp/help/html/makingmeasurements.html),
 [REW 클록 조정](https://www.roomeqwizard.com/betahelp/help/html/analysis.html)을 2026-09-08 확인했습니다.
 
-실제 마이크 권한 요청·녹음·재생·청취는 수행하지 않았습니다.
+실제 마이크 권한 요청·녹음·재생·청취는 하지 않았습니다.
 캡처 세션의 시작/중단 지연, 권한 대기·취소·우회 복구, AGC·클록 변동·장치 소실은 남아 있습니다.
 변환기와 파일 검사는 메모리/임시 WAV를 사용하는 실제 프레임워크 검사이며 실제 입력 장치 검증과 구분합니다.
 이 플랫폼의 ASan은 누수 감지를 지원하지 않으므로 주소 오류 검사와 누수 검증을 구분합니다.
