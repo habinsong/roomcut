@@ -51,10 +51,10 @@
     },
     {
       "path": "README.md",
-      "bytes": 10057,
-      "sha256": "5bb80b56fe0409533b429ca1dccdc640f36b4868145caf233d8ce4514f609884",
+      "bytes": 4373,
+      "sha256": "a985c89dbf42248a05c1ba6ab5571b7e4bacda494b6f776d140e8d7f89fb5e9d",
       "kind": "text",
-      "lines": 198,
+      "lines": 79,
       "archive": "docs/development/generated/source/README.md.txt"
     },
     {
@@ -1059,34 +1059,34 @@
     },
     {
       "path": "docs/README.de.md",
-      "bytes": 10690,
-      "sha256": "bc030fd8ec6eb5044b23c1aa61904309b73689193da0575e682354add71c789e",
+      "bytes": 4547,
+      "sha256": "91ce82b35c2e80427402236f7a381c53b8f488eb3b7a9a928547cd2ee69f2633",
       "kind": "text",
-      "lines": 201,
+      "lines": 82,
       "archive": "docs/development/generated/source/docs/README.de.md.txt"
     },
     {
       "path": "docs/README.fr.md",
-      "bytes": 11239,
-      "sha256": "dfca66090bda4609a7eb0b2f725a7a7aed215a92fb5e652dfd4c9e1f50f11a2d",
+      "bytes": 4810,
+      "sha256": "81650521aa4c1ff7888cb1138209a19c6e3664560cee2b96d9d42fc0554cb7e5",
       "kind": "text",
-      "lines": 205,
+      "lines": 79,
       "archive": "docs/development/generated/source/docs/README.fr.md.txt"
     },
     {
       "path": "docs/README.ja.md",
-      "bytes": 13182,
-      "sha256": "e0609765196ca28b706302d36e00fe62cd362e56e62103a6ea592bf4b82d015f",
+      "bytes": 5344,
+      "sha256": "890db160728c81c058dd789f7a5211b309478585be13375f3c393dd26ac7fb92",
       "kind": "text",
-      "lines": 194,
+      "lines": 79,
       "archive": "docs/development/generated/source/docs/README.ja.md.txt"
     },
     {
       "path": "docs/README.ko.md",
-      "bytes": 11317,
-      "sha256": "0db904f903551a1b8090465d47655e2cb298598a5aa62e42d8faec2b5166baf4",
+      "bytes": 4778,
+      "sha256": "3c6ce3dd6351b4e2ae128a358cbf9a4b77fa1f846bc5621a9e5423f57533ab9d",
       "kind": "text",
-      "lines": 186,
+      "lines": 79,
       "archive": "docs/development/generated/source/docs/README.ko.md.txt"
     },
     {
