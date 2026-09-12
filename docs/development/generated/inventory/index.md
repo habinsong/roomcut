@@ -7,5 +7,5 @@
 | [CMakeLists.txt](../../../../CMakeLists.txt) | [원문](../source/CMakeLists.txt.txt) | 49 | 1779 | `01f48b815687455a39e7d22eee6144bc187c2c20678d09b8fc874552ff815908` |
 | [LICENSE](../../../../LICENSE) | [원문](../source/LICENSE.txt) | 201 | 11351 | `a2ab14df3e1b62a46ae18d2d6b4808a246cc315493dde81e48398627fe04e3c6` |
 | [Package.swift](../../../../Package.swift) | [원문](../source/Package.swift.txt) | 274 | 10856 | `0bf5f41bfd2a17ea38c87824e0751d95fa03c0f9e59def4bb2c5ef36e39eb551` |
-| [README.md](../../../../README.md) | [원문](../source/README.md.txt) | 79 | 4373 | `a985c89dbf42248a05c1ba6ab5571b7e4bacda494b6f776d140e8d7f89fb5e9d` |
+| [README.md](../../../../README.md) | [원문](../source/README.md.txt) | 79 | 4288 | `f4ffd09c9951dda3285d36404a0cc8d933d315535227058f85676b7e704606c1` |
 | [THIRD_PARTY_NOTICES.md](../../../../THIRD_PARTY_NOTICES.md) | [원문](../source/THIRD_PARTY_NOTICES.md.txt) | 88 | 4275 | `8f7a6b4f2e7e759880f4100b912e6eda51436462fe6f103d7466b7bc95eb5abe` |

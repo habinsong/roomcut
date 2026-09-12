@@ -51,8 +51,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 4373,
-      "sha256": "a985c89dbf42248a05c1ba6ab5571b7e4bacda494b6f776d140e8d7f89fb5e9d",
+      "bytes": 4288,
+      "sha256": "f4ffd09c9951dda3285d36404a0cc8d933d315535227058f85676b7e704606c1",
       "kind": "text",
       "lines": 79,
       "archive": "docs/development/generated/source/README.md.txt"
@@ -1059,32 +1059,32 @@
     },
     {
       "path": "docs/README.de.md",
-      "bytes": 4547,
-      "sha256": "91ce82b35c2e80427402236f7a381c53b8f488eb3b7a9a928547cd2ee69f2633",
+      "bytes": 4481,
+      "sha256": "808b51e9b4e064da7cbfab5c075e31555c9189fad2e1a22ba3534f50ffe7028c",
       "kind": "text",
       "lines": 82,
       "archive": "docs/development/generated/source/docs/README.de.md.txt"
     },
     {
       "path": "docs/README.fr.md",
-      "bytes": 4810,
-      "sha256": "81650521aa4c1ff7888cb1138209a19c6e3664560cee2b96d9d42fc0554cb7e5",
+      "bytes": 4725,
+      "sha256": "3d650cd7aef1204c4033f95edd83ad2b9b12bffd2656419c5db38815fe125bfd",
       "kind": "text",
       "lines": 79,
       "archive": "docs/development/generated/source/docs/README.fr.md.txt"
     },
     {
       "path": "docs/README.ja.md",
-      "bytes": 5344,
-      "sha256": "890db160728c81c058dd789f7a5211b309478585be13375f3c393dd26ac7fb92",
+      "bytes": 5259,
+      "sha256": "4ca6691ed2a8fa414e13c6acf0fbb0c1b018cdea373503c976354eebd64e5ff0",
       "kind": "text",
       "lines": 79,
       "archive": "docs/development/generated/source/docs/README.ja.md.txt"
     },
     {
       "path": "docs/README.ko.md",
-      "bytes": 4778,
-      "sha256": "3c6ce3dd6351b4e2ae128a358cbf9a4b77fa1f846bc5621a9e5423f57533ab9d",
+      "bytes": 4693,
+      "sha256": "be4a2ffc4f734c06620fa7bfd4a09b99c28a4b169810021254fcc304ad1c7a2f",
       "kind": "text",
       "lines": 79,
       "archive": "docs/development/generated/source/docs/README.ko.md.txt"
