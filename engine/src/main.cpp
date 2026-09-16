@@ -72,6 +72,7 @@ int main(int argc, char** argv) {
     EngineSoundState sound(chainParams, currentPreset);
 
     EngineContext ctx;
+    ctx.useSystemBedRenderer = options.systemBedRenderer;
     ctx.volume.setBoost((float)clampVolumeBoost(pstate.volumeBoost));
     g_ctx = &ctx;
     std::signal(SIGINT, handleSignal);

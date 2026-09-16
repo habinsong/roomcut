@@ -214,6 +214,18 @@ target_compile_options(test_external_bed PRIVATE -Wall -Wextra)
 
 add_test(NAME external_bed COMMAND test_external_bed)
 
+# Engine: AUSpatialMixer as the headphone bed renderer, offline (no device).
+find_library(TEST_AudioToolbox_FRAMEWORK AudioToolbox REQUIRED)
+add_executable(test_spatial_mixer_bed
+  ${CMAKE_SOURCE_DIR}/engine/tests/test_spatial_mixer_bed.cpp
+  ${CMAKE_SOURCE_DIR}/engine/src/SpatialMixerBedRenderer.cpp)
+target_include_directories(test_spatial_mixer_bed PRIVATE
+  ${CMAKE_SOURCE_DIR}/engine/include ${CMAKE_SOURCE_DIR}/core ${CMAKE_SOURCE_DIR}/core/dsp ${CMAKE_SOURCE_DIR}/core/tests)
+target_link_libraries(test_spatial_mixer_bed PRIVATE ${TEST_AudioToolbox_FRAMEWORK} "-framework CoreFoundation")
+target_compile_options(test_spatial_mixer_bed PRIVATE -Wall -Wextra)
+add_test(NAME spatial_mixer_bed COMMAND test_spatial_mixer_bed)
+set_tests_properties(spatial_mixer_bed PROPERTIES TIMEOUT 60)
+
 # DSP: stereo -> 5.1/7.1 upmix steering matrix — header-only.
 add_executable(test_upmix ${CMAKE_SOURCE_DIR}/core/tests/test_upmix.cpp)
 target_include_directories(test_upmix PRIVATE ${CMAKE_SOURCE_DIR}/core/dsp)

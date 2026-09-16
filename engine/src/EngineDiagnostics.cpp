@@ -10,10 +10,20 @@ namespace roomcut {
 bool parseEngineOptions(int argc, char* const argv[], EngineOptions& out, std::string& error) {
     const char* program = argc > 0 && argv[0] != nullptr ? argv[0] : "RoomcutAudioEngine";
     char usage[256];
-    std::snprintf(usage, sizeof(usage), "usage: %s [--dump out.wav] [--eq g0,g1,...,g9]", program);
+    std::snprintf(usage, sizeof(usage), "usage: %s [--dump out.wav] [--eq g0,g1,...,g9] [--bed-renderer system|builtin]", program);
     for (int i = 1; i < argc; ++i) {
         if (std::strcmp(argv[i], "--dump") == 0 && i + 1 < argc) {
             out.dumpPath = argv[++i];
+        } else if (std::strcmp(argv[i], "--bed-renderer") == 0 && i + 1 < argc) {
+            const char* value = argv[++i];
+            if (std::strcmp(value, "system") == 0) {
+                out.systemBedRenderer = true;
+            } else if (std::strcmp(value, "builtin") == 0) {
+                out.systemBedRenderer = false;
+            } else {
+                error = std::string("bad --bed-renderer: ") + value + " (use system or builtin)";
+                return false;
+            }
         } else if (std::strcmp(argv[i], "--eq") == 0 && i + 1 < argc) {
             const char* s = argv[++i];
             char* end = nullptr;

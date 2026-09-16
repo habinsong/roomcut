@@ -96,8 +96,20 @@ static void testAnUnwritablePathFails() {
           "a capture that cannot be written reports failure");
 }
 
+static void testBedRendererIsChosenOnTheCommandLine() {
+    EngineOptions options; std::string error;
+    CHECK(parse({"engine"}, options, error) && !options.systemBedRenderer, "the built-in bed renderer is the default");
+    CHECK(parse({"engine", "--bed-renderer", "system"}, options, error) && options.systemBedRenderer, "system selects AUSpatialMixer");
+    CHECK(parse({"engine", "--bed-renderer", "builtin"}, options, error) && !options.systemBedRenderer, "builtin selects the stage's own render");
+    EngineOptions refused; std::string why;
+    CHECK(!parse({"engine", "--bed-renderer", "apple"}, refused, why) && why.find("--bed-renderer") != std::string::npos,
+          "an unknown renderer is refused and named");
+    CHECK(!parse({"engine", "--bed-renderer"}, refused, why), "the flag needs a value");
+}
+
 int main() {
     testNoArgumentsCaptureNothingAndStayFlat();
+    testBedRendererIsChosenOnTheCommandLine();
     testDumpPathAndEqCurveAreRead();
     testRefusedArgumentsReportWhyAndDoNotRun();
     testWrittenWavIsReadableFloat32();

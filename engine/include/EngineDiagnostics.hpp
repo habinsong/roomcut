@@ -14,6 +14,9 @@ struct EngineOptions {
     std::string dumpPath;                       // empty = no capture
     ChainParams params = ChainParams::flat();
     bool eqGiven = false;                       // --eq wins over the resumed state
+    // --bed-renderer system: the headphone upmix goes through AUSpatialMixer
+    // (SpatialMixerBedRenderer). Off by default until listening decides (P0 G1).
+    bool systemBedRenderer = false;
 
     bool dumping() const { return !dumpPath.empty(); }
 };

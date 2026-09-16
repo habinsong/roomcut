@@ -28,6 +28,7 @@
 #include "EngineStateStore.hpp"
 #include "PublishedRing.hpp"
 #include "RealtimeParams.hpp"
+#include "SpatialMixerBedRenderer.hpp"
 #include "OutputDevice.hpp"
 #include "OutputRecovery.hpp"
 #include "DriverFeedWatchdog.hpp"
@@ -88,6 +89,11 @@ struct EngineContext {
     std::atomic<RoomcutEngineLifecycle> lifecycle{ROOMCUT_ENGINE_STARTING};
 
     RenderPipeline         render;              // render-thread only after prepare()
+    // One AUSpatialMixer per A/B chain, opened with the output (control thread,
+    // IO stopped) when --bed-renderer system asked for it.
+    bool                   useSystemBedRenderer = false;
+    SpatialMixerBedRenderer bedCurrent;
+    SpatialMixerBedRenderer bedReference;
     std::atomic<uint32_t>  renderPeakBits{0};   // float bits of the last block's peak
     std::atomic<uint64_t>  framesRendered{0};
     std::atomic<uint64_t>  renderUnderruns{0};  // output pulled more than the ring had
@@ -277,6 +283,22 @@ OSStatus openOutputOn(EngineContext& ctx, OutputDevice& output,
     // Allocate and reset all sample-path state before starting the callback.
     ctx.comparisonMeters.readLatest(ctx.comparisonSnapshot);
     ctx.comparisonSnapshot = {};
+    BedRenderer* bedCurrent = nullptr;
+    BedRenderer* bedReference = nullptr;
+    if (ctx.useSystemBedRenderer) {
+        std::string bedError;
+        if (ctx.bedCurrent.prepare(output.sampleRate(), bedError) && ctx.bedReference.prepare(output.sampleRate(), bedError)) {
+            bedCurrent = &ctx.bedCurrent;
+            bedReference = &ctx.bedReference;
+            std::fprintf(stderr, "[engine] bed renderer: AUSpatialMixer at %.0f Hz (+%zu frames)\n",
+                         output.sampleRate(), SpatialMixerBedRenderer::kBlockFrames);
+        } else {
+            ctx.bedCurrent.release();
+            ctx.bedReference.release();
+            std::fprintf(stderr, "[engine] bed renderer: built-in (%s)\n", bedError.c_str());
+        }
+    }
+    ctx.render.attachBedRenderers(bedCurrent, bedReference);
     try {
         ctx.render.prepare((double)ringSR, output.sampleRate(), params);
         ctx.analysis.prepare((uint32_t)std::lround(output.sampleRate()));
