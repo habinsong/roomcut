@@ -113,9 +113,11 @@ struct Direction {
     double side = 0.0;         // -1 left, +1 right, 0 centre
     double ildDb = 0.0;        // broadband, left over right
     double arrivalLeftMs = -1.0, arrivalRightMs = -1.0;
-    // One source through one path reaches both ears with the same polarity,
-    // no further apart than the head allows. Opposite polarity dominating, or a
-    // lag beyond the head, is not a direction a single source can have.
+    // One source through one path reaches both ears with the same polarity.
+    // Opposite polarity dominating the head's time window is not a direction a
+    // single source can have. (The window is the model's largest head; a lag
+    // bound tied to the default sphere would reject measured heads, whose ITD
+    // runs past it — AUSpatialMixer measures 723 us at 90 degrees.)
     bool singleSource = false;
 };
 
@@ -187,8 +189,7 @@ Direction measure(const Ears& e, double fs) {
     d.itdSeconds = (static_cast<double>(best) + fraction) / fs;
     d.lateralDegrees = lateralFromItd(d.itdSeconds);
     d.side = d.itdSeconds > 0.0 ? -1.0 : (d.itdSeconds < 0.0 ? 1.0 : 0.0);
-    d.singleSource = peak > 0.0 && peak >= -trough
-        && std::fabs(d.itdSeconds) <= woodworthItd(90.0) + 1.0 / fs;
+    d.singleSource = peak > 0.0 && peak >= -trough;
     return d;
 }
 
