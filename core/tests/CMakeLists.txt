@@ -200,6 +200,13 @@ target_compile_options(test_spatial_matrix PRIVATE -Wall -Wextra)
 
 add_test(NAME spatial_matrix COMMAND test_spatial_matrix)
 
+# DSP: where each upmix channel is heard on headphones (ITD/ILD direction harness).
+add_executable(test_binaural_direction ${CMAKE_SOURCE_DIR}/core/tests/test_binaural_direction.cpp)
+target_include_directories(test_binaural_direction PRIVATE ${CMAKE_SOURCE_DIR}/core/dsp)
+target_compile_options(test_binaural_direction PRIVATE -Wall -Wextra)
+
+add_test(NAME binaural_direction COMMAND test_binaural_direction)
+
 # DSP: stereo -> 5.1/7.1 upmix steering matrix — header-only.
 add_executable(test_upmix ${CMAKE_SOURCE_DIR}/core/tests/test_upmix.cpp)
 target_include_directories(test_upmix PRIVATE ${CMAKE_SOURCE_DIR}/core/dsp)
