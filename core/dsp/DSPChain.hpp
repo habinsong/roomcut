@@ -45,6 +45,9 @@ public:
         reset();
     }
 
+    // A headphone bed renderer outside the core (see ExternalBed); before prepare().
+    void attachBedRenderer(BedRenderer* renderer) { head_.attachBedRenderer(renderer); }
+
     void setParams(const ChainParams& params) {
         if (params == params_) return;
         params_ = params;
@@ -115,11 +118,12 @@ public:
 
     double limiterGainReductionDb() const { return limiter_.gainReductionDb(); }
 
-    // Delay the chain adds on purpose. Only the limiter's look-ahead is a bulk
-    // delay of the whole signal; the filters are IIR, so their group delay varies
-    // with frequency and is not part of a single number.
+    // Delay the chain adds on purpose. The limiter's look-ahead and, while a bed
+    // renderer is attached, its block are bulk delays of the whole signal; the
+    // filters are IIR, so their group delay varies with frequency and is not
+    // part of a single number.
     double latencySeconds() const {
-        return fs_ > 0 ? static_cast<double>(limiter_.lookaheadFrames()) / fs_ : 0.0;
+        return fs_ > 0 ? static_cast<double>(limiter_.lookaheadFrames() + head_.latencyFrames()) / fs_ : 0.0;
     }
     bool safeBypassed() const { return safeBypass_; }
 

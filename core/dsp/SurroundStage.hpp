@@ -46,6 +46,7 @@
 #include <cmath>
 #include <cstddef>
 
+#include "ExternalBed.hpp"
 #include "SpeakerColour.hpp"
 #include "Upmixer.hpp"
 #include "VirtualSpeaker.hpp"
@@ -173,6 +174,7 @@ public:
         lowA_ = 1.0 - std::exp(-2.0 * kPi * kSurroundLowpassHz / fs_);
         matchA_ = 1.0 - std::exp(-1.0 / (fs_ * kSurroundMatchSeconds));
         matchStep_ = 1.0 - std::exp(-1.0 / (fs_ * 0.05));
+        external_.prepare(fs_);
         computeNormalisation();
         applyYaw();
         reset();
@@ -203,6 +205,7 @@ public:
         if (wanted == layout_) return;
         layout_ = wanted;
         upmix_.setLayout(layout_);
+        external_.setLayout(layout_);
         computeNormalisation();
         applyYaw();
     }
@@ -212,6 +215,7 @@ public:
     void setSurroundLevels(double centreWidth, double surroundDepth) {
         upmix_.setCentreWidth(centreWidth);
         upmix_.setSurroundDepth(surroundDepth);
+        external_.setSurroundLevels(centreWidth, surroundDepth);
     }
 
     // Head yaw in degrees, positive when the listener turns to the right.
@@ -220,6 +224,14 @@ public:
         applyYaw();
     }
     double yawDegrees() const { return yaw_; }
+
+    // Hands the headphone upmix to a renderer outside the DSP core (see
+    // ExternalBed). Call before prepare(). While one is attached the stage's
+    // output is delayed by latencyFrames(), in every mode, so nothing jumps in
+    // time when the bed moves between the built-in render and the external one.
+    void attachBedRenderer(BedRenderer* renderer) { external_.attach(renderer); }
+    std::size_t latencyFrames() const { return external_.latencyFrames(); }
+    double externalBedGain() const { return external_.externalGain(); }
 
     void setHeadRadiusCm(double cm) {
         for (auto& speaker : speaker_) speaker.setHeadRadiusCm(cm);
@@ -241,10 +253,17 @@ public:
         matchGain_ = 1.0;
         upmix_.reset();
         mix_ = enabled_ ? 1.0 : 0.0;
+        external_.reset(layout_, externalWanted());
     }
 
     inline void processFrame(float* frame, std::size_t channels) {
         if (channels < 2) return;
+        if (external_.attached()) {
+            double left = frame[0], right = frame[1];
+            external_.input(left, right, layout_, externalWanted(), yaw_);
+            frame[0] = static_cast<float>(left);
+            frame[1] = static_cast<float>(right);
+        }
         const double target = enabled_ ? 1.0 : 0.0;
         if (mix_ < target)      mix_ = std::min(target, mix_ + rampStep_);
         else if (mix_ > target) mix_ = std::max(target, mix_ - rampStep_);
@@ -279,6 +298,7 @@ public:
         }
         double wetL = 0.0, wetR = 0.0;
         renderBed(up, wetL, wetR);
+        if (external_.attached()) external_.substitute(wetL, wetR);
         if (upmixing) {
             // The match owns the level on this path, so it has to be the LAST
             // thing: a fixed bus gain applied after it would simply reappear as
@@ -335,6 +355,8 @@ private:
     static constexpr double k51Angles[5] = {0.0, -kBaseAngleDegrees, kBaseAngleDegrees, -110.0, 110.0};
     static constexpr double k71Angles[7] = {0.0, -kBaseAngleDegrees, kBaseAngleDegrees,
                                             -90.0, 90.0, -135.0, 135.0};
+
+    bool externalWanted() const { return headphone_ && enabled_ && layout_ >= Upmixer::k51; }
 
     static std::size_t speakerCount(int layout) {
         return layout >= Upmixer::k71 ? 7u : (layout >= Upmixer::k51 ? 5u : 2u);
@@ -441,6 +463,7 @@ private:
     double emphasisStep_ = 0.002;
     Upmixer upmix_{};
     VirtualSpeaker speaker_[kMaxSpeakers]{};
+    ExternalBed external_{};
 };
 
 } // namespace roomcut

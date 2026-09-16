@@ -46,6 +46,9 @@ public:
         hold_.fill(0.0f);
     }
 
+    // Before prepare(); see ComparisonProcessor::attachBedRenderers.
+    void attachBedRenderers(BedRenderer* current, BedRenderer* reference) { dsp_.attachBedRenderers(current, reference); }
+
     void setParams(const ChainParams& params) { dsp_.setParams(params); }
     void setComparison(const ComparisonSettings& settings) { dsp_.setComparison(settings); }
     ComparisonMetrics comparisonMetrics() const { return dsp_.metrics(); }

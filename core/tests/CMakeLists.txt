@@ -207,6 +207,13 @@ target_compile_options(test_binaural_direction PRIVATE -Wall -Wextra)
 
 add_test(NAME binaural_direction COMMAND test_binaural_direction)
 
+# DSP: the headphone bed handed to an external block renderer (fake renderer).
+add_executable(test_external_bed ${CMAKE_SOURCE_DIR}/core/tests/test_external_bed.cpp)
+target_include_directories(test_external_bed PRIVATE ${CMAKE_SOURCE_DIR}/core/dsp)
+target_compile_options(test_external_bed PRIVATE -Wall -Wextra)
+
+add_test(NAME external_bed COMMAND test_external_bed)
+
 # DSP: stereo -> 5.1/7.1 upmix steering matrix — header-only.
 add_executable(test_upmix ${CMAKE_SOURCE_DIR}/core/tests/test_upmix.cpp)
 target_include_directories(test_upmix PRIVATE ${CMAKE_SOURCE_DIR}/core/dsp)

@@ -27,6 +27,13 @@ public:
     // Both chains are the same shape, so either one answers for the pair.
     double latencySeconds() const { return chains_[0].latencySeconds(); }
 
+    // One headphone bed renderer per chain, before prepare(); either may be null.
+    // Both chains must carry the same block so an A/B swap cannot shift time.
+    void attachBedRenderers(BedRenderer* current, BedRenderer* reference) {
+        chains_[0].attachBedRenderer(current);
+        chains_[1].attachBedRenderer(reference);
+    }
+
     void prepare(double fs, std::size_t channels, const ComparisonSettings& settings = {}) {
         if (channels < 1 || channels > 2) throw std::invalid_argument("comparison requires mono or stereo");
         channels_ = channels;
