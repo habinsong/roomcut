@@ -39,6 +39,9 @@ enum {
 #define ROOMCUT_CLIENT_CAP_DYNAMICS       0x00000010u
 #define ROOMCUT_CLIENT_CAP_LEVEL_MATCH    0x00000020u
 #define ROOMCUT_CLIENT_CAP_DYNAMIC_EQ     0x00000040u
+#define ROOMCUT_CLIENT_CAP_VIRTUAL_ROOM   0x00000080u
+#define ROOMCUT_CLIENT_CAP_HEAD_TRACKING  0x00000100u
+#define ROOMCUT_CLIENT_CAP_UPMIX          0x00000200u
 #define ROOMCUT_CLIENT_ANALYSIS_SPECTRUM_BINS 24
 
 /* One parametric-EQ band (mirrors RoomcutParamBand on the wire). `type` indexes
@@ -91,6 +94,11 @@ typedef struct {
     double spatialMode;   /* 0 = speaker (XTC), 1 = headphone (crossfeed) */
     double highpassHz;    /* dynamics: 0 = off */
     double compAmount;    /* dynamics: 0..100 leveling amount, 0 = off */
+    double roomType;      /* virtual room: 0 = off, 1 = Studio, 2 = Living Room, 3 = Hall */
+    double roomAmount;    /* virtual room: 0..100, 50 = reference level */
+    double surroundType;      /* upmix: 0 = off, 2 = virtual 5.1, 3 = virtual 7.1 */
+    double centerWidth;     /* upmix centre trim, -12..+6 */
+    double surroundDepth;   /* upmix surround trim, -12..+6 */
     RoomcutClientParamBand parametric[ROOMCUT_CLIENT_PARAM_BANDS];
     RoomcutClientParamDynamics dynamics[ROOMCUT_CLIENT_PARAM_BANDS];
 } RoomcutClientParams;
@@ -98,6 +106,10 @@ typedef struct {
 typedef struct {
     uint32_t enabled;
     uint32_t state;
+    /* Payload version the engine replied with. Below 3 it carries no virtual
+     * room and below 4 no upmix; in either case the caller must keep whatever
+     * it already had rather than reading the zeros. */
+    uint32_t payloadVersion;
     uint64_t revision;
     uint64_t renderedRevision;
     float currentReductionDb;
@@ -145,9 +157,13 @@ int roomcutClientGetParams(RoomcutClientParams* out);
 int roomcutClientGetComparison(RoomcutClientComparison* out);
 /* A nonempty builtinPresetId resolves current parameters atomically in the
  * engine. Otherwise current supplies them. Reference is always required. */
+/* `peerComparisonVersion`: what the running engine understands — derive it
+ * from the capability bits in RoomcutClientState (UPMIX -> 4, VIRTUAL_ROOM
+ * -> 3, otherwise 2). Pass 0 to mean "unknown", which sends the floor. */
 int roomcutClientSetComparison(const RoomcutClientParams* current,
                                 const RoomcutClientParams* reference,
-                                int enabled, const char* builtinPresetId);
+                                int enabled, const char* builtinPresetId,
+                                uint32_t peerComparisonVersion);
 
 int roomcutClientGetAnalysis(RoomcutClientAnalysis* out);
 
@@ -249,8 +265,15 @@ int roomcutClientSetParams(double preampDb,
                            double centerFocus, double crossfeed,
                            double roomReduce, double spatialMode,
                            double highpassHz, double compAmount,
+                           double roomType, double roomAmount,
+                           double surroundType, double centerWidth, double surroundDepth,
                            const RoomcutClientParamBand parametric[ROOMCUT_CLIENT_PARAM_BANDS],
                            const RoomcutClientParamDynamics dynamics[ROOMCUT_CLIENT_PARAM_BANDS]);
+
+/* Push the listener's live head orientation (degrees, + = turned right).
+ * active = 0 means the tracker stopped delivering and the renderer fades out.
+ * Cheap enough to call at the tracker's own rate (AirPods deliver ~50 Hz). */
+int roomcutClientSetHeadPose(double yawDeg, int active);
 
 /* Builtin preset enumeration (no engine connection needed). */
 int roomcutClientPresetCount(void);

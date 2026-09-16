@@ -50,6 +50,8 @@ public:
     void setComparison(const ComparisonSettings& settings) { dsp_.setComparison(settings); }
     ComparisonMetrics comparisonMetrics() const { return dsp_.metrics(); }
     void setBypass(bool bypass) { dsp_.setBypass(bypass); }
+    // Head orientation from the listener's headphones; see DSPChain::setHeadPose.
+    void setHeadPose(double yawDegrees, bool active) { dsp_.setHeadPose(yawDegrees, active); }
     double ratio() const { return resampler_.ratio(); }
     double resamplerLatencySeconds() const { return resampler_.latencySeconds(); }
     // What the engine adds on purpose, end to end: rate conversion plus the

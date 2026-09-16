@@ -42,22 +42,34 @@ inline bool normalizeControlRequest(RoomcutControlMsgBuffer& buffer) {
     case ROOMCUT_MSG_SET_BYPASS: valid = sizeMatches(size, sizeof(RoomcutSetBypassRequest)); break;
     case ROOMCUT_MSG_SET_KEEP_DEFAULT: valid = sizeMatches(size, sizeof(RoomcutSetKeepDefaultRequest)); break;
     case ROOMCUT_MSG_SET_VOLUME_BOOST: valid = sizeMatches(size, sizeof(RoomcutSetVolumeBoostRequest)); break;
+    case ROOMCUT_MSG_SET_HEAD_POSE:
+        valid = sizeMatches(size, sizeof(RoomcutSetHeadPoseRequest))
+            && buffer.setHeadPose.active <= 1 && std::isfinite(buffer.setHeadPose.yawDeg);
+        break;
     case ROOMCUT_MSG_SET_PARAMS:
         valid = sizeMatches(size, sizeof(RoomcutSetParamsRequest), {
             offsetof(RoomcutSetParamsRequest, spatialWidth), offsetof(RoomcutSetParamsRequest, spatialMode),
             offsetof(RoomcutSetParamsRequest, parametric), offsetof(RoomcutSetParamsRequest, highpassHz),
-            offsetof(RoomcutSetParamsRequest, dynamics)});
+            offsetof(RoomcutSetParamsRequest, dynamics), offsetof(RoomcutSetParamsRequest, roomType),
+            offsetof(RoomcutSetParamsRequest, surroundType)});
         break;
     case ROOMCUT_MSG_STATE: case ROOMCUT_MSG_GET_PARAMS: case ROOMCUT_MSG_GET_ANALYSIS:
         valid = sizeMatches(size, sizeof(RoomcutStateRequest), {sizeof(mach_msg_header_t) + sizeof(uint32_t)});
         break;
     case ROOMCUT_MSG_SET_COMPARISON:
-        valid = size == sizeof(RoomcutComparisonRequest)
-            && buffer.comparisonRequest.version == ROOMCUT_COMPARISON_VERSION
+        // A version-2 sender stops right before the appended virtual room, a
+        // version-3 one right before the appended upmix.
+        valid = sizeMatches(size, sizeof(RoomcutComparisonRequest),
+                            {offsetof(RoomcutComparisonRequest, currentRoomType),
+                             offsetof(RoomcutComparisonRequest, currentSurroundType)})
+            && buffer.comparisonRequest.version >= ROOMCUT_COMPARISON_MIN_VERSION
+            && buffer.comparisonRequest.version <= ROOMCUT_COMPARISON_VERSION
             && buffer.comparisonRequest.enabled <= 1 && buffer.comparisonRequest.kind <= ROOMCUT_COMPARISON_PRESET;
         break;
     case ROOMCUT_MSG_GET_COMPARISON:
-        valid = size == sizeof(RoomcutGetComparisonRequest) && buffer.getComparison.version == ROOMCUT_COMPARISON_VERSION;
+        valid = size == sizeof(RoomcutGetComparisonRequest)
+            && buffer.getComparison.version >= ROOMCUT_COMPARISON_MIN_VERSION
+            && buffer.getComparison.version <= ROOMCUT_COMPARISON_VERSION;
         break;
     }
     if (!valid) return false;
@@ -85,12 +97,16 @@ inline bool normalizeControlReply(RoomcutControlMsgBuffer& buffer, uint32_t expe
         valid = sizeMatches(size, sizeof(RoomcutGetParamsReply), {
             offsetof(RoomcutGetParamsReply, spatialWidth), offsetof(RoomcutGetParamsReply, spatialMode),
             offsetof(RoomcutGetParamsReply, parametric), offsetof(RoomcutGetParamsReply, highpassHz),
-            offsetof(RoomcutGetParamsReply, dynamics)});
+            offsetof(RoomcutGetParamsReply, dynamics), offsetof(RoomcutGetParamsReply, roomType),
+            offsetof(RoomcutGetParamsReply, surroundType)});
         break;
     case ROOMCUT_MSG_GET_ANALYSIS: valid = sizeMatches(size, sizeof(RoomcutAnalysisReply)); break;
     case ROOMCUT_MSG_GET_COMPARISON:
-        valid = size == sizeof(RoomcutComparisonReply)
-            && buffer.comparisonReply.version == ROOMCUT_COMPARISON_VERSION
+        valid = sizeMatches(size, sizeof(RoomcutComparisonReply),
+                            {offsetof(RoomcutComparisonReply, currentRoomType),
+                             offsetof(RoomcutComparisonReply, currentSurroundType)})
+            && buffer.comparisonReply.version >= ROOMCUT_COMPARISON_MIN_VERSION
+            && buffer.comparisonReply.version <= ROOMCUT_COMPARISON_VERSION
             && buffer.comparisonReply.enabled <= 1 && buffer.comparisonReply.state <= 5
             && std::isfinite(buffer.comparisonReply.currentReductionDb)
             && std::isfinite(buffer.comparisonReply.referenceReductionDb)

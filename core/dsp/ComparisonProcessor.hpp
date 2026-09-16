@@ -68,6 +68,15 @@ public:
         settings_ = settings;
     }
 
+    // Live head orientation reaches both chains: the A/B swap must not change
+    // where the listener's head is.
+    void setHeadPose(double yawDegrees, bool active) {
+        if (headActive_ == active && headYawDeg_ == yawDegrees) return;
+        headYawDeg_ = yawDegrees;
+        headActive_ = active;
+        for (auto& chain : chains_) chain.setHeadPose(yawDegrees, active);
+    }
+
     void setBypass(bool bypassed) {
         if (bypassed_ == bypassed) return;
         bypassed_ = bypassed;
@@ -117,6 +126,8 @@ private:
     ComparisonSettings settings_;
     std::size_t channels_ = 2, current_ = 0;
     bool bypassed_ = false;
+    double headYawDeg_ = 0.0;
+    bool headActive_ = false;
 };
 } // namespace roomcut
 #endif

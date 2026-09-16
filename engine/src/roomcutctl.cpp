@@ -65,8 +65,10 @@ int usage(const char* argv0) {
         "params get [--json] | analysis --json | "
         "params <preamp> <g0..g9> <releaseMs> <outDb> "
         "[<width> <centerFocus> <crossfeed> <roomReduce> "
-        "[<mode> <highpassHz> <compAmount>]] | "
+        "[<mode> <highpassHz> <compAmount> [<roomType> <roomAmount> "
+        "[<surroundType> <centerWidth> <surroundDepth>]]]] | "
         "peq <type> <freqHz> <gainDb> <q> | "
+        "headpose <yawDeg> [on|off] | "
         "device <uid|auto> | "
         "bypass on|off | keepdefault on|off | health\n",
         argv0);
@@ -147,10 +149,11 @@ int main(int argc, char** argv) {
             std::printf("preset:   %s\n", st.presetId);
             std::printf("revision: %u\n", st.paramsRevision);
             std::printf("boost:    %.2fx\n", volumeBoost);
-            std::printf("caps:     %s%s%s%s\n",
+            std::printf("caps:     %s%s%s%s%s\n",
                         (st.capabilities & ROOMCUT_CAP_SPATIAL_PARAMS) ? "spatial" : "",
                         (st.capabilities & ROOMCUT_CAP_PARAMETRIC) ? " parametric" : "",
                         (st.capabilities & ROOMCUT_CAP_ANALYZER) ? " analyzer" : "",
+                        (st.capabilities & ROOMCUT_CAP_UPMIX) ? " upmix" : "",
                         st.capabilities == 0 ? "(none)" : "");
             std::printf("bypass:   manual=%s safe=%s\n",
                         st.manualBypass ? "on" : "off",
@@ -281,11 +284,16 @@ int main(int argc, char** argv) {
                     "\"outputGainDb\":%.4f,\"spatialWidth\":%.4f,"
                     "\"centerFocus\":%.4f,\"crossfeed\":%.4f,"
                     "\"roomReduce\":%.4f,\"spatialMode\":%.4f,"
-                    "\"highpassHz\":%.4f,\"compAmount\":%.4f}\n",
+                    "\"highpassHz\":%.4f,\"compAmount\":%.4f,"
+                    "\"roomType\":%.4f,\"roomAmount\":%.4f,"
+                    "\"surroundType\":%.4f,\"centerWidth\":%.4f,"
+                    "\"surroundDepth\":%.4f}\n",
                     params.limiterReleaseMs,
                     params.outputGainDb, params.spatialWidth,
                     params.centerFocus, params.crossfeed, params.roomReduce,
-                    params.spatialMode, params.highpassHz, params.compAmount);
+                    params.spatialMode, params.highpassHz, params.compAmount,
+                    params.roomType, params.roomAmount,
+                    params.surroundType, params.centerWidth, params.surroundDepth);
                 rc = 0;
             } else {
                 std::printf("preset:   %s\n", params.presetId);
@@ -304,10 +312,14 @@ int main(int argc, char** argv) {
                             params.crossfeed, params.roomReduce, params.spatialMode);
                 std::printf("dynamics: highpass %.2f Hz, leveling %.2f\n",
                             params.highpassHz, params.compAmount);
+                std::printf("room:     type %.0f, amount %.2f\n",
+                            params.roomType, params.roomAmount);
+                std::printf("upmix:    type %.0f, centre width %.0f%%, surround depth %.0f%%\n",
+                            params.surroundType, params.centerWidth, params.surroundDepth);
                 rc = 0;
             }
         }
-    } else if (std::strcmp(cmd, "params") == 0 && (argc == 15 || argc == 19 || argc == 22)) {
+    } else if (std::strcmp(cmd, "params") == 0 && (argc == 15 || argc == 19 || argc == 22 || argc == 24 || argc == 27)) {
         double preamp = std::strtod(argv[2], nullptr);
         double gains[10];
         for (int b = 0; b < 10; ++b) gains[b] = std::strtod(argv[3 + b], nullptr);
@@ -317,21 +329,40 @@ int main(int argc, char** argv) {
         double center = argc >= 19 ? std::strtod(argv[16], nullptr) : 0.0;
         double crossfeed = argc >= 19 ? std::strtod(argv[17], nullptr) : 0.0;
         double room = argc >= 19 ? std::strtod(argv[18], nullptr) : 0.0;
-        double mode = argc == 22 ? std::strtod(argv[19], nullptr) : 0.0;
-        double hpf  = argc == 22 ? std::strtod(argv[20], nullptr) : 0.0;
-        double comp = argc == 22 ? std::strtod(argv[21], nullptr) : 0.0;
+        double mode = argc >= 22 ? std::strtod(argv[19], nullptr) : 0.0;
+        double hpf  = argc >= 22 ? std::strtod(argv[20], nullptr) : 0.0;
+        double comp = argc >= 22 ? std::strtod(argv[21], nullptr) : 0.0;
+        double roomType = argc >= 24 ? std::strtod(argv[22], nullptr) : 0.0;
+        double roomAmount = argc >= 24 ? std::strtod(argv[23], nullptr) : 50.0;
+        double surroundType = argc == 27 ? std::strtod(argv[24], nullptr) : 0.0;
+        double centerWidth = argc == 27 ? std::strtod(argv[25], nullptr) : 0.0;
+        double surroundDepth = argc == 27 ? std::strtod(argv[26], nullptr) : 0.0;
         uint32_t status = 1;
         // CLI does not edit parametric bands — pass none (the engine keeps the
         // band array flat for a custom set from the CLI).
         kern_return_t kr = controlSetParams(service, preamp, gains,
                                             releaseMs, outDb,
                                             width, center, crossfeed, room, mode,
-                                            hpf, comp,
+                                            hpf, comp, roomType, roomAmount,
+                                            surroundType, centerWidth, surroundDepth,
                                             nullptr, nullptr, kTimeoutMs, &status);
         if (kr != KERN_SUCCESS || status != 0) {
             std::fprintf(stderr, "roomcutctl: params failed (%d)\n", kr);
         } else {
             std::printf("params -> custom\n");
+            rc = 0;
+        }
+    } else if (std::strcmp(cmd, "headpose") == 0 && (argc == 3 || argc == 4)) {
+        // headpose <yawDegrees> [on|off] — drives the head-tracked renderer
+        // without the app, so the render path can be verified on its own.
+        const double yaw = std::strtod(argv[2], nullptr);
+        const bool active = argc == 3 || std::strcmp(argv[3], "off") != 0;
+        uint32_t status = 1;
+        kern_return_t kr = controlSetHeadPose(service, yaw, active, kTimeoutMs, &status);
+        if (kr != KERN_SUCCESS || status != 0) {
+            std::fprintf(stderr, "roomcutctl: head pose failed (%d)\n", kr);
+        } else {
+            std::printf("head pose -> yaw %.1f deg, %s\n", yaw, active ? "active" : "inactive");
             rc = 0;
         }
     } else if (std::strcmp(cmd, "peq") == 0 && (argc == 6 || argc == 10)) {
@@ -361,7 +392,8 @@ int main(int argc, char** argv) {
         kern_return_t kr = controlSetParams(service, 0.0, flatGains,
                                             100.0, 0.0,
                                             0.0, 0.0, 0.0, 0.0, 0.0,
-                                            0.0, 0.0,
+                                            0.0, 0.0, 0.0, 50.0,
+                                            0.0, 0.0, 0.0,
                                             bands, dynamics, kTimeoutMs, &status);
         if (kr != KERN_SUCCESS || status != 0) {
             std::fprintf(stderr, "roomcutctl: peq failed (%d)\n", kr);

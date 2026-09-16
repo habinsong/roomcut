@@ -12,7 +12,7 @@ public final class RoomcutViewModel: ObservableObject {
     // through the engine)? Reflected from CoreAudio each poll; drives the top
     // ON/OFF toggle. OFF means the system default is a real device and Roomcut
     // is fully out of the path.
-    @Published public private(set) var roomcutIsDefault = false
+    @Published public internal(set) var roomcutIsDefault = false
     public let editor = SoundEditor()
     public let comparison = SoundComparison()
     public var preampDb: Double {
@@ -50,6 +50,26 @@ public final class RoomcutViewModel: ObservableObject {
     public var spatialMode: Double {
         get { editor.snapshot.parameters.spatialMode }
         set { editor.update { $0.parameters.spatialMode = newValue } }
+    }
+    public var roomType: Double {
+        get { editor.snapshot.parameters.roomType }
+        set { editor.update { $0.parameters.roomType = newValue } }
+    }
+    public var roomAmount: Double {
+        get { editor.snapshot.parameters.roomAmount }
+        set { editor.update { $0.parameters.roomAmount = newValue } }
+    }
+    public var surroundType: Double {
+        get { editor.snapshot.parameters.surroundType }
+        set { editor.update { $0.parameters.surroundType = newValue } }
+    }
+    public var centerWidth: Double {
+        get { editor.snapshot.parameters.centerWidth }
+        set { editor.update { $0.parameters.centerWidth = newValue } }
+    }
+    public var surroundDepth: Double {
+        get { editor.snapshot.parameters.surroundDepth }
+        set { editor.update { $0.parameters.surroundDepth = newValue } }
     }
     public var compAmount: Double {
         get { editor.snapshot.parameters.compAmount }
@@ -99,7 +119,7 @@ public final class RoomcutViewModel: ObservableObject {
     public var appearance: RoomcutAppearance { preferences.appearance }
     public var themeSyncEnabled: Bool { preferences.themeSync }
     public var language: AppLanguage { preferences.language }
-    @Published public private(set) var analysis: RoomcutAnalysisSnapshot?
+    @Published public internal(set) var analysis: RoomcutAnalysisSnapshot?
     public var deviceAutoPresetEnabled: Bool { presetStore.autoApply }
 
     // Sample Now Playing metadata, set only by a `--ui-fixture` launch. nil in
@@ -116,28 +136,30 @@ public final class RoomcutViewModel: ObservableObject {
 
     public let presets: [EnginePreset]
 
-    private let client: EngineClientProtocol
-    private let writer: ParameterWriter
-    private let deviceWriter: DeviceCommandWriter
-    private let bypassWriter: BypassWriter
-    private let deviceReader: DeviceReadCoordinator
-    private let presetStore: PresetStore
-    private let preferences: AppPreferences
+    let client: EngineClientProtocol
+    let writer: ParameterWriter
+    let deviceWriter: DeviceCommandWriter
+    let bypassWriter: BypassWriter
+    let deviceReader: DeviceReadCoordinator
+    private var deviceListWatcher: DeviceListWatcher?
+    public let headTracking: HeadTrackingService
+    let presetStore: PresetStore
+    let preferences: AppPreferences
     private var observations: Set<AnyCancellable> = []
-    private let poller = EnginePoller()
-    private var writeErrorActive = false
-    private var paramsReadFailed = false
+    let poller = EnginePoller()
+    var writeErrorActive = false
+    var paramsReadFailed = false
     private var paramsRetryAfter = Date.distantPast
-    private var isEditingParams: Bool { writer.isBusy || editor.isEditing }
-    private var isEditingVolume = false
-    private var isEditingBalance = false
+    var isEditingParams: Bool { writer.isBusy || editor.isEditing }
+    var isEditingVolume = false
+    var isEditingBalance = false
     private var lastSeenPresetId: String?
-    private var lastSeenRevision: UInt32?
+    var lastSeenRevision: UInt32?
     private var lastUnderruns: UInt64?
-    private var analyzerVisible = false
-    private var didClaimDefaultOutput = false
+    var analyzerVisible = false
+    var didClaimDefaultOutput = false
 
-    private static let volumeEpsilon = 0.001
+    static let volumeEpsilon = 0.001
     public static let maxVolume = 2.0
 
     public convenience init() {
@@ -154,11 +176,15 @@ public final class RoomcutViewModel: ObservableObject {
         self.deviceWriter = DeviceCommandWriter(client: client)
         self.bypassWriter = BypassWriter(client: client)
         self.deviceReader = DeviceReadCoordinator(client: client)
+        self.headTracking = HeadTrackingService { [client] yaw, active in
+            client.sendHeadPose(yawDegrees: yaw, active: active)
+        }
         editor.relabel(saved: presetStore.activeSavedName.flatMap { presetStore.contains($0) ? $0 : nil },
                        builtin: presetStore.activeBuiltinID.flatMap { id in
                            client.presets.contains { $0.id == id } || PresetLibrary.preset(for: id) != nil ? id : nil
                        })
-        for publisher in [editor.objectWillChange, writer.objectWillChange, presetStore.objectWillChange, preferences.objectWillChange] {
+        for publisher in [editor.objectWillChange, writer.objectWillChange, presetStore.objectWillChange,
+                          preferences.objectWillChange, headTracking.objectWillChange] {
             publisher.sink { [weak self] in self?.objectWillChange.send() }.store(in: &observations)
         }
         writer.didComplete = { [weak self] id, command, result in
@@ -180,9 +206,26 @@ public final class RoomcutViewModel: ObservableObject {
 
     public func startPolling() {
         poller.start { [weak self] in await self?.refreshNow(waitForDevices: false) }
+        // CoreAudio announces a device appearing or disappearing right away;
+        // waiting for the next poll would leave freshly connected headphones
+        // missing from the list for up to five seconds.
+        if deviceListWatcher == nil {
+            deviceListWatcher = DeviceListWatcher { [weak self] in
+                Task { @MainActor in self?.deviceListDidChange() }
+            }
+        }
+        deviceListWatcher?.start()
+    }
+
+    // The hardware list moved: drop the cached list and read it now.
+    public func deviceListDidChange() {
+        poller.invalidateDeviceList()
+        Task { await refreshNow(waitForDevices: true) }
     }
 
     public func stopPolling() {
+        headTracking.stop()
+        deviceListWatcher?.stop()
         poller.stop()
         deviceReader.cancel()
         writer.cancel()
@@ -313,440 +356,8 @@ public final class RoomcutViewModel: ObservableObject {
         }
     }
 
-    public func apply(presetId: String) {
-        Task { await applyPreset(presetId) }
-    }
-
-    public func applyPreset(_ presetId: String) async {
-        editor.finishEditing()
-        _ = await writer.preset(presetId, editorRevision: editor.revision, comparison: prepareComparisonWrite())
-    }
-
-    // MARK: Basic-tab macros (additive layer over the 10-band EQ)
-
-    // Move one macro to `normalized` ∈ [-1, 1]. Only that macro's target bands
-    // shift, by the DELTA from its previous position — so re-editing never
-    // double-counts and the engine EQ always matches the knob.
-    public func setMacro(_ macro: EqMacro, normalized: Double) {
-        let clamped = max(-1.0, min(1.0, normalized))
-        let previous = macroValues[macro] ?? 0
-        macroValues[macro] = clamped
-        eqGainsDb = RoomcutMacros.applyDelta(macro, delta: clamped - previous, to: eqGainsDb)
-        schedulePushParams()
-    }
-
-    // MARK: Saved presets (name → params, UserDefaults-backed)
-
-    public func presetNameExists(_ name: String) -> Bool { presetStore.contains(name) }
-    public static let customPresetName = "Custom"
-
-    public func makeCurrentPreset(name: String, folder: String? = nil, roomTuneInfo: String? = nil) -> SavedPreset {
-        var value = editor.snapshot
-        value.parameters = currentParameters()
-        var preset = value.preset(name: name, folder: folder, roomTuneInfo: roomTuneInfo)
-        if !parametricAvailable { preset.parametric = [] }
-        return preset
-    }
-
-    @discardableResult
-    public func saveCurrentAsPreset(name: String, roomTuneInfo: String? = nil) -> Bool {
-        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        let name = trimmed.isEmpty ? Self.customPresetName : trimmed
-        presetStore.save(makeCurrentPreset(name: name, roomTuneInfo: roomTuneInfo))
-        setActivePreset(savedName: name, builtinId: nil)
-        return true
-    }
-
-    public func applySavedPreset(_ preset: SavedPreset) {
-        editor.finishEditing()
-        var value = SoundSnapshot(preset: preset)
-        value.parameters = value.parameters.supported(by: status)
-        editor.update { $0 = value }
-        setActivePreset(savedName: value.savedPresetName, builtinId: value.builtinPresetID)
-        schedulePushParams(preservingPresetSelection: true)
-    }
-
-    public func deleteSavedPreset(_ preset: SavedPreset) {
-        presetStore.delete(preset)
-        if activeSavedPreset?.caseInsensitiveCompare(preset.name) == .orderedSame {
-            setActivePreset(savedName: nil, builtinId: nil)
-        }
-    }
-
-    // The name to show wherever the preset surfaces (menu bar, Settings, the EQ
-    // summaries): the active saved preset, else the builtin name, else "Custom".
-    public var currentPresetName: String {
-        if editor.hasBaseline || editor.isEditing {
-            if let name = activeSavedPreset { return name }
-            if let id = activeBuiltinPresetId, let preset = PresetLibrary.preset(for: id) { return preset.name }
-            if let id = activeBuiltinPresetId, let preset = presets.first(where: { $0.id == id }) { return preset.name }
-            return "Custom"
-        }
-        let id = status.presetId
-        if id == "custom", let name = activeSavedPreset { return name }
-        if id == "custom",
-           let builtin = activeBuiltinPresetId,
-           let p = presets.first(where: { $0.id == builtin }) { return p.name }
-        if let p = presets.first(where: { $0.id == id }) { return p.name }
-        return id == "custom" ? "Custom" : (id == "—" ? "—" : id.capitalized)
-    }
-
-    // True when the live curve is a hand-modified "custom" — not a saved or library
-    // preset — i.e. there's something the user might want to save.
-    public var isCustomCurve: Bool {
-        status.reachable && (editor.hasBaseline || status.presetId == "custom") && activeSavedPreset == nil
-            && activeBuiltinPresetId == nil
-    }
-
-    // Picker token: builtin preset id, "saved:<name>", or "custom".
-    public var presetPickerSelection: String {
-        if editor.hasBaseline {
-            if let name = activeSavedPreset { return "saved:\(name)" }
-            return activeBuiltinPresetId ?? "custom"
-        }
-        if status.presetId == "custom", let name = activeSavedPreset { return "saved:\(name)" }
-        if status.presetId == "custom", let builtin = activeBuiltinPresetId { return builtin }
-        return status.presetId
-    }
-
-    public func applyPickerSelection(_ token: String) {
-        if let preset = PresetLibrary.preset(for: token) {
-            applySavedPreset(preset)
-        } else if token.hasPrefix("saved:") {
-            let name = String(token.dropFirst("saved:".count))
-            if let sp = (savedPresets + PresetLibrary.all).first(where: { $0.name.caseInsensitiveCompare(name) == .orderedSame }) { applySavedPreset(sp) }
-        } else if token != "custom" {
-            apply(presetId: token)
-        }
-    }
-
-    private func setActivePreset(savedName: String?, builtinId: String?) {
-        editor.relabel(saved: savedName, builtin: builtinId)
-        presetStore.recordSelection(saved: savedName, builtin: builtinId)
-        recordDevicePreset()
-    }
-
-    public func setDeviceAutoPreset(_ on: Bool) {
-        guard deviceAutoPresetEnabled != on else { return }
-        presetStore.setAutoApply(on)
-        if on { recordDevicePreset() }
-    }
-
-    private func recordDevicePreset() {
-        let token = activeSavedPreset.map { "saved:\($0)" } ?? activeBuiltinPresetId
-        presetStore.remember(token, device: status.outputDeviceUID)
-    }
-
-    public typealias PresetExportFile = PresetArchive
-    public func exportPresetsData() -> Data? { presetStore.exportData() }
-    @discardableResult
-    public func importPresets(from data: Data) -> Int? { presetStore.importData(data) }
-
-    public var selectedDeviceUID: String { status.outputDeviceUID }
-
-    public func selectDevice(_ uid: String) {
-        sendDeviceCommand(.output(uid))
-    }
-
-    // Available (sampleRate, bitDepth) pairs for the current real device, and the
-    // distinct rates / depths the pickers offer.
-    public var availableSampleRates: [Double] {
-        Array(Set(deviceFormatOptions.map { $0.sampleRate })).sorted()
-    }
-    public var availableBitDepths: [Int] {
-        Array(Set(deviceFormatOptions.map { $0.bitDepth })).sorted()
-    }
-
-    // Change only the rate (keep the current depth) or only the depth (keep the
-    // current rate). The engine polls the nominal rate and re-opens its output.
-    public func selectSampleRate(_ sr: Double) {
-        guard let fmt = audioFormat else { return }
-        applyDeviceFormat(sampleRate: sr, bitDepth: fmt.bitDepth)
-    }
-    public func selectBitDepth(_ bits: Int) {
-        guard let fmt = audioFormat else { return }
-        applyDeviceFormat(sampleRate: fmt.sampleRate, bitDepth: bits)
-    }
-
-    private func applyDeviceFormat(sampleRate: Double, bitDepth: Int) {
-        let uid = selectedDeviceUID
-        guard !uid.isEmpty else { return }
-        sendDeviceCommand(.format(uid: uid, sampleRate: sampleRate, bitDepth: bitDepth))
-    }
-
-    // UI edits are immediate; DeviceCommandWriter owns asynchronous hardware
-    // completion. Readback cannot snap the slider back during a pending write.
-    public func beginVolumeEdit() { poller.invalidateDevices(); isEditingVolume = true }
-    public func endVolumeEdit() { poller.invalidateDevices(); isEditingVolume = false }
-
-    public func setVolume(_ v: Double) {
-        volume = min(Self.maxVolume, max(0.0, v))
-        sendDeviceCommand(.volume(volume))
-    }
-
-    // Balance uses the same optimistic UI and serialized write/readback guard.
-    public func beginBalanceEdit() { poller.invalidateDevices(); isEditingBalance = true }
-    public func endBalanceEdit() { poller.invalidateDevices(); isEditingBalance = false }
-
-    public func setBalance(_ pan: Double) {
-        balance = min(1.0, max(-1.0, pan))
-        sendDeviceCommand(.balance(balance))
-    }
-
-    private func applyDeviceReadback(_ readback: DeviceControlReadback) {
-        if audioFormat != readback.audioFormat { audioFormat = readback.audioFormat }
-        if deviceFormatOptions != readback.formatOptions { deviceFormatOptions = readback.formatOptions }
-
-        guard !isEditingVolume else { return }
-        if let v = readback.volume {
-            if !hasVolumeControl { hasVolumeControl = true }
-            if abs(volume - v) > Self.volumeEpsilon { volume = v }
-        } else if hasVolumeControl {
-            hasVolumeControl = false
-        }
-
-        // Balance mirrors the device's per-channel volume — poll it back so an
-        // external change (Audio MIDI Setup / System Settings) is reflected.
-        guard !isEditingBalance else { return }
-        if let p = readback.balance {
-            if !hasBalanceControl { hasBalanceControl = true }
-            if abs(balance - p) > Self.volumeEpsilon { balance = p }
-        } else if hasBalanceControl {
-            hasBalanceControl = false
-        }
-    }
-
-    public func setNowPlayingTheme(_ theme: RoomcutNowPlayingTheme) { preferences.setTheme(theme) }
-    public func setNowPlayingLayout(_ layout: RoomcutNowPlayingLayout) { preferences.setLayout(layout) }
-    public func setAppearance(_ appearance: RoomcutAppearance) { preferences.setAppearance(appearance) }
-    public func setThemeSync(_ on: Bool) { preferences.setThemeSync(on) }
-    public func setLanguage(_ language: AppLanguage) { preferences.setLanguage(language) }
-
     public var keepDefault: Bool { status.keepDefault }
-    public var spatialAvailable: Bool { status.reachable && status.supportsSpatialParams }
-    public var parametricAvailable: Bool { status.reachable && status.supportsParametric }
-    public var analyzerAvailable: Bool { status.reachable && status.supportsAnalyzer }
-    public var dynamicsAvailable: Bool { status.reachable && status.supportsDynamics }
-
-    public func setCompAmount(_ value: Double) {
-        guard ensureDynamicsAvailable() else { return }
-        compAmount = Self.clamp(value, 0, 100)
-        schedulePushParams(preservingPresetSelection: true)
-    }
-
-    // Low Cut (HPF). The engine treats < 20 Hz as off (DSPChain::configureHpf);
-    // 400 Hz mirrors PresetBounds::kHighpassMaxHz.
-    public func setHighpassHz(_ value: Double) {
-        guard ensureDynamicsAvailable() else { return }
-        highpassHz = Self.clamp(value, 0, 400)
-        schedulePushParams(preservingPresetSelection: true)
-    }
-
-    private func ensureDynamicsAvailable() -> Bool {
-        guard dynamicsAvailable else {
-            errorBanner = status.reachable ? "현재 엔진이 볼륨 평준화를 지원하지 않습니다" : "연결 끊김"
-            return false
-        }
-        return true
-    }
-
-    public func setAnalyzerVisible(_ visible: Bool) {
-        analyzerVisible = visible
-        if !visible, analysis != nil {
-            analysis = nil
-        }
-    }
-
-    public func setKeepDefault(_ on: Bool) {
-        sendDeviceCommand(.keepDefault(on))
-    }
-
-    public func setBypass(_ on: Bool) {
-        bypassWriter.manual(on)
-        clearErrorBanner()
-    }
-
-    public func makeBypassOverride() -> BypassOverride {
-        BypassOverride(writer: bypassWriter, current: { self.status.manualBypass })
-    }
-
-    // Await an explicit write; room measurement uses an owned temporary override.
-    @discardableResult
-    public func updateBypass(_ on: Bool) async -> Bool {
-        await bypassWriter.manualAndWait(on)
-    }
-
-    // Master switch: fully engage/disengage Roomcut by switching the system
-    // default output between the Roomcut virtual device and the real device.
-    // keep-default reclaim is coupled so OFF actually sticks (otherwise the
-    // engine would grab the default straight back).
-    public func setMasterEnabled(_ on: Bool) {
-        didClaimDefaultOutput = true // An explicit choice supersedes startup's automatic claim.
-        roomcutIsDefault = on
-        sendDeviceCommand(.master(on))
-    }
-
-    var isDeviceWritePending: Bool { deviceWriter.isBusy }
-    var isBypassWritePending: Bool { bypassWriter.isBusy }
-    var isDeviceReadPending: Bool { deviceReader.isBusy }
-
-    private func sendDeviceCommand(_ command: DeviceCommandWriter.Command) {
-        poller.invalidateDevices()
-        deviceWriter.submit(command)
-        clearErrorBanner()
-    }
-
-    private func completeDeviceWrite(id: UInt64, command: DeviceCommandWriter.Command, result: Result<Void, Error>) {
-        if command.affectsControls { poller.invalidateDevices() }
-        if case .failure = result { setErrorBanner(command.failureMessage) }
-        else { clearErrorBanner() }
-        guard command.affectsControls else { return }
-        Task { [weak self] in
-            guard let self, self.deviceWriter.isCurrent(id) else { return }
-            await self.refreshNow(waitForDevices: false)
-        }
-    }
-
-    public func setSpatialWidth(_ value: Double) {
-        guard ensureSpatialAvailable() else { return }
-        spatialWidth = Self.clamp(value, -200, 200)
-        schedulePushParams(preservingPresetSelection: true)
-    }
-
-    public func setCenterFocus(_ value: Double) {
-        guard ensureSpatialAvailable() else { return }
-        centerFocus = Self.clamp(value, 0, 200)
-        schedulePushParams(preservingPresetSelection: true)
-    }
-
-    public func setCrossfeed(_ value: Double) {
-        guard ensureSpatialAvailable() else { return }
-        crossfeed = Self.clamp(value, 0, 100)
-        schedulePushParams(preservingPresetSelection: true)
-    }
-
-    public func setRoomReduce(_ value: Double) {
-        guard ensureSpatialAvailable() else { return }
-        roomReduce = Self.clamp(value, 0, 200)
-        schedulePushParams(preservingPresetSelection: true)
-    }
-
-    public func setSpatialValues(width: Double, centerFocus: Double, crossfeed: Double, roomReduce: Double) {
-        guard ensureSpatialAvailable() else { return }
-        spatialWidth = Self.clamp(width, -200, 200)
-        self.centerFocus = Self.clamp(centerFocus, 0, 200)
-        self.crossfeed = Self.clamp(crossfeed, 0, 100)
-        self.roomReduce = Self.clamp(roomReduce, 0, 200)
-        schedulePushParams(preservingPresetSelection: true)
-    }
-
-    // Output device (Speaker/Headphone) × Surround (off/on) are encoded into one
-    // value the DSP reads: 0 = speaker, 1 = headphone, 2 = headphone+surround,
-    // 3 = speaker+surround. Speaker uses crosstalk cancellation, headphone uses
-    // binaural crossfeed; surround layers a symmetric ambience field on either path.
-    public func setSpatialMode(_ mode: Double) {
-        guard ensureSpatialAvailable() else { return }
-        let m = mode.rounded()
-        spatialMode = m >= 3 ? 3.0 : (m >= 2 ? 2.0 : (m >= 1 ? 1.0 : 0.0))
-        schedulePushParams(preservingPresetSelection: true)
-    }
-
-    // The two independent axes over the encoded spatialMode.
-    public var spatialOutputIsHeadphone: Bool { spatialMode == 1 || spatialMode == 2 }
-    public var spatialSurroundOn: Bool { spatialMode == 2 || spatialMode == 3 }
-
-    public func setSpatialOutput(headphone: Bool) {
-        setSpatialMode(Self.encodeSpatialMode(headphone: headphone, surround: spatialSurroundOn))
-    }
-    public func setSpatialSurround(_ on: Bool) {
-        setSpatialMode(Self.encodeSpatialMode(headphone: spatialOutputIsHeadphone, surround: on))
-    }
-    private static func encodeSpatialMode(headphone: Bool, surround: Bool) -> Double {
-        switch (headphone, surround) {
-        case (false, false): return 0   // speaker
-        case (true, false):  return 1   // headphone
-        case (true, true):   return 2   // headphone + surround
-        case (false, true):  return 3   // speaker + surround
-        }
-    }
-
-    // MARK: Parametric EQ (N user-configurable biquad bands)
-
-    // Parametric clamps mirror PresetValidator (core/presets/PresetValidator.hpp);
-    // the engine re-clamps, but matching here keeps the UI honest.
-    public static let parametricFreqRange = 20.0...20000.0
-    public static let parametricGainRange = -24.0...24.0
-    public static let parametricQRange = 0.1...12.0
-
-    // Replace one band wholesale (the editor builds the updated band, validates
     // the values, then pushes). No-op if the engine doesn't support parametric.
-    public func setParametricBand(_ index: Int, _ band: ParametricBand) {
-        guard ensureParametricAvailable() else { return }
-        guard parametric.indices.contains(index) else { return }
-        var b = band
-        b.type = max(0, min(ParametricBand.Kind.allCases.count - 1, b.type))
-        b.freqHz = Self.clamp(b.freqHz, Self.parametricFreqRange.lowerBound, Self.parametricFreqRange.upperBound)
-        b.gainDb = Self.clamp(b.gainDb, Self.parametricGainRange.lowerBound, Self.parametricGainRange.upperBound)
-        b.q = Self.clamp(b.q, Self.parametricQRange.lowerBound, Self.parametricQRange.upperBound)
-        parametric[index] = b
-        schedulePushParams()
-    }
-
-    // Convenience mutators used by the editor controls.
-    public func setParametricEnabled(_ index: Int, _ on: Bool) {
-        guard parametric.indices.contains(index) else { return }
-        var b = parametric[index]; b.enabled = on; setParametricBand(index, b)
-    }
-    public func setParametricType(_ index: Int, _ type: Int) {
-        guard parametric.indices.contains(index) else { return }
-        var b = parametric[index]; b.type = type; setParametricBand(index, b)
-    }
-    public func setParametricFreq(_ index: Int, _ hz: Double) {
-        guard parametric.indices.contains(index) else { return }
-        var b = parametric[index]; b.freqHz = hz; setParametricBand(index, b)
-    }
-    public func setParametricGain(_ index: Int, _ db: Double) {
-        guard parametric.indices.contains(index) else { return }
-        var b = parametric[index]; b.gainDb = db; setParametricBand(index, b)
-    }
-    public func setParametricQ(_ index: Int, _ q: Double) {
-        guard parametric.indices.contains(index) else { return }
-        var b = parametric[index]; b.q = q; setParametricBand(index, b)
-    }
-    public func setParametricDynamic(_ index: Int, _ on: Bool) {
-        guard parametric.indices.contains(index) else { return }
-        var b = parametric[index]
-        b.dynamic = on
-        // Turning it on with nothing to give away would look broken, so start it
-        // where a resonance actually gets caught.
-        if on && b.rangeDb <= 0 { b.rangeDb = 6 }
-        setParametricBand(index, b)
-    }
-    public func setParametricThreshold(_ index: Int, _ db: Double) {
-        guard parametric.indices.contains(index) else { return }
-        var b = parametric[index]; b.thresholdDb = db; setParametricBand(index, b)
-    }
-    public func setParametricRange(_ index: Int, _ db: Double) {
-        guard parametric.indices.contains(index) else { return }
-        var b = parametric[index]; b.rangeDb = db; setParametricBand(index, b)
-    }
-    public func setParametricAttack(_ index: Int, _ ms: Double) {
-        guard parametric.indices.contains(index) else { return }
-        var b = parametric[index]; b.attackMs = ms; setParametricBand(index, b)
-    }
-    public func setParametricRelease(_ index: Int, _ ms: Double) {
-        guard parametric.indices.contains(index) else { return }
-        var b = parametric[index]; b.releaseMs = ms; setParametricBand(index, b)
-    }
-    public var dynamicEqAvailable: Bool { status.reachable && status.supportsDynamicEq }
-
-    private func ensureParametricAvailable() -> Bool {
-        guard parametricAvailable else {
-            errorBanner = status.reachable ? "현재 엔진이 Parametric EQ를 지원하지 않습니다" : "연결 끊김"
-            return false
-        }
-        return true
-    }
 
     public func schedulePushParams(preservingPresetSelection: Bool = false) {
         if !preservingPresetSelection { setActivePreset(savedName: nil, builtinId: nil) }
@@ -833,120 +444,9 @@ public final class RoomcutViewModel: ObservableObject {
         }
     }
 
-    public var canUndoSound: Bool { status.reachable && editor.canUndo }
-    public var canRedoSound: Bool { status.reachable && editor.canRedo }
-    public var isSoundWritePending: Bool { writer.isBusy }
-    public func beginParameterEdit() { editor.beginGesture() }
-    public func endParameterEdit() {
-        guard editor.isGestureActive else { return }
-        editor.endGesture()
-        schedulePushParams(preservingPresetSelection: true)
-    }
-    public func undoSound() { guard canUndoSound else { return }; editor.undo(); sendHistoryState() }
-    public func redoSound() { guard canRedoSound else { return }; editor.redo(); sendHistoryState() }
-    public func selectComparison(_ slot: SoundComparisonSlot) {
-        guard status.reachable, editor.hasBaseline, editor.activeSlot != slot else { return }
-        editor.select(slot)
-        sendHistoryState()
-    }
-    public func copyComparison() {
-        guard status.reachable, editor.hasBaseline else { return }
-        editor.copyToOther()
-        if comparison.enabled { sendHistoryState() }
-    }
-    public func toggleLevelMatch() {
-        guard status.reachable, editor.hasBaseline, comparison.supported else { return }
-        editor.finishEditing()
-        comparison.requestEnabled(!comparison.enabled)
-        sendHistoryState()
-    }
-    private func sendHistoryState() {
-        writeErrorActive = false
-        setActivePreset(savedName: editor.snapshot.savedPresetName, builtinId: editor.snapshot.builtinPresetID)
-        var value = editor.snapshot
-        value.parameters = currentParameters()
-        writer.parameters(value, comparison: prepareComparisonWrite(), immediate: true)
-    }
+    func currentParameters() -> EngineParameters { editor.snapshot.parameters.supported(by: status) }
 
-    private func prepareComparisonWrite() -> SoundComparisonWrite? {
-        guard comparison.supported else { return nil }
-        if comparison.enabled { comparison.requestEnabled(true) }
-        return SoundComparisonWrite(reference: editor.referenceSnapshot.parameters.supported(by: status), enabled: comparison.enabled)
-    }
-
-    private func readSoundParameters() async throws -> (parameters: EngineParameters, comparison: EngineComparisonState?) {
-        if status.supportsLevelMatch {
-            let value = try await client.getComparison()
-            return (value.current, value)
-        }
-        return (try await client.getParams(), nil)
-    }
-
-    private func acceptComparison(_ snapshot: EngineComparisonState?) {
-        guard let snapshot else { return }
-        let reference = snapshot.reference.supported(by: status)
-        if snapshot.enabled && reference != editor.referenceSnapshot.parameters { editor.restoreReference(reference) }
-        comparison.accept(snapshot)
-    }
-
-    private func refreshComparisonState(in cycle: EnginePoller.Cycle) async {
-        let editRevision = editor.revision, writeRevision = writer.revision
-        do {
-            let snapshot = try await client.getComparison()
-            guard poller.isCurrent(cycle) else { return }
-            guard editRevision == editor.revision, writeRevision == writer.revision, !isEditingParams else { return }
-            guard snapshot.current.supported(by: status) == currentParameters(),
-                  !snapshot.enabled || snapshot.reference.supported(by: status) == editor.referenceSnapshot.parameters.supported(by: status) else {
-                lastSeenRevision = nil
-                comparison.requestEnabled(snapshot.enabled)
-                return
-            }
-            comparison.accept(snapshot)
-        } catch {
-            if poller.isCurrent(cycle) { comparison.failed() }
-        }
-    }
-
-    private func refreshAnalysis(in cycle: EnginePoller.Cycle) async {
-        do {
-            let next = try await client.getAnalysis()
-            guard poller.isCurrent(cycle), analyzerVisible else { return }
-            if analysis != next { analysis = next }
-        } catch {
-            guard poller.isCurrent(cycle), analyzerVisible else { return }
-            if analysis != nil { analysis = nil }
-        }
-    }
-
-    // Pure rule (testable): warn only when the lifetime underrun counter rose
-    // AND audio is flowing. First sample (previous == nil) never warns — it just
-    // establishes the baseline.
-    private func updateMeterDisplay(with nextStatus: EngineStatus, underrunActiveNow: Bool) {
-        guard nextStatus.reachable else {
-            meters.reset()
-            return
-        }
-        meters.update(peak: nextStatus.peak,
-                      limiterGRDb: nextStatus.limiterGRDb,
-                      underrunActiveNow: underrunActiveNow)
-    }
-
-    private func resetMeterDisplay() {
-        meters.reset()
-    }
-
-    private func clearErrorBanner() {
-        let controlError = deviceWriter.error ?? bypassWriter.error
-        if !writeErrorActive && !paramsReadFailed && errorBanner != controlError { errorBanner = controlError }
-    }
-
-    private func setErrorBanner(_ message: String) {
-        if errorBanner != message { errorBanner = message }
-    }
-
-    private func currentParameters() -> EngineParameters { editor.snapshot.parameters.supported(by: status) }
-
-    private func ensureSpatialAvailable() -> Bool {
+    func ensureSpatialAvailable() -> Bool {
         guard spatialAvailable else {
             errorBanner = status.reachable ? "현재 엔진이 Spatial을 지원하지 않습니다" : "연결 끊김"
             return false
@@ -954,7 +454,7 @@ public final class RoomcutViewModel: ObservableObject {
         return true
     }
 
-    private static func clamp(_ value: Double, _ lo: Double, _ hi: Double) -> Double {
+    static func clamp(_ value: Double, _ lo: Double, _ hi: Double) -> Double {
         min(hi, max(lo, value))
     }
 }

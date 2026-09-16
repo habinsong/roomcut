@@ -29,7 +29,8 @@ RoomcutStateReply makeStateReply(const EngineSoundState& sound, const EngineStat
     reply.keepDefault = runtime.keepDefault;
     reply.capabilities = ROOMCUT_CAP_SPATIAL_PARAMS | ROOMCUT_CAP_PARAMETRIC | ROOMCUT_CAP_ANALYZER
         | ROOMCUT_CAP_VOLUME_BOOST | ROOMCUT_CAP_DYNAMICS | ROOMCUT_CAP_LEVEL_MATCH
-        | ROOMCUT_CAP_DYNAMIC_EQ;
+        | ROOMCUT_CAP_DYNAMIC_EQ | ROOMCUT_CAP_VIRTUAL_ROOM | ROOMCUT_CAP_HEAD_TRACKING
+        | ROOMCUT_CAP_UPMIX;
     reply.volumeBoost = runtime.volumeBoost;
     reply.engineLatencyMs = runtime.engineLatencyMs;
     return reply;
@@ -62,6 +63,18 @@ RoomcutComparisonReply makeComparisonReply(const EngineSoundState& sound, const 
     std::snprintf(reply.presetId, sizeof(reply.presetId), "%s", sound.presetID());
     encodeParameters(settings.current, reply.current);
     encodeParameters(settings.reference, reply.reference);
+    // The room travels beside the parameter blocks (see the wire header), so the
+    // app reads the same value here that GET_PARAMS reports.
+    reply.currentRoomType = settings.current.roomType;
+    reply.currentRoomAmount = settings.current.roomAmount;
+    reply.referenceRoomType = settings.reference.roomType;
+    reply.referenceRoomAmount = settings.reference.roomAmount;
+    reply.currentSurroundType = settings.current.surroundType;
+    reply.currentCenterWidth = settings.current.centerWidth;
+    reply.currentSurroundDepth = settings.current.surroundDepth;
+    reply.referenceSurroundType = settings.reference.surroundType;
+    reply.referenceCenterWidth = settings.reference.centerWidth;
+    reply.referenceSurroundDepth = settings.reference.surroundDepth;
     return reply;
 }
 

@@ -29,7 +29,7 @@ Roomcut est une application macOS native qui contrôle et calibre l'ensemble du 
 ## Fonctionnalités clés
 
 - **Égaliseur système global** : Égaliseur graphique 10 bandes + paramétrique 6 bandes (avec égalisation dynamique) et 5 potentiomètres macro (Bass, Warmth, Vocal, Clarity, Air).
-- **Espace stéréo (Stereo Space)** : Élargit ou resserre le signal latéral sans altérer la voix centrale (commandes Focus/Space) et Crossfeed pour casque.
+- **Espace stéréo (Stereo Space)** : Élargit ou resserre le signal latéral sans altérer la voix centrale (commandes Focus/Space), Crossfeed pour casque et une salle virtuelle optionnelle (Studio / Living / Hall) qui sort le son de la tête.
 - **Comparaison A/B à niveau égalisé** : Bascule instantanée entre deux réglages avec alignement automatique de volume (pondération K) pour comparer le timbre sans biais de niveau.
 - **Room Tune** : Mesure les résonances acoustiques de la pièce via le micro de l'iPhone (Continuité) et génère des préréglages d'atténuation précis.
 - **25 préréglages intégrés** : Profils optimisés pour haut-parleurs, casques et AirPods, avec import/export de fichiers JSON personnalisés.

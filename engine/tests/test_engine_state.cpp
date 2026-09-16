@@ -26,6 +26,11 @@ static void testParameterCodec() {
     params.spatialMode = 3;
     params.highpassHz = 80;
     params.compAmount = 25;
+    params.roomType = 2;
+    params.roomAmount = 65;
+    params.surroundType = 3;
+    params.centerWidth = 62.5;
+    params.surroundDepth = 37.5;
     params.parametric[1].enabled = true;
     params.parametric[1].freqHz = 1234.125;
     params.parametric[1].gainDb = -2.5;
@@ -82,6 +87,38 @@ static void testParameterCodec() {
     CHECK(restored.preampDb == -2 && restored.eqGainsDb[5] == 3 && restored.outputGainDb == -1,
           "legacy numeric positions are unchanged");
     CHECK(restored.spatialWidth == 0 && restored.compAmount == 0, "missing legacy fields retain neutral defaults");
+
+    // A state file written before the virtual room existed must come back with
+    // the room off — and at the struct's reference amount, not a zero that would
+    // silently mean "room at level 0" once a type is chosen.
+    ChainParams preRoom;
+    CHECK(parseParamsLine("0 0 0 0 0 0 0 0 0 0 0 100 0 30 40 15 10 1 80 25", &preRoom),
+          "pre-room state remains readable");
+    CHECK(preRoom.spatialWidth == 30 && preRoom.compAmount == 25, "pre-room fields land in the right slots");
+    CHECK(preRoom.roomType == 0 && preRoom.roomAmount == ChainParams{}.roomAmount,
+          "a pre-room state file keeps the virtual room off at its default level");
+
+    // A file written after the room but before the upmix: the room must still
+    // land, and the upmix must come back off rather than reading past the end.
+    ChainParams preUpmix;
+    CHECK(parseParamsLine("0 0 0 0 0 0 0 0 0 0 0 100 0 30 40 15 10 1 80 25 2 65", &preUpmix),
+          "pre-upmix state remains readable");
+    CHECK(preUpmix.roomType == 2 && preUpmix.roomAmount == 65, "pre-upmix fields land in the right slots");
+    CHECK(preUpmix.surroundType == 0 && preUpmix.centerWidth == ChainParams{}.centerWidth
+          && preUpmix.surroundDepth == ChainParams{}.surroundDepth,
+          "a pre-upmix state file keeps the upmix off at its default steering");
+
+    // The two steering fields were -12..+6 dB trims before they became 0..100
+    // steering. A file written then stores a 0 that used to mean "no trim" and
+    // would now read as "extract no centre at all" — which is exactly what a
+    // listener found in the field. Without the schema marker they are ignored.
+    ChainParams stale;
+    CHECK(parseParamsLine("0 0 0 0 0 0 0 0 0 0 0 100 0 30 40 15 10 1 80 25 2 65 3 0 0", &stale),
+          "a params line from before the meaning changed still loads");
+    CHECK(stale.surroundType == 3, "the layout still comes back");
+    CHECK(stale.centerWidth == ChainParams{}.centerWidth
+          && stale.surroundDepth == ChainParams{}.surroundDepth,
+          "but its steering values are ignored, not adopted as 0");
 }
 
 static void testStore(const std::filesystem::path& directory) {

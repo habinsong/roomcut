@@ -132,20 +132,70 @@ static void soundRoundTrip(const std::filesystem::path& directory) {
     RoomcutComparisonRequest comparison{};
     auto reference = current; reference.preampDb = -9;
     current.eqGainsDb[2] = -4;
+    // The virtual room travels beside the parameter blocks; each side keeps its
+    // own, and the app reads these back on every poll (a dropped room here is
+    // what made a freshly picked room snap back to off).
+    current.roomType = 2; current.roomAmount = 65;
+    reference.roomType = 1; reference.roomAmount = 40;
     encodeParameters(current, comparison.current); encodeParameters(reference, comparison.reference);
+    comparison.currentRoomType = current.roomType; comparison.currentRoomAmount = current.roomAmount;
+    comparison.referenceRoomType = reference.roomType; comparison.referenceRoomAmount = reference.roomAmount;
     comparison.enabled = 1;
-    CHECK(controlSetComparison(service.port, comparison, 1000, &status) == KERN_SUCCESS && status == 0, "comparison command is accepted atomically");
+    CHECK(controlSetComparison(service.port, comparison, ROOMCUT_COMPARISON_VERSION, 1000, &status) == KERN_SUCCESS && status == 0, "comparison command is accepted atomically");
     RoomcutComparisonReply compared{};
     CHECK(controlGetComparison(service.port, 1000, &compared) == KERN_SUCCESS && compared.enabled &&
-          decodeParameters(compared.current) == current && decodeParameters(compared.reference) == reference &&
-          compared.state == static_cast<uint32_t>(LevelMatchState::Measuring), "comparison reply preserves both states and pending render revision");
+          compared.state == static_cast<uint32_t>(LevelMatchState::Measuring),
+          "comparison reply preserves both states and pending render revision");
+    CHECK(compared.currentRoomType == current.roomType && compared.currentRoomAmount == current.roomAmount &&
+          compared.referenceRoomType == reference.roomType && compared.referenceRoomAmount == reference.roomAmount,
+          "each comparison side keeps its own virtual room");
+    {   // The parameter blocks themselves carry no room, so compare them without it.
+        auto currentWire = decodeParameters(compared.current);
+        auto referenceWire = decodeParameters(compared.reference);
+        currentWire.roomType = current.roomType; currentWire.roomAmount = current.roomAmount;
+        referenceWire.roomType = reference.roomType; referenceWire.roomAmount = reference.roomAmount;
+        CHECK(currentWire == current && referenceWire == reference,
+              "comparison reply preserves every other parameter on both sides");
+    }
+    // Turning them OFF has to travel too. Zero is a value, not an absence: the
+    // sender used to decide how much of this message to send by looking at the
+    // values, so a room of 0 and an upmix of 0 produced the short form, the
+    // engine read that as "this app predates the feature" and kept what was
+    // already playing — and Room Off / Surround Off did nothing at all.
+    {
+        auto offCurrent = current; offCurrent.roomType = 0; offCurrent.surroundType = 0;
+        auto offReference = reference; offReference.roomType = 0; offReference.surroundType = 0;
+        RoomcutComparisonRequest off{};
+        encodeParameters(offCurrent, off.current);
+        encodeParameters(offReference, off.reference);
+        off.enabled = 1;      // every trailing field deliberately left at zero
+        CHECK(controlSetComparison(service.port, off, ROOMCUT_COMPARISON_VERSION, 1000, &status) == KERN_SUCCESS
+              && status == 0, "an all-off comparison is accepted");
+        RoomcutComparisonReply back{};
+        CHECK(controlGetComparison(service.port, 1000, &back) == KERN_SUCCESS, "reply after turning everything off");
+        CHECK(back.currentRoomType == 0 && back.referenceRoomType == 0,
+              "Room Off actually reaches the engine");
+        CHECK(back.currentSurroundType == 0 && back.referenceSurroundType == 0,
+              "Surround Off actually reaches the engine");
+    }
+
+    // Restore the room for the checks that follow.
+    CHECK(controlSetComparison(service.port, comparison, ROOMCUT_COMPARISON_VERSION, 1000, &status) == KERN_SUCCESS
+          && status == 0, "comparison restored after the off round trip");
+    CHECK(controlGetComparison(service.port, 1000, &compared) == KERN_SUCCESS, "reply after restoring");
+
     const auto revision = compared.revision;
     comparison.kind = ROOMCUT_COMPARISON_PRESET;
     std::snprintf(comparison.presetId, sizeof(comparison.presetId), "%s", "missing-preset");
     comparison.reference.preampDb = -12;
-    CHECK(controlSetComparison(service.port, comparison, 1000, &status) == KERN_SUCCESS && status == 1, "unknown comparison preset is rejected");
-    CHECK(controlGetComparison(service.port, 1000, &compared) == KERN_SUCCESS && compared.revision == revision &&
-          decodeParameters(compared.reference) == reference, "rejected preset changes neither reference nor revision");
+    CHECK(controlSetComparison(service.port, comparison, ROOMCUT_COMPARISON_VERSION, 1000, &status) == KERN_SUCCESS && status == 1, "unknown comparison preset is rejected");
+    {   // Same as above: the room rides beside the block, so restore it to compare.
+        auto referenceWire = decodeParameters(compared.reference);
+        referenceWire.roomType = compared.referenceRoomType;
+        referenceWire.roomAmount = compared.referenceRoomAmount;
+        CHECK(controlGetComparison(service.port, 1000, &compared) == KERN_SUCCESS && compared.revision == revision &&
+              referenceWire == reference, "rejected preset changes neither reference nor revision");
+    }
     CHECK(controlSetPreset(service.port, "flat", 1000, &status) == KERN_SUCCESS && status == 0, "builtin preset still applies");
     CHECK(store.load().presetId == "flat" && store.load().paramsLine.empty(), "builtin persistence removes an obsolete custom line");
 

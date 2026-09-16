@@ -97,6 +97,9 @@ func runSelfTest() -> Int32 {
                                            params.centerFocus, params.crossfeed,
                                            params.roomReduce, params.spatialMode,
                                            params.highpassHz, params.compAmount,
+                                           params.roomType, params.roomAmount,
+                                           params.surroundType, params.centerWidth,
+                                           params.surroundDepth,
                                            pbuf.baseAddress, dbuf.baseAddress)
                 }
             }
@@ -113,7 +116,12 @@ func runSelfTest() -> Int32 {
               after.spatialWidth == params.spatialWidth,
               after.centerFocus == params.centerFocus,
               after.crossfeed == params.crossfeed,
-              after.roomReduce == params.roomReduce else {
+              after.roomReduce == params.roomReduce,
+              after.roomType == params.roomType,
+              after.roomAmount == params.roomAmount,
+              after.surroundType == params.surroundType,
+              after.centerWidth == params.centerWidth,
+              after.surroundDepth == params.surroundDepth else {
             stderrPrint("selftest: params readback mismatch (rc \(rc))")
             return 1
         }

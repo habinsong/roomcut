@@ -111,6 +111,7 @@ int roomcutClientGetComparison(RoomcutClientComparison* out) {
     std::memset(out, 0, sizeof(*out));
     out->enabled = reply.enabled;
     out->state = reply.state;
+    out->payloadVersion = reply.version;
     out->revision = reply.revision;
     out->renderedRevision = reply.renderedRevision;
     out->currentReductionDb = reply.currentReductionDb;
@@ -118,12 +119,24 @@ int roomcutClientGetComparison(RoomcutClientComparison* out) {
     std::memcpy(out->presetId, reply.presetId, sizeof(out->presetId));
     roomcut::encodeParameters(roomcut::decodeParameters(reply.current), out->current);
     roomcut::encodeParameters(roomcut::decodeParameters(reply.reference), out->reference);
+    // The room and the upmix sit beside the parameter blocks, not inside them.
+    out->current.roomType = reply.currentRoomType;
+    out->current.roomAmount = reply.currentRoomAmount;
+    out->reference.roomType = reply.referenceRoomType;
+    out->reference.roomAmount = reply.referenceRoomAmount;
+    out->current.surroundType = reply.currentSurroundType;
+    out->current.centerWidth = reply.currentCenterWidth;
+    out->current.surroundDepth = reply.currentSurroundDepth;
+    out->reference.surroundType = reply.referenceSurroundType;
+    out->reference.centerWidth = reply.referenceCenterWidth;
+    out->reference.surroundDepth = reply.referenceSurroundDepth;
     return 0;
 }
 
 int roomcutClientSetComparison(const RoomcutClientParams* current,
                                 const RoomcutClientParams* reference,
-                                int enabled, const char* builtinPresetId) {
+                                int enabled, const char* builtinPresetId,
+                                uint32_t peerComparisonVersion) {
     if (!reference || enabled < 0 || enabled > 1) return -3;
     RoomcutComparisonRequest request{};
     request.enabled = static_cast<uint32_t>(enabled);
@@ -136,8 +149,21 @@ int roomcutClientSetComparison(const RoomcutClientParams* current,
         roomcut::encodeParameters(roomcut::decodeParameters(*current), request.current);
     }
     roomcut::encodeParameters(roomcut::decodeParameters(*reference), request.reference);
+    if (current) {
+        request.currentRoomType = current->roomType;
+        request.currentRoomAmount = current->roomAmount;
+        request.currentSurroundType = current->surroundType;
+        request.currentCenterWidth = current->centerWidth;
+        request.currentSurroundDepth = current->surroundDepth;
+    }
+    request.referenceRoomType = reference->roomType;
+    request.referenceRoomAmount = reference->roomAmount;
+    request.referenceSurroundType = reference->surroundType;
+    request.referenceCenterWidth = reference->centerWidth;
+    request.referenceSurroundDepth = reference->surroundDepth;
     return withEngine([&](mach_port_t service, uint32_t* status) {
-        return roomcut::controlSetComparison(service, request, kTimeoutMs, status);
+        return roomcut::controlSetComparison(service, request, peerComparisonVersion,
+                                             kTimeoutMs, status);
     });
 }
 
@@ -381,6 +407,8 @@ int roomcutClientSetParams(double preampDb,
                            double centerFocus, double crossfeed,
                            double roomReduce, double spatialMode,
                            double highpassHz, double compAmount,
+                           double roomType, double roomAmount,
+                           double surroundType, double centerWidth, double surroundDepth,
                            const RoomcutClientParamBand parametric[ROOMCUT_CLIENT_PARAM_BANDS],
                            const RoomcutClientParamDynamics dynamics[ROOMCUT_CLIENT_PARAM_BANDS]) {
     if (eqGainsDb == nullptr) {
@@ -417,8 +445,15 @@ int roomcutClientSetParams(double preampDb,
                                          limiterReleaseMs,
                                          outputGainDb, spatialWidth,
                                          centerFocus, crossfeed, roomReduce, spatialMode,
-                                         highpassHz, compAmount,
+                                         highpassHz, compAmount, roomType, roomAmount,
+                                         surroundType, centerWidth, surroundDepth,
                                          bands, dyn, kTimeoutMs, status);
+    });
+}
+
+int roomcutClientSetHeadPose(double yawDeg, int active) {
+    return withEngine([&](mach_port_t svc, uint32_t* status) {
+        return roomcut::controlSetHeadPose(svc, yawDeg, active != 0, kTimeoutMs, status);
     });
 }
 

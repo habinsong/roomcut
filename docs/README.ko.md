@@ -29,7 +29,7 @@ Roomcut은 자체 가상 오디오 드라이버를 통해 Mac에서 나오는 �
 ## 주요 기능
 
 - **시스템 전역 EQ**: 10밴드 그래픽 EQ + 6밴드 파라메트릭 EQ(다이내믹 EQ 지원) 및 직관적인 5대 매크로 노브(Bass, Warmth, Vocal, Clarity, Air).
-- **스테레오 공간감 (Stereo Space)**: 중앙 보컬을 해치지 않고 사이드 음역대만 넓히거나 모아주는 Focus/Space 조절 및 헤드폰 전용 Crossfeed.
+- **스테레오 공간감 (Stereo Space)**: 중앙 보컬을 해치지 않고 사이드 음역대만 넓히거나 모아주는 Focus/Space 조절과 헤드폰 전용 Crossfeed, 그리고 가상 공간(Studio / Living / Hall) — 헤드폰에서는 공간 전체를, 스피커에서는 뒤따르는 잔향만 더합니다.
 - **음량 보정 A/B 비교**: K-가중 라우드니스 미터로 양쪽 슬롯의 음량을 자동 일치시켜 음량 차이 없는 순수 음질 비교 지원.
 - **Room Tune**: iPhone(Continuity Camera) 마이크로 방 안의 과도한 공진을 측정하고 컷 EQ 프리셋 자동 제안.
 - **25개 기본 프리셋**: 스피커, 헤드폰, AirPods 등 출력 장치별 맞춤 프리셋 제공 및 커스텀 JSON 프리셋 저장/공유.

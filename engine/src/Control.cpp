@@ -160,6 +160,27 @@ kern_return_t controlSetVolumeBoost(mach_port_t servicePort, double boost,
     return KERN_SUCCESS;
 }
 
+kern_return_t controlSetHeadPose(mach_port_t servicePort, double yawDeg, bool active,
+                                 uint32_t timeoutMs, uint32_t* outStatus) {
+    RoomcutSetHeadPoseRequest req;
+    std::memset(&req, 0, sizeof(req));
+    req.msgType = ROOMCUT_MSG_SET_HEAD_POSE;
+    req.active  = active ? 1u : 0u;
+    req.yawDeg  = yawDeg;
+
+    RoomcutControlMsgBuffer buf;
+    kern_return_t kr = requestReply(servicePort, &req.header, sizeof(req),
+                                    ROOMCUT_MSG_SET_HEAD_POSE, &buf, timeoutMs);
+    if (kr != KERN_SUCCESS) {
+        return kr;
+    }
+    if (buf.reply.msgType != ROOMCUT_MSG_SET_HEAD_POSE) {
+        return KERN_FAILURE;
+    }
+    if (outStatus) *outStatus = buf.reply.status;
+    return KERN_SUCCESS;
+}
+
 kern_return_t controlSetParams(mach_port_t servicePort,
                                double preampDb, const double* eqGainsDb,
                                double limiterReleaseMs,
@@ -167,6 +188,8 @@ kern_return_t controlSetParams(mach_port_t servicePort,
                                double centerFocus, double crossfeed,
                                double roomReduce, double spatialMode,
                                double highpassHz, double compAmount,
+                               double roomType, double roomAmount,
+                               double surroundType, double centerWidth, double surroundDepth,
                                const RoomcutParamBand* parametric,
                                const RoomcutParamDynamics* dynamics,
                                uint32_t timeoutMs, uint32_t* outStatus) {
@@ -189,6 +212,11 @@ kern_return_t controlSetParams(mach_port_t servicePort,
     req.spatialMode      = spatialMode;
     req.highpassHz       = highpassHz;
     req.compAmount       = compAmount;
+    req.roomType         = roomType;
+    req.roomAmount       = roomAmount;
+    req.surroundType     = surroundType;
+    req.centerWidth    = centerWidth;
+    req.surroundDepth  = surroundDepth;
     if (parametric != nullptr) {
         for (int b = 0; b < ROOMCUT_PARAM_BANDS; ++b) req.parametric[b] = parametric[b];
     }
@@ -276,11 +304,27 @@ kern_return_t controlGetAnalysis(mach_port_t servicePort, uint32_t timeoutMs,
 }
 
 kern_return_t controlSetComparison(mach_port_t servicePort, RoomcutComparisonRequest request,
-                                   uint32_t timeoutMs, uint32_t* outStatus) {
+                                   uint32_t peerVersion, uint32_t timeoutMs, uint32_t* outStatus) {
     request.msgType = ROOMCUT_MSG_SET_COMPARISON;
-    request.version = ROOMCUT_COMPARISON_VERSION;
+    // How much of this message goes out depends on what the ENGINE understands,
+    // never on what the values happen to be.
+    //
+    // It used to depend on the values — the trailing blocks were sent only when
+    // the room or the upmix was non-zero — and that made "off" impossible to
+    // say. Zero is a value, not an absence: a listener turning the room off sent
+    // the short form, the engine read the short form as "this app is too old to
+    // know about rooms", kept the room it already had, and the control did
+    // nothing. Same for the upmix. (Reported in QA, 2026-09-15.)
+    const uint32_t version = peerVersion < ROOMCUT_COMPARISON_MIN_VERSION
+        ? ROOMCUT_COMPARISON_MIN_VERSION
+        : (peerVersion > ROOMCUT_COMPARISON_VERSION ? ROOMCUT_COMPARISON_VERSION : peerVersion);
+    request.version = version;
+    const mach_msg_size_t size = version >= 4
+        ? static_cast<mach_msg_size_t>(sizeof(request))
+        : (version >= 3 ? static_cast<mach_msg_size_t>(offsetof(RoomcutComparisonRequest, currentSurroundType))
+                        : static_cast<mach_msg_size_t>(offsetof(RoomcutComparisonRequest, currentRoomType)));
     RoomcutControlMsgBuffer buffer;
-    const auto result = requestReply(servicePort, &request.header, sizeof(request),
+    const auto result = requestReply(servicePort, &request.header, size,
                                      ROOMCUT_MSG_SET_COMPARISON, &buffer, timeoutMs);
     if (result == KERN_SUCCESS && outStatus) *outStatus = buffer.reply.status;
     return result;
@@ -291,7 +335,12 @@ kern_return_t controlGetComparison(mach_port_t servicePort, uint32_t timeoutMs,
     if (!outReply) return KERN_INVALID_ARGUMENT;
     RoomcutGetComparisonRequest request{};
     request.msgType = ROOMCUT_MSG_GET_COMPARISON;
-    request.version = ROOMCUT_COMPARISON_VERSION;
+    // This message carries no payload — it only asks. Sending our own newest
+    // version would be rejected outright by any engine older than us (the
+    // engine validates version <= its own), and this is the call the app reads
+    // every parameter through, so that rejection would blank the whole UI.
+    // Ask at the floor and let the reply say what the engine actually speaks.
+    request.version = ROOMCUT_COMPARISON_MIN_VERSION;
     RoomcutControlMsgBuffer buffer;
     const auto result = requestReply(servicePort, &request.header, sizeof(request),
                                      ROOMCUT_MSG_GET_COMPARISON, &buffer, timeoutMs);

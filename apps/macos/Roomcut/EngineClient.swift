@@ -9,282 +9,6 @@ public func presetIdString(_ state: RoomcutClientState) -> String {
     }
 }
 
-public struct EnginePreset: Identifiable, Hashable {
-    public let id: String
-    public let name: String
-
-    public init(id: String, name: String) {
-        self.id = id
-        self.name = name
-    }
-}
-
-public struct OutputDeviceChoice: Identifiable, Hashable {
-    public let uid: String
-    public let name: String
-    public var id: String { uid }
-
-    public init(uid: String, name: String) {
-        self.uid = uid
-        self.name = name
-    }
-}
-
-public struct AudioFormatInfo: Equatable, Sendable {
-    public let bitDepth: Int
-    public let sampleRate: Double
-    public let latencyMs: Double
-
-    public init(bitDepth: Int, sampleRate: Double, latencyMs: Double) {
-        self.bitDepth = bitDepth
-        self.sampleRate = sampleRate
-        self.latencyMs = latencyMs
-    }
-}
-
-// One physical format (sample rate + bit depth) the real output device supports.
-public struct DeviceFormatOption: Equatable, Hashable, Sendable {
-    public let sampleRate: Double
-    public let bitDepth: Int
-
-    public init(sampleRate: Double, bitDepth: Int) {
-        self.sampleRate = sampleRate
-        self.bitDepth = bitDepth
-    }
-}
-
-public struct EngineStatus {
-    // The C header's anonymous enum imports as plain Int32 constants.
-    public static let stopped = UInt32(ROOMCUT_CLIENT_STATE_STOPPED)
-    public static let running = UInt32(ROOMCUT_CLIENT_STATE_RUNNING)
-    public static let bypass  = UInt32(ROOMCUT_CLIENT_STATE_BYPASS)
-    public static let recover = UInt32(ROOMCUT_CLIENT_STATE_RECOVER)
-    public static let spatialParamsCapability = UInt32(ROOMCUT_CLIENT_CAP_SPATIAL_PARAMS)
-    public static let parametricCapability = UInt32(ROOMCUT_CLIENT_CAP_PARAMETRIC)
-    public static let dynamicEqCapability = UInt32(ROOMCUT_CLIENT_CAP_DYNAMIC_EQ)
-    public static let analyzerCapability = UInt32(ROOMCUT_CLIENT_CAP_ANALYZER)
-    public static let dynamicsCapability = UInt32(ROOMCUT_CLIENT_CAP_DYNAMICS)
-    public static let levelMatchCapability = UInt32(ROOMCUT_CLIENT_CAP_LEVEL_MATCH)
-
-    public var reachable = false
-    public var state: UInt32 = EngineStatus.stopped
-    public var presetId = "—"
-    public var manualBypass = false
-    public var safeBypass = false
-    public var limiterGRDb: Float = 0
-    public var peak: Float = 0
-    public var paramsRevision: UInt32 = 0
-    public var frames: UInt64 = 0
-    public var underruns: UInt64 = 0
-    public var outputDeviceUID = ""
-    public var keepDefault = false
-    public var capabilities: UInt32 = 0
-    public var volumeBoost = 1.0
-    // What the engine adds on purpose. 0 means an engine that doesn't report it.
-    public var engineLatencyMs = 0.0
-
-    public init() {}
-
-    public var supportsLevelMatch: Bool { capabilities & Self.levelMatchCapability != 0 }
-
-    public var supportsSpatialParams: Bool {
-        (capabilities & Self.spatialParamsCapability) != 0
-    }
-
-    public var supportsParametric: Bool {
-        (capabilities & Self.parametricCapability) != 0
-    }
-
-    public var supportsAnalyzer: Bool {
-        (capabilities & Self.analyzerCapability) != 0
-    }
-
-    public var supportsDynamics: Bool {
-        (capabilities & Self.dynamicsCapability) != 0
-    }
-
-    public var supportsDynamicEq: Bool {
-        (capabilities & Self.dynamicEqCapability) != 0
-    }
-
-    public var stateName: String {
-        guard reachable else { return "OFFLINE" }
-        switch state {
-        case Self.stopped: return "STOPPED"
-        case Self.running: return "RUNNING"
-        case Self.bypass:  return "BYPASS"
-        case Self.recover: return "RECOVER"
-        default: return "?"
-        }
-    }
-
-    public var menuBarSymbol: String {
-        guard reachable else { return "waveform.slash" }
-        switch state {
-        case Self.running: return "waveform"
-        case Self.bypass:  return "waveform.slash"
-        // Recovering is transient (the engine reconnects to the driver on every
-        // app launch now that it follows the app's lifecycle). Don't flash an
-        // alarming ⚠️ in the menu bar for it — the in-app status still shows
-        // "복구 중". Treat it as active.
-        case Self.recover: return "waveform"
-        default: return "waveform.slash"
-        }
-    }
-
-    public var presentation: RoomcutPresentation.Status {
-        RoomcutPresentation.status(reachable: reachable, state: state)
-    }
-}
-
-// One parametric-EQ band, mirroring RoomcutClientParamBand. `type` indexes the
-// filter kinds below (also the engine's BiquadType order).
-public struct ParametricBand: Equatable, Codable {
-    public enum Kind: Int, CaseIterable, Identifiable {
-        case bell = 0, lowShelf = 1, highShelf = 2, highPass = 3, lowPass = 4, notch = 5
-        public var id: Int { rawValue }
-        public var label: String {
-            switch self {
-            case .bell:      return "Bell"
-            case .lowShelf:  return "Low Shelf"
-            case .highShelf: return "High Shelf"
-            case .highPass:  return "High Pass"
-            case .lowPass:   return "Low Pass"
-            case .notch:     return "Notch"
-            }
-        }
-        // Pass/notch filters ignore gain; the UI hides the gain control for them.
-        public var usesGain: Bool { self == .bell || self == .lowShelf || self == .highShelf }
-    }
-
-    public var enabled: Bool
-    public var type: Int
-    public var freqHz: Double
-    public var gainDb: Double
-    public var q: Double
-    // Optional dynamic side, mirroring RoomcutClientParamDynamics. `dynamic` off
-    // is the static band, and older presets decode to exactly that.
-    public var dynamic: Bool
-    public var thresholdDb: Double
-    public var rangeDb: Double
-    public var attackMs: Double
-    public var releaseMs: Double
-
-    public init(enabled: Bool = false, type: Int = 0,
-                freqHz: Double = 1000, gainDb: Double = 0, q: Double = 1.0,
-                dynamic: Bool = false, thresholdDb: Double = -24, rangeDb: Double = 0,
-                attackMs: Double = 20, releaseMs: Double = 200) {
-        self.enabled = enabled
-        self.type = type
-        self.freqHz = freqHz
-        self.gainDb = gainDb
-        self.q = q
-        self.dynamic = dynamic
-        self.thresholdDb = thresholdDb
-        self.rangeDb = rangeDb
-        self.attackMs = attackMs
-        self.releaseMs = releaseMs
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case enabled, type, freqHz, gainDb, q, dynamic, thresholdDb, rangeDb, attackMs, releaseMs
-    }
-
-    // A preset written before the dynamic side existed has none of those keys.
-    public init(from decoder: Decoder) throws {
-        let c = try decoder.container(keyedBy: CodingKeys.self)
-        enabled = try c.decodeIfPresent(Bool.self, forKey: .enabled) ?? false
-        type = try c.decodeIfPresent(Int.self, forKey: .type) ?? 0
-        freqHz = try c.decodeIfPresent(Double.self, forKey: .freqHz) ?? 1000
-        gainDb = try c.decodeIfPresent(Double.self, forKey: .gainDb) ?? 0
-        q = try c.decodeIfPresent(Double.self, forKey: .q) ?? 1.0
-        dynamic = try c.decodeIfPresent(Bool.self, forKey: .dynamic) ?? false
-        thresholdDb = try c.decodeIfPresent(Double.self, forKey: .thresholdDb) ?? -24
-        rangeDb = try c.decodeIfPresent(Double.self, forKey: .rangeDb) ?? 0
-        attackMs = try c.decodeIfPresent(Double.self, forKey: .attackMs) ?? 20
-        releaseMs = try c.decodeIfPresent(Double.self, forKey: .releaseMs) ?? 200
-    }
-
-    // Only write the dynamic keys when they mean something, so a static band's
-    // JSON stays byte-for-byte what it used to be.
-    public func encode(to encoder: Encoder) throws {
-        var c = encoder.container(keyedBy: CodingKeys.self)
-        try c.encode(enabled, forKey: .enabled)
-        try c.encode(type, forKey: .type)
-        try c.encode(freqHz, forKey: .freqHz)
-        try c.encode(gainDb, forKey: .gainDb)
-        try c.encode(q, forKey: .q)
-        guard dynamic else { return }
-        try c.encode(dynamic, forKey: .dynamic)
-        try c.encode(thresholdDb, forKey: .thresholdDb)
-        try c.encode(rangeDb, forKey: .rangeDb)
-        try c.encode(attackMs, forKey: .attackMs)
-        try c.encode(releaseMs, forKey: .releaseMs)
-    }
-
-    public var kind: Kind { Kind(rawValue: type) ?? .bell }
-}
-
-public struct EngineParameters: Equatable {
-    public static let bandCount = Int(ROOMCUT_CLIENT_EQ_BANDS)
-    public static let paramBandCount = Int(ROOMCUT_CLIENT_PARAM_BANDS)
-    public static let flat = EngineParameters(
-        preampDb: 0,
-        eqGainsDb: Array(repeating: 0, count: bandCount),
-        outputGainDb: 0,
-        spatialWidth: 0,
-        centerFocus: 0,
-        crossfeed: 0,
-        roomReduce: 0
-    )
-
-    public var preampDb: Double
-    public var eqGainsDb: [Double]
-    public var limiterReleaseMs: Double
-    public var outputGainDb: Double
-    public var spatialWidth: Double
-    public var centerFocus: Double
-    public var crossfeed: Double
-    public var roomReduce: Double
-    public var spatialMode: Double   // 0 = speaker (XTC), 1 = headphone (crossfeed)
-    public var highpassHz: Double    // dynamics: 0 = off
-    public var compAmount: Double    // dynamics: 0..100 leveling amount, 0 = off
-    public var parametric: [ParametricBand]
-
-    public init(preampDb: Double,
-                eqGainsDb: [Double],
-                limiterReleaseMs: Double = 100.0,
-                outputGainDb: Double,
-                spatialWidth: Double = 0.0,
-                centerFocus: Double = 0.0,
-                crossfeed: Double = 0.0,
-                roomReduce: Double = 0.0,
-                spatialMode: Double = 0.0,
-                highpassHz: Double = 0.0,
-                compAmount: Double = 0.0,
-                parametric: [ParametricBand] = []) {
-        self.preampDb = preampDb
-        self.eqGainsDb = Array(eqGainsDb.prefix(Self.bandCount))
-        if self.eqGainsDb.count < Self.bandCount {
-            self.eqGainsDb.append(contentsOf: repeatElement(0, count: Self.bandCount - self.eqGainsDb.count))
-        }
-        self.limiterReleaseMs = limiterReleaseMs
-        self.outputGainDb = outputGainDb
-        self.spatialWidth = spatialWidth
-        self.centerFocus = centerFocus
-        self.crossfeed = crossfeed
-        self.roomReduce = roomReduce
-        self.spatialMode = spatialMode
-        self.highpassHz = highpassHz
-        self.compAmount = compAmount
-        self.parametric = Array(parametric.prefix(Self.paramBandCount))
-        if self.parametric.count < Self.paramBandCount {
-            self.parametric.append(contentsOf:
-                repeatElement(ParametricBand(), count: Self.paramBandCount - self.parametric.count))
-        }
-    }
-}
-
 public enum EngineClientError: Error, Equatable {
     case transport(Int32)
 }
@@ -299,6 +23,7 @@ public protocol EngineClientProtocol: AnyObject {
     func setKeepDefault(_ on: Bool) async throws
     func setParams(_ params: EngineParameters) async throws
     func getComparison() async throws -> EngineComparisonState
+    nonisolated func sendHeadPose(yawDegrees: Double, active: Bool)
     func setComparison(_ target: EngineComparisonTarget, reference: EngineParameters, enabled: Bool) async throws
 
     // Native device access can block on CoreAudio or Mach. UI polling uses
@@ -345,6 +70,10 @@ public extension EngineClientProtocol {
         DeviceReadback.capture(using: self, uid: uid, devices: includeDevices, controls: includeControls)
     }
     func getComparison() async throws -> EngineComparisonState { throw EngineClientError.transport(-3) }
+    // Live head orientation. Fire-and-forget by design: at the tracker's rate a
+    // dropped update is replaced by the next one a few milliseconds later, and
+    // waiting on each would stall the motion callback.
+    nonisolated func sendHeadPose(yawDegrees: Double, active: Bool) {}
     func setComparison(_ target: EngineComparisonTarget, reference: EngineParameters, enabled: Bool) async throws {
         throw EngineClientError.transport(-3)
     }
@@ -427,6 +156,10 @@ public final class LiveEngineClient: EngineClientProtocol {
             }
             s.keepDefault = c.keepDefault != 0
             s.capabilities = c.capabilities
+            // Remember what this engine understands. setComparison has to send
+            // "off" as an actual zero, and it can only know how much of the
+            // message the engine will read from these bits.
+            Self.rememberComparisonVersion(for: c.capabilities)
             s.volumeBoost = c.volumeBoost
             s.engineLatencyMs = c.engineLatencyMs
             return s
@@ -451,16 +184,41 @@ public final class LiveEngineClient: EngineClientProtocol {
         }
     }
 
+    // The comparison payload version the running engine speaks. Derived from its
+    // capability bits on every state read, because the size of the message we
+    // send must follow what the ENGINE can read — never what the values are.
+    // Deciding it from the values is what once made "Room Off" and "Surround
+    // Off" do nothing: a zero looked like "nothing to send".
+    private static let comparisonVersionLock = NSLock()
+    private nonisolated(unsafe) static var comparisonVersion: UInt32 = 2
+
+    static func rememberComparisonVersion(for capabilities: UInt32) {
+        let version: UInt32 = (capabilities & UInt32(ROOMCUT_CLIENT_CAP_UPMIX)) != 0 ? 4
+            : ((capabilities & UInt32(ROOMCUT_CLIENT_CAP_VIRTUAL_ROOM)) != 0 ? 3 : 2)
+        comparisonVersionLock.lock()
+        comparisonVersion = version
+        comparisonVersionLock.unlock()
+    }
+
+    static var currentComparisonVersion: UInt32 {
+        comparisonVersionLock.lock()
+        defer { comparisonVersionLock.unlock() }
+        return comparisonVersion
+    }
+
     public func setComparison(_ target: EngineComparisonTarget, reference: EngineParameters, enabled: Bool) async throws {
         try await runOnQueue {
             var reference = reference.nativeValues()
+            let version = Self.currentComparisonVersion
             let result: Int32
             switch target {
             case .parameters(let parameters):
                 var current = parameters.nativeValues()
-                result = roomcutClientSetComparison(&current, &reference, enabled ? 1 : 0, nil)
+                result = roomcutClientSetComparison(&current, &reference, enabled ? 1 : 0, nil, version)
             case .preset(let id):
-                result = id.withCString { roomcutClientSetComparison(nil, &reference, enabled ? 1 : 0, $0) }
+                result = id.withCString {
+                    roomcutClientSetComparison(nil, &reference, enabled ? 1 : 0, $0, version)
+                }
             }
             guard result == 0 else { throw EngineClientError.transport(result) }
         }
@@ -557,6 +315,11 @@ public final class LiveEngineClient: EngineClientProtocol {
                         params.spatialMode,
                         params.highpassHz,
                         params.compAmount,
+                        params.roomType,
+                        params.roomAmount,
+                        params.surroundType,
+                        params.centerWidth,
+                        params.surroundDepth,
                         pbuf.baseAddress,
                         dbuf.baseAddress
                     )
@@ -564,6 +327,14 @@ public final class LiveEngineClient: EngineClientProtocol {
                 }
             }
             guard rc == 0 else { throw EngineClientError.transport(rc) }
+        }
+    }
+
+    // Sent from the head-tracking callback, so it hops to the client queue and
+    // returns immediately rather than blocking the sensor stream on Mach IPC.
+    nonisolated public func sendHeadPose(yawDegrees: Double, active: Bool) {
+        queue.async {
+            _ = roomcutClientSetHeadPose(yawDegrees, active ? 1 : 0)
         }
     }
 

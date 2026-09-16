@@ -59,6 +59,8 @@ cat > "${APP}/Contents/Info.plist" <<'PLIST'
     <string>26.0</string>
     <key>LSUIElement</key>
     <true/>
+    <key>NSMotionUsageDescription</key>
+    <string>Roomcut이 AirPods의 머리 방향을 읽어 화면 쪽으로 음상을 고정합니다.</string>
     <key>NSMicrophoneUsageDescription</key>
     <string>Room Tune이 iPhone 마이크로 방의 음향을 측정합니다.</string>
 </dict>

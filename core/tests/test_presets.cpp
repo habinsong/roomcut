@@ -106,6 +106,47 @@ static void test_spatial_mode_is_a_finite_enum() {
     }
 }
 
+static void test_virtual_room_is_a_finite_enum() {
+    for (double type : {std::nan(""), std::numeric_limits<double>::infinity(), -1.0, 4.0, 2.5, 1e100}) {
+        auto params = ChainParams::flat();
+        params.roomType = type;
+        CHECK(!PresetValidator::validate(params).ok, "invalid room types are rejected");
+        const auto clamped = PresetValidator::clamp(params);
+        CHECK(PresetValidator::validate(clamped).ok, "room-type clamp produces a valid enum");
+        CHECK(clamped.roomType == std::round(clamped.roomType), "room types are integral before DSP conversion");
+        CHECK(clamped.roomType >= 0.0 && clamped.roomType <= 3.0, "room types stay inside the table");
+    }
+    for (double amount : {std::nan(""), -20.0, 400.0}) {
+        auto params = ChainParams::flat();
+        params.roomAmount = amount;
+        CHECK(!PresetValidator::validate(params).ok, "out-of-range room amounts are rejected");
+        const auto clamped = PresetValidator::clamp(params);
+        CHECK(clamped.roomAmount >= 0.0 && clamped.roomAmount <= 100.0, "room amount is clamped to 0..100");
+    }
+    for (double type : {std::nan(""), -1.0, 4.0, 2.5, 1e100}) {
+        auto params = ChainParams::flat();
+        params.surroundType = type;
+        CHECK(!PresetValidator::validate(params).ok, "invalid upmix layouts are rejected");
+        const auto clamped = PresetValidator::clamp(params);
+        CHECK(PresetValidator::validate(clamped).ok, "upmix-layout clamp produces a valid enum");
+        CHECK(clamped.surroundType == std::round(clamped.surroundType),
+              "upmix layouts are integral before DSP conversion");
+        CHECK(clamped.surroundType >= 0.0 && clamped.surroundType <= 3.0,
+              "upmix layouts stay inside the table");
+    }
+    for (double value : {std::nan(""), -30.0, 140.0}) {
+        auto params = ChainParams::flat();
+        params.centerWidth = value;
+        params.surroundDepth = value;
+        CHECK(!PresetValidator::validate(params).ok, "out-of-range upmix steering is rejected");
+        const auto clamped = PresetValidator::clamp(params);
+        CHECK(clamped.centerWidth >= 0.0 && clamped.centerWidth <= 100.0,
+              "centre width is clamped to 0..100");
+        CHECK(clamped.surroundDepth >= 0.0 && clamped.surroundDepth <= 100.0,
+              "surround depth is clamped to 0..100");
+    }
+}
+
 int main() {
     test_flat_is_valid_and_unchanged();
     test_rejects_dangerous_values();
@@ -114,6 +155,7 @@ int main() {
     test_clamp_nan_becomes_finite();
     test_all_builtins_valid();
     test_spatial_mode_is_a_finite_enum();
+    test_virtual_room_is_a_finite_enum();
 
     if (g_failures == 0) { printf("all preset tests passed\n"); return 0; }
     fprintf(stderr, "%d preset check(s) failed\n", g_failures);

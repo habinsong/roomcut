@@ -179,6 +179,41 @@ target_compile_options(test_limiter PRIVATE -Wall -Wextra)
 
 add_test(NAME limiter COMMAND test_limiter)
 
+# DSP: one virtual loudspeaker at an azimuth (ITD + head shadow) — header-only.
+add_executable(test_virtual_speaker ${CMAKE_SOURCE_DIR}/core/tests/test_virtual_speaker.cpp)
+target_include_directories(test_virtual_speaker PRIVATE ${CMAKE_SOURCE_DIR}/core/dsp)
+target_compile_options(test_virtual_speaker PRIVATE -Wall -Wextra)
+
+add_test(NAME virtual_speaker COMMAND test_virtual_speaker)
+
+# DSP: the stereo mix on two head-anchored virtual speakers — header-only.
+add_executable(test_surround_stage ${CMAKE_SOURCE_DIR}/core/tests/test_surround_stage.cpp)
+target_include_directories(test_surround_stage PRIVATE ${CMAKE_SOURCE_DIR}/core/dsp)
+target_compile_options(test_surround_stage PRIVATE -Wall -Wextra)
+
+add_test(NAME surround_stage COMMAND test_surround_stage)
+
+# DSP: every combination of surround, head tracking, room and bypass.
+add_executable(test_spatial_matrix ${CMAKE_SOURCE_DIR}/core/tests/test_spatial_matrix.cpp)
+target_include_directories(test_spatial_matrix PRIVATE ${CMAKE_SOURCE_DIR}/core/dsp)
+target_compile_options(test_spatial_matrix PRIVATE -Wall -Wextra)
+
+add_test(NAME spatial_matrix COMMAND test_spatial_matrix)
+
+# DSP: stereo -> 5.1/7.1 upmix steering matrix — header-only.
+add_executable(test_upmix ${CMAKE_SOURCE_DIR}/core/tests/test_upmix.cpp)
+target_include_directories(test_upmix PRIVATE ${CMAKE_SOURCE_DIR}/core/dsp)
+target_compile_options(test_upmix PRIVATE -Wall -Wextra)
+
+add_test(NAME upmix COMMAND test_upmix)
+
+# DSP: virtual room (image-source early reflections + FDN tail) — header-only.
+add_executable(test_roomsim ${CMAKE_SOURCE_DIR}/core/tests/test_roomsim.cpp)
+target_include_directories(test_roomsim PRIVATE ${CMAKE_SOURCE_DIR}/core/dsp)
+target_compile_options(test_roomsim PRIVATE -Wall -Wextra)
+
+add_test(NAME roomsim COMMAND test_roomsim)
+
 add_executable(test_spatial ${CMAKE_SOURCE_DIR}/core/tests/test_spatial.cpp)
 target_include_directories(test_spatial PRIVATE ${CMAKE_SOURCE_DIR}/core/dsp)
 target_compile_options(test_spatial PRIVATE -Wall -Wextra)

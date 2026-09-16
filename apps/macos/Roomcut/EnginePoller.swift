@@ -69,4 +69,13 @@ final class EnginePoller {
         deviceRevision &+= 1
         completed[.controls] = nil
     }
+
+    // The hardware itself changed (a device appeared or disappeared), so the
+    // list is wrong, not just the per-device controls. invalidateDevices()
+    // deliberately keeps the list — an engine-side output switch does not add
+    // or remove anything — but a CoreAudio device-list change does.
+    func invalidateDeviceList() {
+        invalidateDevices()
+        completed[.devices] = nil
+    }
 }

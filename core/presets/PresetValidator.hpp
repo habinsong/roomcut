@@ -49,6 +49,10 @@ struct PresetBounds {
     static constexpr double kHighpassMaxHz = 400.0;
     static constexpr double kCompAmountMin =   0.0;
     static constexpr double kCompAmountMax = 100.0;
+    static constexpr double kRoomAmountMin =   0.0;   // virtual room level
+    static constexpr double kRoomAmountMax = 100.0;
+    static constexpr double kUpmixSteerMin =   0.0;   // upmix centre width / surround depth
+    static constexpr double kUpmixSteerMax = 100.0;
     static constexpr double kParamFreqMinHz =    20.0;
     static constexpr double kParamFreqMaxHz = 20000.0;
     static constexpr double kParamGainMinDb = -24.0;
@@ -84,6 +88,14 @@ public:
         if (std::isfinite(p.spatialMode) && p.spatialMode != std::round(p.spatialMode)) r.fail("spatialMode is not an integer");
         checkRange(r, p.highpassHz, PresetBounds::kHighpassMinHz, PresetBounds::kHighpassMaxHz, "highpassHz");
         checkRange(r, p.compAmount, PresetBounds::kCompAmountMin, PresetBounds::kCompAmountMax, "compAmount");
+        checkRange(r, p.roomType, 0.0, 3.0, "roomType");
+        if (std::isfinite(p.roomType) && p.roomType != std::round(p.roomType)) r.fail("roomType is not an integer");
+        checkRange(r, p.roomAmount, PresetBounds::kRoomAmountMin, PresetBounds::kRoomAmountMax, "roomAmount");
+        checkRange(r, p.surroundType, 0.0, 3.0, "surroundType");
+        if (std::isfinite(p.surroundType) && p.surroundType != std::round(p.surroundType))
+            r.fail("surroundType is not an integer");
+        checkRange(r, p.centerWidth, PresetBounds::kUpmixSteerMin, PresetBounds::kUpmixSteerMax, "centerWidth");
+        checkRange(r, p.surroundDepth, PresetBounds::kUpmixSteerMin, PresetBounds::kUpmixSteerMax, "surroundDepth");
         for (std::size_t i = 0; i < p.parametric.size(); ++i) {
             const auto& band = p.parametric[i];
             const std::string tag = "parametric[" + std::to_string(i) + "]";
@@ -115,6 +127,17 @@ public:
         p.spatialMode = std::round(p.spatialMode);
         p.highpassHz = clampField(r, p.highpassHz, PresetBounds::kHighpassMinHz, PresetBounds::kHighpassMaxHz, "highpassHz");
         p.compAmount = clampField(r, p.compAmount, PresetBounds::kCompAmountMin, PresetBounds::kCompAmountMax, "compAmount");
+        p.roomType = clampField(r, p.roomType, 0.0, 3.0, "roomType");
+        if (p.roomType != std::round(p.roomType)) r.fail("roomType rounded to an integer");
+        p.roomType = std::round(p.roomType);
+        p.roomAmount = clampField(r, p.roomAmount, PresetBounds::kRoomAmountMin, PresetBounds::kRoomAmountMax, "roomAmount");
+        p.surroundType = clampField(r, p.surroundType, 0.0, 3.0, "surroundType");
+        if (p.surroundType != std::round(p.surroundType)) r.fail("surroundType rounded to an integer");
+        p.surroundType = std::round(p.surroundType);
+        p.centerWidth = clampField(r, p.centerWidth, PresetBounds::kUpmixSteerMin,
+                                   PresetBounds::kUpmixSteerMax, "centerWidth");
+        p.surroundDepth = clampField(r, p.surroundDepth, PresetBounds::kUpmixSteerMin,
+                                     PresetBounds::kUpmixSteerMax, "surroundDepth");
         for (std::size_t i = 0; i < p.parametric.size(); ++i) {
             auto& band = p.parametric[i];
             const std::string tag = "parametric[" + std::to_string(i) + "]";

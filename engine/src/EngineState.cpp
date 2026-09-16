@@ -8,6 +8,10 @@
 
 namespace roomcut {
 
+// Bumped when a field in the params line changes MEANING rather than being
+// appended. 1 = centre width / surround depth are 0..100 steering.
+constexpr double kParamsSchema = 1.0;
+
 void capturePersistentSound(PersistentState& state, const ChainParams& params, const char* presetID) {
     state.presetId = presetID;
     state.paramsLine = state.presetId == "custom" ? serializeParamsLine(params) : std::string();
@@ -28,7 +32,16 @@ std::string serializeParamsLine(const ChainParams& params) {
     output << ' ' << params.limiterReleaseMs << ' ' << params.outputGainDb
         << ' ' << params.spatialWidth << ' ' << params.centerFocus
         << ' ' << params.crossfeed << ' ' << params.roomReduce << ' ' << params.spatialMode
-        << ' ' << params.highpassHz << ' ' << params.compAmount;
+        << ' ' << params.highpassHz << ' ' << params.compAmount
+        << ' ' << params.roomType << ' ' << params.roomAmount
+        << ' ' << params.surroundType << ' ' << params.centerWidth
+        << ' ' << params.surroundDepth
+        // Schema marker. The two fields before it changed meaning once already
+        // — they were -12..+6 dB trims and became 0..100 steering — and a file
+        // written before that change stores a 0 that used to mean "no trim" and
+        // now reads as "extract no centre at all". A file without this marker is
+        // from before, so those two are ignored and the defaults stand.
+        << ' ' << kParamsSchema;
     return output.str();
 }
 
@@ -37,11 +50,14 @@ bool parseParamsLine(const std::string& line, ChainParams* params) {
     std::istringstream input(line);
     input.imbue(std::locale::classic());
     constexpr size_t base = GraphicEQ::kNumBands + 3;
-    double values[base + 7]{};
-    for (size_t i = 0; i < base + 7; ++i) {
+    constexpr size_t fields = base + 13;  // spatial (5) + dynamics (2) + room (2) + upmix (3) + schema
+    double values[fields]{};
+    size_t read = 0;
+    for (size_t i = 0; i < fields; ++i) {
         input >> std::ws;
-        if (i >= base && input.eof()) break; // pre-spatial/dynamics state files
+        if (i >= base && input.eof()) break; // pre-spatial/dynamics/room state files
         if (!(input >> values[i]) || !std::isfinite(values[i])) return false;
+        read = i + 1;
     }
     params->preampDb = values[0];
     for (size_t band = 0; band < GraphicEQ::kNumBands; ++band) params->eqGainsDb[band] = values[band + 1];
@@ -54,6 +70,23 @@ bool parseParamsLine(const std::string& line, ChainParams* params) {
     params->spatialMode = values[base + 4];
     params->highpassHz = values[base + 5];
     params->compAmount = values[base + 6];
+    // A state file written before the virtual room existed keeps the struct's
+    // own defaults (room off at the reference level) instead of reading zeros.
+    if (read >= base + 9) {
+        params->roomType = values[base + 7];
+        params->roomAmount = values[base + 8];
+    }
+    // Likewise for a file written before the upmix: keep the struct's defaults
+    // (upmix off, trims at unity) instead of reading zeros that are not there.
+    if (read >= base + 12) {
+        params->surroundType = values[base + 9];
+        // Only trust the steering values from a file that was written with the
+        // current meaning; see kParamsSchema.
+        if (read >= base + 13 && values[base + 12] >= 1.0) {
+            params->centerWidth = values[base + 10];
+            params->surroundDepth = values[base + 11];
+        }
+    }
     return true;
 }
 

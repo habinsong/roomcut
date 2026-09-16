@@ -52,7 +52,27 @@
         "width": { "type": "number", "minimum": -100, "maximum": 100, "default": 0 },
         "centerFocus": { "type": "number", "minimum": 0, "maximum": 100, "default": 0 },
         "crossfeed": { "type": "number", "minimum": 0, "maximum": 100, "default": 0 },
-        "roomReduce": { "type": "number", "minimum": 0, "maximum": 100, "default": 0 }
+        "roomReduce": { "type": "number", "minimum": 0, "maximum": 100, "default": 0 },
+        "roomType": {
+          "description": "Virtual room: 0 off, 1 Studio, 2 Living Room, 3 Hall. Headphones get the full space, speakers only its late field.",
+          "type": "integer", "minimum": 0, "maximum": 3, "default": 0
+        },
+        "roomAmount": {
+          "description": "Virtual room level; 50 is the room's reference level.",
+          "type": "number", "minimum": 0, "maximum": 100, "default": 50
+        },
+        "surroundType": {
+          "description": "Virtual surround upmix: 0 off, 2 virtual 5.1, 3 virtual 7.1. Headphones only — speakers already have a phantom centre and a real room.",
+          "type": "integer", "minimum": 0, "maximum": 3, "default": 0
+        },
+        "centerWidth": {
+          "description": "How much of the centre image becomes a discrete centre channel. 0 leaves it as the phantom the front pair already makes; 100 extracts all of it.",
+          "type": "number", "minimum": 0, "maximum": 100, "default": 100
+        },
+        "surroundDepth": {
+          "description": "How much of the ambient part of the programme is steered behind the listener rather than left in front. 50 is the balance point between envelopment and the head-tracking cue.",
+          "type": "number", "minimum": 0, "maximum": 100, "default": 50
+        }
       }
     },
     "compressor": {

@@ -17,6 +17,8 @@
 
 #include "DSPPath.hpp"
 #include "Limiter.hpp"
+#include "SurroundStage.hpp"
+#include "RoomSim.hpp"
 
 namespace roomcut {
 
@@ -30,6 +32,14 @@ public:
         // A clip-only safety net at digital full scale leaves sub-0 dBFS masters
         // transparent. One limiter after both mixes preserves its look-ahead.
         limiter_.prepare(fs, 2.0, kClipCeilingDb, params_.limiterReleaseMs, channels_);
+        // The virtual room sits beside the limiter rather than inside a path:
+        // its tail must survive a preset change instead of being crossfaded,
+        // and one instance keeps its delay lines out of the path copy that
+        // beginTransition() performs on the render thread.
+        room_.prepare(fs);
+        head_.prepare(fs);
+        applyRoom();
+        applyHeadPose();
         crossfadeSamples_ = std::max<std::size_t>(1, std::lround(crossfadeMs * 0.001 * fs));
         mixStep_ = 1.0 / static_cast<double>(crossfadeSamples_);
         reset();
@@ -41,7 +51,16 @@ public:
         limiter_.setReleaseMs(params.limiterReleaseMs);
         // Release belongs to the shared limiter, not either processing path.
         transitionParams_.limiterReleaseMs = params.limiterReleaseMs;
-        if (!transitioning_ && !(params_ == transitionParams_)) beginTransition();
+        transitionParams_.roomType = params.roomType;
+        transitionParams_.roomAmount = params.roomAmount;
+        // The upmix, like the room, lives beside the paths rather than inside
+        // one, so changing it must not drag the whole chain through a crossfade.
+        transitionParams_.surroundType = params.surroundType;
+        transitionParams_.centerWidth = params.centerWidth;
+        transitionParams_.surroundDepth = params.surroundDepth;
+        applyRoom();
+        applyHeadPose();
+        if (!transitioning_ && (pathsDirty_ || !(params_ == transitionParams_))) beginTransition();
         // While fading, retain only the latest request. Never replace a path
         // whose output is audible or restart a fade at a different mix weight.
     }
@@ -51,17 +70,44 @@ public:
     void setBypass(bool bypass) {
         bypass_ = bypass;
         mixTarget_ = bypass ? 0.0 : 1.0;
+        applyRoom();
+        applyHeadPose();
     }
+
+    // Live head orientation, in degrees, positive when the listener turns right.
+    // This is not a preset value: it arrives many times a second from the
+    // headphones' own sensors, so it never goes through setParams() (which
+    // would crossfade the whole chain on every update).
+    void setHeadPose(double yawDegrees, bool active) {
+        const bool wasActive = headActive_;
+        headYawDeg_ = yawDegrees;
+        headActive_ = active;
+        applyHeadPose();
+        // The angle itself arrives fifty times a second and must never touch the
+        // tonal paths. The tracker APPEARING or GOING AWAY is different: it
+        // changes whether the crossfeed should be rendering at all, and that is
+        // a path change like any other, so it crossfades. This happens a handful
+        // of times in a session, not per block.
+        if (wasActive != active && params_.crossfeed != 0.0) {
+            pathsDirty_ = true;
+            if (!transitioning_) beginTransition();
+        }
+    }
+
+    bool headTracking() const { return head_.enabled(); }
 
     bool bypassed() const { return bypass_; }
 
     void reset() {
-        paths_[activePath_].setParams(params_);
+        paths_[activePath_].setParams(pathParams());
         paths_[activePath_].reset();
         limiter_.reset();
+        room_.reset();
+        head_.reset();
         transitionParams_ = params_;
         transitioning_ = false;
         transitionFrame_ = 0;
+        pathsDirty_ = false;
         safeBypass_ = false;
         mix_ = bypass_ ? 0.0 : 1.0;
         mixTarget_ = mix_;
@@ -104,6 +150,12 @@ public:
                     for (std::size_t c = 0; c < channels_; ++c)
                         frame[c] = static_cast<float>(frame[c] * mix_ + dry[c] * (1.0 - mix_));
                 }
+                // Head tracking first — it decides where the speakers stand —
+                // then the room those speakers stand in. Both run on the blended
+                // result and before the limiter, so their extra energy still
+                // meets the brickwall.
+                head_.processFrame(frame, channels_);
+                room_.processFrame(frame, channels_);
                 for (std::size_t c = 0; c < channels_; ++c) {
                     if (!std::isfinite(frame[c])) safeBypass_ = true;
                 }
@@ -123,15 +175,98 @@ public:
             if (transitioning_ && ++transitionFrame_ >= crossfadeSamples_) {
                 activePath_ = 1 - activePath_;
                 transitioning_ = false;
-                if (!(params_ == transitionParams_)) beginTransition();
+                if (pathsDirty_ || !(params_ == transitionParams_)) beginTransition();
             }
         }
     }
 
 private:
+    // Both outputs get a room, but not the same one: headphones need the whole
+    // space rebuilt, speakers already sit in a real room and get only its late
+    // field (see RoomSim). Bypass silences it like everything else.
+    void applyRoom() {
+        const int mode = static_cast<int>(std::lround(params_.spatialMode));
+        const bool headphone = (mode == 1 || mode == 2);
+        int type = bypass_ ? 0 : static_cast<int>(std::lround(params_.roomType));
+        // A virtual loudspeaker with no reflections stays inside the listener's
+        // head. The literature is blunt about it — virtualisers built on the
+        // direct-path HRTF alone do not externalise, because the head gives no
+        // distance cue past about a metre; what carries distance and room is the
+        // reflected sound. So an upmix on headphones always gets a room, and
+        // the Room control chooses WHICH one rather than whether there is one.
+        // Without this, picking 5.1 changed the sound so little that it read as
+        // nothing happening at all.
+        const int surround = static_cast<int>(std::lround(params_.surroundType));
+        const bool upmixing = headphone && !bypass_ && surround >= Upmixer::k51;
+        if (upmixing && type == 0) type = 1;            // the smallest room there is
+        // Speakers are already in a room. Adding a second one at the same level
+        // as the headphone profile stacks reverb on reverb, so the slider keeps
+        // its full 0-100 travel and the amount it asks for is halved on the way
+        // in — same control, half the reverb, which is what a real room leaves
+        // space for.
+        double amount = headphone ? params_.roomAmount : params_.roomAmount * 0.5;
+        // At the room's own reference level, exactly as if the listener had
+        // picked Studio: measured -17.3 dB of reflected energy against the
+        // direct sound, which is a room you can hear rather than a hint of one.
+        if (upmixing && static_cast<int>(std::lround(params_.roomType)) == 0) amount = 50.0;
+        room_.setParams(type, amount, headphone);
+    }
+
+    // Which of the spatial features is actually rendering, and how.
+    //
+    // Three of them overlap if left alone — head tracking, the upmix and the
+    // crossfeed/XTC model all decide where a source appears — so the chain makes
+    // the call rather than trusting whoever set the parameters. A preset, a
+    // restored state file or a switch between outputs could otherwise leave two
+    // of them running at once, which measurably doubles up: head tracking with
+    // crossfeed still at 50 narrowed a 0.58-correlated mix to 0.93 instead of
+    // 0.86, and put 3.5 dB more of it in the middle.
+    //
+    // The rules, in one place:
+    //   - Head tracking runs on headphones only. Speakers do not move with you.
+    //   - The upmix runs on both, differently: virtual loudspeakers on
+    //     headphones, a folded and widened stereo pair on speakers.
+    //   - While either of those is rendering on headphones, the crossfeed steps
+    //     aside — it is a third, fixed-head version of the same job.
+    //   - The upmix also retires the older ambience surround, which spreads the
+    //     same material a cruder way.
+    void applyHeadPose() {
+        const int mode = static_cast<int>(std::lround(params_.spatialMode));
+        const bool headphone = (mode == 1 || mode == 2);
+        const int surround = static_cast<int>(std::lround(params_.surroundType));
+        const bool upmixing = !bypass_ && surround >= Upmixer::k51;
+        const bool tracking = headActive_ && headphone && !bypass_;
+        head_.setHeadphone(headphone);
+        head_.setLayout(upmixing ? surround : Upmixer::kOff);
+        head_.setSurroundLevels(params_.centerWidth, params_.surroundDepth);
+        head_.setEnabled(tracking || upmixing);
+        head_.setYawDegrees(tracking ? headYawDeg_ : 0.0);
+    }
+
+    // What the tonal paths get: the stored parameters with whatever the stage
+    // has taken over removed, so the two can never both render it.
+    ChainParams pathParams() const {
+        ChainParams p = params_;
+        const int mode = static_cast<int>(std::lround(p.spatialMode));
+        const bool headphone = (mode == 1 || mode == 2);
+        const int surround = static_cast<int>(std::lround(p.surroundType));
+        const bool upmixing = surround >= Upmixer::k51;
+        if (upmixing) {
+            // The ambience surround and the upmix spread the same content.
+            p.spatialMode = headphone ? 1.0 : 0.0;
+        }
+        if (headphone && (upmixing || headActive_)) {
+            // Crossfeed builds a fixed virtual stage; the stage is already
+            // building one, with real angles.
+            p.crossfeed = 0.0;
+        }
+        return p;
+    }
+
     void beginTransition() {
         paths_[1 - activePath_] = paths_[activePath_];
-        paths_[1 - activePath_].setParams(params_);
+        paths_[1 - activePath_].setParams(pathParams());
+        pathsDirty_ = false;
         transitionParams_ = params_;
         transitionFrame_ = 0;
         transitioning_ = true;
@@ -147,6 +282,14 @@ private:
     std::size_t transitionFrame_ = 0;
     bool transitioning_ = false;
     Limiter limiter_{};
+    RoomSim room_{};
+    SurroundStage head_{};
+    double headYawDeg_ = 0.0;
+    bool headActive_ = false;
+    // Set when something outside the parameter set changed what the tonal paths
+    // should be doing (so far: the tracker appearing or going away). Consumed by
+    // the next crossfade, so it cannot be lost while one is already running.
+    bool pathsDirty_ = false;
     bool bypass_ = false;
     bool safeBypass_ = false;
     double mix_ = 1.0;

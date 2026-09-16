@@ -34,6 +34,9 @@
 #define ROOMCUT_CAP_DYNAMICS       0x00000010u /* highpassHz/compAmount on the wire */
 #define ROOMCUT_CAP_LEVEL_MATCH    0x00000020u
 #define ROOMCUT_CAP_DYNAMIC_EQ     0x00000040u /* per-band dynamic EQ on the wire */
+#define ROOMCUT_CAP_VIRTUAL_ROOM   0x00000080u /* roomType/roomAmount on the wire */
+#define ROOMCUT_CAP_HEAD_TRACKING  0x00000100u /* SET_HEAD_POSE + head-tracked render */
+#define ROOMCUT_CAP_UPMIX          0x00000200u /* surroundType/center+surroundDepth on the wire */
 
 /* Driver → engine: request the handoff. Sent to the engine's service port;
  * header.msgh_local_port carries a reply send-once right. */
@@ -258,7 +261,27 @@ typedef struct {
     double            compAmount;   /* 0..100 leveling amount, 0 = off */
     /* Dynamic EQ (ROOMCUT_CAP_DYNAMIC_EQ), appended for the same reason. */
     RoomcutParamDynamics dynamics[ROOMCUT_PARAM_BANDS];
+    /* Virtual room (headphone only), appended for the same reason: an older
+     * sender leaves both at 0, which reads as "no room". */
+    double            roomType;    /* 0 = off, 1 = Studio, 2 = Living Room, 3 = Hall */
+    double            roomAmount;  /* 0..100, 50 = the room's reference level */
+    /* Virtual 5.1/7.1 upmix (ROOMCUT_CAP_UPMIX), appended for the same reason:
+     * an older sender leaves all three at 0, which reads as "no upmix". */
+    double            surroundType;     /* 0 = off, 2 = virtual 5.1, 3 = virtual 7.1 */
+    double            centerWidth;    /* -12..+6 */
+    double            surroundDepth;  /* -12..+6 */
 } RoomcutSetParamsRequest;
+
+/* Live head orientation from the listener's headphones. Unlike every other
+ * SET_*, this is not a preset value: it arrives tens of times a second and is
+ * never persisted, so it has its own small message instead of riding along with
+ * the parameter set (which would crossfade the whole chain on every update). */
+typedef struct {
+    mach_msg_header_t header;
+    uint32_t          msgType;   /* ROOMCUT_MSG_SET_HEAD_POSE */
+    uint32_t          active;    /* 0 = tracker not delivering; render goes dry */
+    double            yawDeg;    /* + = listener turned right */
+} RoomcutSetHeadPoseRequest;
 
 /* Acknowledgement for SET_* requests. */
 typedef struct {
@@ -330,6 +353,13 @@ typedef struct {
     double            highpassHz;
     double            compAmount;
     RoomcutParamDynamics dynamics[ROOMCUT_PARAM_BANDS];
+    /* Virtual room — appended (see RoomcutSetParamsRequest). */
+    double            roomType;
+    double            roomAmount;
+    /* Virtual 5.1/7.1 upmix — appended (see RoomcutSetParamsRequest). */
+    double            surroundType;
+    double            centerWidth;
+    double            surroundDepth;
 } RoomcutGetParamsReply;
 
 typedef struct {
@@ -361,7 +391,13 @@ typedef struct {
 
 /* A complete A/B update is one transaction. Existing SET_PARAMS layouts stay
  * unchanged; the new payload is versioned independently of the driver ring. */
-#define ROOMCUT_COMPARISON_VERSION 2u /* 2 adds RoomcutParamDynamics to the payload */
+/* 2 added RoomcutParamDynamics. 3 adds the virtual room and 4 the upmix — both
+ * appended AFTER the two parameter blocks, never inside them:
+ * RoomcutParameterValues sits twice in a row, so growing it would shift
+ * `reference` and break every size-compatible peer. An older peer simply
+ * sends/receives the shorter message. */
+#define ROOMCUT_COMPARISON_VERSION 4u
+#define ROOMCUT_COMPARISON_MIN_VERSION 2u /* still accept a peer without the room */
 #define ROOMCUT_COMPARISON_PARAMETERS 0u
 #define ROOMCUT_COMPARISON_PRESET 1u
 typedef struct {
@@ -378,6 +414,8 @@ typedef struct {
     double compAmount;
     RoomcutParamBand parametric[ROOMCUT_PARAM_BANDS];
     RoomcutParamDynamics dynamics[ROOMCUT_PARAM_BANDS];
+    /* No virtual room or upmix here — see ROOMCUT_COMPARISON_VERSION. Both
+     * travel in the trailing fields of the request/reply instead. */
 } RoomcutParameterValues;
 
 typedef struct {
@@ -389,6 +427,20 @@ typedef struct {
     char presetId[ROOMCUT_PRESET_ID_MAX];
     RoomcutParameterValues current;
     RoomcutParameterValues reference;
+    /* Virtual room for each side (version 3+). A version-2 sender omits these
+     * and the engine keeps whatever room is already playing. */
+    double currentRoomType;
+    double currentRoomAmount;
+    double referenceRoomType;
+    double referenceRoomAmount;
+    /* Upmix for each side (version 4+). A version-3 sender omits these and the
+     * engine keeps whatever upmix is already playing. */
+    double currentSurroundType;
+    double currentCenterWidth;
+    double currentSurroundDepth;
+    double referenceSurroundType;
+    double referenceCenterWidth;
+    double referenceSurroundDepth;
 } RoomcutComparisonRequest;
 
 typedef struct {
@@ -410,6 +462,18 @@ typedef struct {
     char presetId[ROOMCUT_PRESET_ID_MAX];
     RoomcutParameterValues current;
     RoomcutParameterValues reference;
+    /* Virtual room per side (version 3+), appended — see the request. */
+    double currentRoomType;
+    double currentRoomAmount;
+    double referenceRoomType;
+    double referenceRoomAmount;
+    /* Upmix per side (version 4+), appended — see the request. */
+    double currentSurroundType;
+    double currentCenterWidth;
+    double currentSurroundDepth;
+    double referenceSurroundType;
+    double referenceCenterWidth;
+    double referenceSurroundDepth;
 } RoomcutComparisonReply;
 
 typedef union {
@@ -419,6 +483,7 @@ typedef union {
     RoomcutSetKeepDefaultRequest setKeepDefault;
     RoomcutSetVolumeBoostRequest setVolumeBoost;
     RoomcutSetParamsRequest setParams;
+    RoomcutSetHeadPoseRequest setHeadPose;
     RoomcutStateRequest     stateRequest;
     RoomcutGetParamsRequest getParams;
     RoomcutAnalysisRequest  analysisRequest;

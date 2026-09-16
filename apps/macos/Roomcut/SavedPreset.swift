@@ -14,13 +14,19 @@ public struct SavedPreset: Codable, Identifiable, Equatable {
     public var roomReduce: Double
     public var spatialMode: Double
     // v2: also capture Basic macros, Parametric bands and the Limiter, plus a tree
-    // folder. v3 adds dynamics (highpassHz/compAmount). Defaults keep older saves
-    // valid.
+    // folder. v3 adds dynamics (highpassHz/compAmount). v4 adds the virtual room
+    // (roomType/roomAmount) and the upmix (surroundType and its two trims).
+    // Defaults keep older saves valid.
     public var eqMacros: [String: Double]
     public var parametric: [ParametricBand]
     public var limiterReleaseMs: Double
     public var highpassHz: Double
     public var compAmount: Double
+    public var roomType: Double
+    public var roomAmount: Double
+    public var surroundType: Double
+    public var centerWidth: Double
+    public var surroundDepth: Double
     public var folder: String?
     public var builtin: Bool   // app-shipped library entry (not user-created)
     public var roomTuneInfo: String?   // Room Tune measurement summary (date · devices · bands)
@@ -40,6 +46,11 @@ public struct SavedPreset: Codable, Identifiable, Equatable {
                 limiterReleaseMs: Double = 100.0,
                 highpassHz: Double = 0,
                 compAmount: Double = 0,
+                roomType: Double = 0,
+                roomAmount: Double = 50,
+                surroundType: Double = 0,
+                centerWidth: Double = 100,
+                surroundDepth: Double = 50,
                 folder: String? = nil,
                 builtin: Bool = false,
                 roomTuneInfo: String? = nil) {
@@ -57,6 +68,11 @@ public struct SavedPreset: Codable, Identifiable, Equatable {
         self.limiterReleaseMs = limiterReleaseMs
         self.highpassHz = highpassHz
         self.compAmount = compAmount
+        self.roomType = roomType
+        self.roomAmount = roomAmount
+        self.surroundType = surroundType
+        self.centerWidth = centerWidth
+        self.surroundDepth = surroundDepth
         self.folder = folder
         self.builtin = builtin
         self.roomTuneInfo = roomTuneInfo
@@ -66,6 +82,8 @@ public struct SavedPreset: Codable, Identifiable, Equatable {
         case name, preampDb, eqGainsDb, outputGainDb
         case spatialWidth, centerFocus, crossfeed, roomReduce, spatialMode
         case eqMacros, parametric, limiterReleaseMs, highpassHz, compAmount
+        case roomType, roomAmount
+        case surroundType, centerWidth, surroundDepth
         case folder, builtin, roomTuneInfo
     }
 
@@ -85,6 +103,11 @@ public struct SavedPreset: Codable, Identifiable, Equatable {
         limiterReleaseMs = try c.decodeIfPresent(Double.self, forKey: .limiterReleaseMs) ?? 100.0
         highpassHz = try c.decodeIfPresent(Double.self, forKey: .highpassHz) ?? 0
         compAmount = try c.decodeIfPresent(Double.self, forKey: .compAmount) ?? 0
+        roomType = try c.decodeIfPresent(Double.self, forKey: .roomType) ?? 0
+        roomAmount = try c.decodeIfPresent(Double.self, forKey: .roomAmount) ?? 50
+        surroundType = try c.decodeIfPresent(Double.self, forKey: .surroundType) ?? 0
+        centerWidth = try c.decodeIfPresent(Double.self, forKey: .centerWidth) ?? 100
+        surroundDepth = try c.decodeIfPresent(Double.self, forKey: .surroundDepth) ?? 50
         folder = try c.decodeIfPresent(String.self, forKey: .folder)
         builtin = try c.decodeIfPresent(Bool.self, forKey: .builtin) ?? false
         roomTuneInfo = try c.decodeIfPresent(String.self, forKey: .roomTuneInfo)

@@ -200,6 +200,3 @@ struct MenuContent: View {
     }
 }
 
-private extension String {
-    var nonEmpty: String? { isEmpty ? nil : self }
-}

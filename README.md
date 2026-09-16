@@ -29,7 +29,7 @@ Roomcut is a native macOS application that controls and enhances all Mac audio s
 ## Key Features
 
 - **System-wide EQ**: 10-band graphic EQ + 6-band parametric EQ (with dynamic EQ support) and 5 intuitive macro dials (Bass, Warmth, Vocal, Clarity, Air).
-- **Stereo Space**: Adjust width and focus on the side channel while preserving center vocals (Focus/Space controls) plus headphone Crossfeed.
+- **Stereo Space**: Adjust width and focus on the side channel while preserving center vocals (Focus/Space controls) plus headphone Crossfeed and an optional Virtual Room (Studio / Living / Hall) — a full simulated space on headphones, a late ambience field on speakers.
 - **Level-Matched A/B**: Instant comparison between two independent slots with K-weighted loudness matching to eliminate volume bias.
 - **Room Tune**: Measure room resonances via Continuity Camera using your iPhone microphone and generate cut-only correction presets.
 - **25 Built-in Presets**: Tailored curves for built-in speakers, headphones, and AirPods, plus custom JSON preset import/export.

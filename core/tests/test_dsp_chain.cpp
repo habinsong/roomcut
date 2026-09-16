@@ -290,6 +290,281 @@ static void test_parametric_band_in_chain() {
     CHECK_NEAR(20.0 * std::log10(bell2k / off2k), 6.0, 0.6, "parametric +6 dB bell lifts 2 kHz in the chain");
 }
 
+// Run `seconds` of a 500 Hz tone through a chain and return the output.
+static std::vector<float> chainTone(const ChainParams& params, bool bypass, double seconds) {
+    DSPChain chain;
+    chain.prepare(kFs, 2);
+    chain.setParams(params);
+    chain.setBypass(bypass);
+    const std::size_t frames = static_cast<std::size_t>(kFs * seconds);
+    std::vector<float> buf(frames * 2, 0.0f);
+    for (std::size_t f = 0; f < frames; ++f) {
+        const float s = static_cast<float>(0.3 * std::sin(2.0 * M_PI * 500.0 * (double)f / kFs));
+        buf[f * 2] = s;
+        buf[f * 2 + 1] = s;
+    }
+    chain.processInterleaved(buf.data(), frames);
+    return buf;
+}
+
+// A stereo pair with real side content. The mono tone above cannot test any of
+// the width features: crossfeed, the ambience surround and the upmix all reshape
+// the SIDE and leave a centred signal alone by design, so a mono probe makes
+// every one of them look like a no-op.
+// Returns the SETTLED half only. Every one of these changes crossfades, and a
+// whole-buffer comparison would just be measuring the crossfade.
+static std::vector<float> chainStereo(const ChainParams& params, double yawDeg,
+                                      bool tracking, double seconds = 0.5) {
+    DSPChain chain;
+    chain.prepare(kFs, 2);
+    chain.setParams(params);
+    chain.setHeadPose(yawDeg, tracking);
+    const std::size_t frames = static_cast<std::size_t>(kFs * seconds);
+    std::vector<float> buf(frames * 2, 0.0f);
+    unsigned state = 22695477u;
+    for (std::size_t f = 0; f < frames; ++f) {
+        state = state * 1103515245u + 12345u;
+        const double noise = (double)((state >> 8) & 0xFFFFu) / 32768.0 - 1.0;
+        const double mid = 0.25 * std::sin(2.0 * M_PI * 500.0 * (double)f / kFs);
+        buf[f * 2] = static_cast<float>(mid + 0.15 * noise);
+        buf[f * 2 + 1] = static_cast<float>(mid - 0.15 * noise);
+    }
+    chain.processInterleaved(buf.data(), frames);
+    return std::vector<float>(buf.begin() + (frames / 2) * 2, buf.end());
+}
+
+static void test_virtual_room_follows_the_output() {
+    // Room off must leave both outputs exactly as they were before the room
+    // stage existed.
+    for (double mode : {0.0, 1.0}) {
+        ChainParams plain = ChainParams::flat();
+        plain.spatialMode = mode;
+        ChainParams off = plain;
+        off.roomType = 0.0;
+        CHECK(chainTone(plain, false, 0.5) == chainTone(off, false, 0.5),
+              "room type 0 leaves the chain bit-identical on either output");
+    }
+
+    // A room changes the sound on both outputs...
+    ChainParams speaker = ChainParams::flat();
+    speaker.spatialMode = 0.0;
+    ChainParams speakerRoom = speaker;
+    speakerRoom.roomType = 2.0;
+    ChainParams headphone = ChainParams::flat();
+    headphone.spatialMode = 1.0;
+    ChainParams headphoneRoom = headphone;
+    headphoneRoom.roomType = 2.0;
+    const std::vector<float> speakerDry = chainTone(speaker, false, 1.0);
+    const std::vector<float> speakerWet = chainTone(speakerRoom, false, 1.0);
+    const std::vector<float> headphoneWet = chainTone(headphoneRoom, false, 1.0);
+    CHECK(!(speakerDry == speakerWet), "a speaker room changes the sound");
+    CHECK(!(chainTone(headphone, false, 1.0) == headphoneWet), "a headphone room changes the sound");
+
+    // ...but not the same way: the speaker room adds nothing in the first
+    // milliseconds, where the real room's own reflections live.
+    const std::size_t onset = static_cast<std::size_t>(kFs * 0.015) * 2;
+    double speakerEarly = 0.0, headphoneEarly = 0.0;
+    const std::vector<float> headphoneDry = chainTone(headphone, false, 1.0);
+    for (std::size_t i = 0; i < onset; ++i) {
+        speakerEarly = std::max(speakerEarly, std::fabs((double)speakerWet[i] - speakerDry[i]));
+        headphoneEarly = std::max(headphoneEarly, std::fabs((double)headphoneWet[i] - headphoneDry[i]));
+    }
+    CHECK(speakerEarly < 1e-6, "the speaker room leaves the first 15 ms to the real room");
+    CHECK(headphoneEarly > 1e-4, "the headphone room builds its own early reflections");
+}
+
+// Same as chainTone, with a head orientation pushed in before rendering.
+static std::vector<float> chainToneWithHead(const ChainParams& params, double yawDeg,
+                                            bool active, bool bypass = false) {
+    DSPChain chain;
+    chain.prepare(kFs, 2);
+    chain.setParams(params);
+    chain.setBypass(bypass);
+    chain.setHeadPose(yawDeg, active);
+    const std::size_t frames = static_cast<std::size_t>(kFs * 0.5);
+    std::vector<float> buf(frames * 2, 0.0f);
+    for (std::size_t f = 0; f < frames; ++f) {
+        const float s = static_cast<float>(0.3 * std::sin(2.0 * M_PI * 500.0 * (double)f / kFs));
+        buf[f * 2] = s;
+        buf[f * 2 + 1] = s;
+    }
+    chain.processInterleaved(buf.data(), frames);
+    return buf;
+}
+
+static void test_head_tracking_only_runs_when_it_should() {
+    ChainParams headphone = ChainParams::flat();
+    headphone.spatialMode = 1.0;
+    ChainParams speaker = ChainParams::flat();
+    speaker.spatialMode = 0.0;
+
+    // No tracker: the chain is exactly what it was before head tracking existed.
+    CHECK(chainToneWithHead(headphone, 0.0, false) == chainTone(headphone, false, 0.5),
+          "an inactive tracker leaves the chain bit-identical");
+    CHECK(chainToneWithHead(headphone, 45.0, false) == chainTone(headphone, false, 0.5),
+          "a stale angle with no tracker changes nothing");
+
+    // Tracking on headphones changes the sound, and the angle matters.
+    CHECK(!(chainToneWithHead(headphone, 0.0, true) == chainTone(headphone, false, 0.5)),
+          "an active tracker engages the head-tracked renderer");
+    CHECK(!(chainToneWithHead(headphone, 30.0, true) == chainToneWithHead(headphone, 0.0, true)),
+          "turning the head changes what the ears get");
+
+    // Speakers are already in a room: head tracking must not touch them.
+    CHECK(chainToneWithHead(speaker, 30.0, true) == chainTone(speaker, false, 0.5),
+          "head tracking never applies on speakers");
+
+    // Bypass silences it like everything else.
+    const std::vector<float> bypassed = chainToneWithHead(headphone, 40.0, true, true);
+    const std::vector<float> dry = chainTone(ChainParams::flat(), true, 0.5);
+    double worst = 0.0;
+    for (std::size_t i = static_cast<std::size_t>(kFs * 0.2) * 2; i < bypassed.size(); ++i)
+        worst = std::max(worst, std::fabs((double)bypassed[i] - dry[i]));
+    CHECK(worst < 1e-6, "bypass silences the head-tracked renderer");
+}
+
+static void test_virtual_room_respects_bypass() {
+    ChainParams params = ChainParams::flat();
+    params.spatialMode = 1.0;
+    params.roomType = 3.0;
+    params.roomAmount = 100.0;
+    // Bypass must be a true passthrough: after the bypass ramp the output is
+    // the dry tone, with no reverb tail riding on top.
+    const std::vector<float> bypassed = chainTone(params, true, 1.0);
+    const std::vector<float> dry = chainTone(ChainParams::flat(), true, 1.0);
+    double diff = 0.0;
+    for (std::size_t i = static_cast<std::size_t>(kFs * 0.5) * 2; i < bypassed.size(); ++i)
+        diff = std::max(diff, std::fabs((double)bypassed[i] - (double)dry[i]));
+    CHECK(diff < 1e-6, "bypass silences the virtual room");
+}
+
+static void test_virtual_room_stays_inside_the_ceiling() {
+    // A hot signal plus the largest room must still leave the limiter's
+    // brickwall intact — the room can never be the thing that clips.
+    ChainParams params = ChainParams::flat();
+    params.spatialMode = 1.0;
+    params.roomType = 3.0;
+    params.roomAmount = 100.0;
+    DSPChain chain;
+    chain.prepare(kFs, 2);
+    chain.setParams(params);
+    chain.setBypass(false);
+    const std::size_t frames = static_cast<std::size_t>(kFs * 2.0);
+    std::vector<float> buf(frames * 2, 0.0f);
+    for (std::size_t f = 0; f < frames; ++f) {
+        const float s = static_cast<float>(0.95 * std::sin(2.0 * M_PI * 440.0 * (double)f / kFs));
+        buf[f * 2] = s;
+        buf[f * 2 + 1] = s;
+    }
+    chain.processInterleaved(buf.data(), frames);
+    double peak = 0.0;
+    bool finite = true;
+    for (float v : buf) { peak = std::max(peak, std::fabs((double)v)); finite = finite && std::isfinite(v); }
+    CHECK(finite, "hot signal through the room stays finite");
+    CHECK(peak <= 1.0, "the room never pushes the chain past full scale");
+}
+
+// The upmix has to run with no head tracker attached — 5.1 has a centre and
+// surrounds that need rendering as speakers whether or not the listener's head
+// is being followed — but it must stay out of the way on speakers and in bypass.
+static void test_upmix_runs_without_a_tracker() {
+    ChainParams headphone = ChainParams::flat();
+    headphone.spatialMode = 1.0;
+    const std::vector<float> plain = chainToneWithHead(headphone, 0.0, false);
+
+    for (double layout : {2.0, 3.0}) {
+        ChainParams upmixed = headphone;
+        upmixed.surroundType = layout;
+        CHECK(chainToneWithHead(upmixed, 0.0, false) != plain,
+              "an upmix layout renders even with no tracker attached");
+
+        ChainParams speaker = upmixed;
+        speaker.spatialMode = 0.0;
+        CHECK(chainToneWithHead(speaker, 0.0, false) == chainTone(speaker, false, 0.5),
+              "the upmix stays off on speakers, which are already in a room");
+
+        CHECK(chainToneWithHead(upmixed, 0.0, false, true) == chainTone(upmixed, true, 0.5),
+              "bypass silences the upmix like everything else");
+    }
+
+    // Off is off: the field exists but changes nothing until it is set.
+    ChainParams off = headphone;
+    off.surroundType = 0.0;
+    off.centerWidth = -6.0;
+    off.surroundDepth = 4.0;
+    CHECK(chainToneWithHead(off, 0.0, false) == plain,
+          "the upmix trims do nothing while the layout is off");
+}
+
+// Head tracking, the upmix and the crossfeed all decide where a source appears.
+// Left alone they stack: measured on a 0.58-correlated mix, head tracking with
+// crossfeed still at 50 pulled the correlation to 0.93 instead of 0.86 and put
+// 3.5 dB more energy in the middle. The chain now decides which one renders, so
+// a stale preset or a restored state file cannot double them up.
+static void test_only_one_virtual_stage_renders() {
+    ChainParams headphone = ChainParams::flat();
+    headphone.spatialMode = 1.0;
+
+    // First prove the probe can see these features at all, or the checks below
+    // would pass by doing nothing.
+    ChainParams plainCrossfeed = headphone;
+    plainCrossfeed.crossfeed = 50.0;
+    CHECK(chainStereo(plainCrossfeed, 0.0, false) != chainStereo(headphone, 0.0, false),
+          "crossfeed works on its own");
+    ChainParams plainAmbience = headphone;
+    plainAmbience.spatialMode = 2.0;
+    CHECK(chainStereo(plainAmbience, 0.0, false) != chainStereo(headphone, 0.0, false),
+          "the ambience surround works on its own");
+
+    for (double layout : {2.0, 3.0}) {
+        ChainParams upmix = headphone;
+        upmix.surroundType = layout;
+        const std::vector<float> alone = chainStereo(upmix, 0.0, false);
+
+        ChainParams withCrossfeed = upmix;
+        withCrossfeed.crossfeed = 50.0;
+        CHECK(chainStereo(withCrossfeed, 0.0, false) == alone,
+              "crossfeed adds nothing while the upmix is placing speakers");
+
+        ChainParams withAmbience = upmix;
+        withAmbience.spatialMode = 2.0;          // headphone + the older ambience surround
+        CHECK(chainStereo(withAmbience, 0.0, false) == alone,
+              "the upmix retires the ambience surround rather than stacking on it");
+    }
+
+    const std::vector<float> tracked = chainStereo(headphone, 20.0, true);
+    ChainParams trackedWithCrossfeed = headphone;
+    trackedWithCrossfeed.crossfeed = 50.0;
+    CHECK(chainStereo(trackedWithCrossfeed, 20.0, true) == tracked,
+          "crossfeed steps aside while head tracking is placing speakers");
+}
+
+// Speakers get the upmix too, but folded rather than rendered binaurally: they
+// already stand in a real room in front of the listener. The fold has to stay
+// mono-compatible, because a centre that cancels in mono is worse than no
+// surround at all.
+static void test_speaker_upmix_folds_and_stays_mono_safe() {
+    ChainParams speaker = ChainParams::flat();
+    speaker.spatialMode = 0.0;
+
+    ChainParams wide = speaker;
+    wide.surroundType = 2.0;
+    CHECK(chainStereo(wide, 0.0, false) != chainStereo(speaker, 0.0, false),
+          "a speaker layout actually changes the output");
+    const std::vector<float> folded = chainToneWithHead(wide, 0.0, false);
+
+    // A centred (mono) programme must survive the fold: the centre channel goes
+    // back to the phantom the pair already makes, so nothing cancels.
+    double worst = 0.0;
+    for (std::size_t f = kFs / 4; f * 2 + 1 < folded.size(); ++f)
+        worst = std::max(worst, std::fabs((double)folded[f * 2] - folded[f * 2 + 1]));
+    CHECK(worst < 1e-6, "a centred source stays centred through the speaker fold");
+
+    // Head tracking is meaningless on speakers — they do not move with the head.
+    CHECK(chainStereo(wide, 45.0, true) == chainStereo(wide, 0.0, false),
+          "a head angle changes nothing on speakers");
+}
+
 int main() {
     test_flat_level_transparent();
     test_bypass_passthrough();
@@ -300,6 +575,13 @@ int main() {
     test_no_nans();
     test_dialogue_highpass_attenuates_lows();
     test_parametric_band_in_chain();
+    test_virtual_room_follows_the_output();
+    test_head_tracking_only_runs_when_it_should();
+    test_virtual_room_respects_bypass();
+    test_virtual_room_stays_inside_the_ceiling();
+    test_upmix_runs_without_a_tracker();
+    test_only_one_virtual_stage_renders();
+    test_speaker_upmix_folds_and_stays_mono_safe();
 
     if (g_failures == 0) { printf("all dsp-chain tests passed\n"); return 0; }
     fprintf(stderr, "%d dsp-chain check(s) failed\n", g_failures);

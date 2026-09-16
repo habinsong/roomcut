@@ -32,7 +32,7 @@ iOS-inspirierte, moderne Ästhetik trifft auf professionelle Audioverarbeitung: 
 
 - **Hybrid-EQ**: 10-Band-Grafik-EQ (31 Hz – 16 kHz) und 6-Band-Parametrik-EQ (Bell, Shelving, Hoch-/Tiefpass, Notch) mit 5 Makro-Reglern (Bass, Warmth, Vocal, Clarity, Air).
 - **Dynamischer EQ**: Bänder lassen sich dynamisch schalten, um unerwünschte Resonanzen pegelabhängig präzise abzusenken.
-- **Stereobreite & Raumklang**: Präzise Kontrolle über Focus (Mitte) und Space (Seite), Crossfeed sowie Lautsprecher-/Kopfhörer-Modi.
+- **Stereobreite & Raumklang**: Präzise Kontrolle über Focus (Mitte) und Space (Seite), Crossfeed, Lautsprecher-/Kopfhörer-Modi sowie ein optionaler virtueller Raum (Studio / Living / Hall), der den Klang auf Kopfhörern aus dem Kopf holt.
 - **A/B-Vergleich mit Lautstärkeangleichung**: K-gewichteter Pegelabgleich für faire Vergleiche ohne Täuschung durch Lautstärkeunterschiede (`⌘Z` / `⇧⌘Z` Undo/Redo).
 - **Room Tune**: Einfache akustische Einmessung und Resonanzkorrektur über ein iPhone als Messmikrofon (Continuity Camera).
 - **Gerätespezifische Presets**: 25 Werkspresets und automatische Preset-Umschaltung je nach verbundenem Ausgabegerät.

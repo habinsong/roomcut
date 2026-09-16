@@ -514,6 +514,270 @@ final class RoomcutViewModelTests: XCTestCase {
         XCTAssertEqual(client.setParamsValues.first?.roomReduce, 55)
     }
 
+    func testDeviceListChangeRereadsDevicesImmediately() async throws {
+        // Hardware that appears between polls must not wait for the next tick:
+        // connecting headphones and not finding them in the list reads as a bug.
+        let client = FakeEngineClient()
+        client.states = [.running(presetId: "flat", revision: 0)]
+        client.devices = [OutputDeviceChoice(uid: "A", name: "Speakers")]
+        let model = RoomcutViewModel(client: client, debounceNanoseconds: 1_000_000)
+
+        await model.refreshNow()
+        XCTAssertEqual(model.outputDevices.count, 1)
+
+        // A device arrives; the poller's device slot would otherwise be fresh
+        // for another five seconds.
+        client.devices = [OutputDeviceChoice(uid: "A", name: "Speakers"),
+                          OutputDeviceChoice(uid: "BT", name: "AirPods Pro")]
+        await model.refreshNow()
+        XCTAssertEqual(model.outputDevices.count, 1, "an unexpired device cache is not re-read on its own")
+
+        model.deviceListDidChange()
+        for _ in 0..<40 where model.outputDevices.count < 2 {
+            try await Task.sleep(nanoseconds: 25_000_000)
+        }
+        XCTAssertEqual(model.outputDevices.map(\.uid), ["A", "BT"],
+                       "a CoreAudio device-list change re-reads the list at once")
+    }
+
+    func testEngineWithoutRoomInItsComparisonPayloadDoesNotResetTheRoom() async throws {
+        // Whenever the engine supports level matching, the app reads its
+        // parameters from the comparison payload. An engine built before the
+        // virtual room sends none, and adopting its zeros snapped a freshly
+        // picked room straight back to off.
+        let caps = EngineStatus.spatialParamsCapability
+            | EngineStatus.virtualRoomCapability
+            | EngineStatus.levelMatchCapability
+        final class Revision: @unchecked Sendable { var value: UInt32 = 1 }
+        let revision = Revision()
+        let client = FakeEngineClient()
+        client.offersComparison = true
+        client.comparisonCarriesRoom = false        // pre-room engine
+        client.stateReadHandler = { .running(presetId: "custom", revision: revision.value, capabilities: caps) }
+        let model = RoomcutViewModel(client: client, debounceNanoseconds: 1_000_000)
+        await model.refreshNow()
+        XCTAssertTrue(model.virtualRoomAvailable)
+
+        model.setRoomType(2)
+        XCTAssertEqual(model.roomType, 2, "the picked room lands in the model immediately")
+        for _ in 0..<40 where client.setComparisonCalls.isEmpty {
+            try await Task.sleep(nanoseconds: 25_000_000)
+        }
+        // The engine applied something, so the app re-reads its parameters —
+        // this is the moment the room used to disappear.
+        revision.value += 1
+        await model.refreshNow()
+        XCTAssertEqual(model.roomType, 2, "a payload without a room leaves the chosen room alone")
+
+        // An engine that reports its own room is authoritative again.
+        client.comparisonCarriesRoom = true
+        client.params.roomType = 0
+        revision.value += 1
+        await model.refreshNow()
+        XCTAssertEqual(model.roomType, 0, "the engine's own room wins once it reports one")
+    }
+
+    func testSurroundIsOneControlOverTwoFields() async throws {
+        // Surround reads as one switch but is two fields on the wire: the older
+        // ambience surround is a bit inside spatialMode, the 5.1/7.1 upmix is
+        // surroundType. Letting the UI set them separately is what left them out
+        // of step — both on, or neither. Every change goes through one call now.
+        let caps = EngineStatus.spatialParamsCapability | EngineStatus.upmixCapability
+        let client = FakeEngineClient()
+        client.stateReadHandler = { .running(presetId: "custom", revision: 1, capabilities: caps) }
+        let model = RoomcutViewModel(client: client, debounceNanoseconds: 1_000_000)
+        await model.refreshNow()
+        model.setSpatialOutput(headphone: true)
+
+        XCTAssertEqual(model.surroundChoice, .off)
+        XCTAssertEqual(model.surroundChoices, [.off, .ambience, .virtual51, .virtual71],
+                       "headphones can render a real layout")
+
+        model.setSurroundChoice(.ambience)
+        XCTAssertEqual(model.surroundChoice, .ambience)
+        XCTAssertTrue(model.spatialSurroundOn)
+        XCTAssertEqual(model.surroundType, 0, "ambience is not a layout")
+
+        model.setSurroundChoice(.virtual71)
+        XCTAssertEqual(model.surroundChoice, .virtual71)
+        XCTAssertEqual(model.surroundType, 3)
+        XCTAssertFalse(model.spatialSurroundOn, "a layout retires the ambience surround")
+
+        // Off means off — both fields, not just the one the UI last touched.
+        model.setSurroundChoice(.off)
+        XCTAssertEqual(model.surroundChoice, .off)
+        XCTAssertEqual(model.surroundType, 0)
+        XCTAssertFalse(model.spatialSurroundOn)
+    }
+
+    func testSurroundFollowsTheOutputItIsPlayingOn() async throws {
+        let caps = EngineStatus.spatialParamsCapability | EngineStatus.upmixCapability
+        let client = FakeEngineClient()
+        client.stateReadHandler = { .running(presetId: "custom", revision: 1, capabilities: caps) }
+        let model = RoomcutViewModel(client: client, debounceNanoseconds: 1_000_000)
+        await model.refreshNow()
+
+        model.setSpatialOutput(headphone: true)
+        model.setSurroundChoice(.virtual71)
+        XCTAssertEqual(model.surroundType, 3)
+
+        // Speakers have no rear, so 7.1 is not on offer there and a carried-over
+        // 7.1 must land on something the control can actually show.
+        model.setSpatialOutput(headphone: false)
+        XCTAssertEqual(model.surroundChoices, [.off, .ambience, .virtual51])
+        XCTAssertEqual(model.surroundType, 2, "7.1 folds to the one speaker layout")
+        XCTAssertNotNil(model.surroundChoices.firstIndex(of: model.surroundChoice),
+                        "whatever is selected is always in the list the control renders")
+
+        // The upmix itself still runs on speakers — folded, not rendered binaurally.
+        XCTAssertTrue(model.upmixAvailable)
+    }
+
+    func testCrossfeedStepsAsideWhenSomethingElsePlacesTheSpeakers() async throws {
+        let caps = EngineStatus.spatialParamsCapability | EngineStatus.upmixCapability
+        let client = FakeEngineClient()
+        client.stateReadHandler = { .running(presetId: "custom", revision: 1, capabilities: caps) }
+        let model = RoomcutViewModel(client: client, debounceNanoseconds: 1_000_000)
+        await model.refreshNow()
+
+        model.setSpatialOutput(headphone: true)
+        XCTAssertTrue(model.crossfeedActive, "on its own the crossfeed is the only stage")
+
+        model.setSurroundChoice(.virtual51)
+        XCTAssertFalse(model.crossfeedActive,
+                       "the engine zeroes it while the upmix places speakers, so the slider hides")
+
+        model.setSurroundChoice(.off)
+        XCTAssertTrue(model.crossfeedActive)
+
+        // On speakers `crossfeed` means crosstalk cancellation, a different job
+        // that the upmix fold does not replace.
+        model.setSpatialOutput(headphone: false)
+        model.setSurroundChoice(.virtual51)
+        XCTAssertTrue(model.crossfeedActive, "speaker XTC is unrelated to the fold")
+    }
+
+    func testSteeringControlsAreOnlyOfferedWhereTheyDoSomething() async throws {
+        let caps = EngineStatus.spatialParamsCapability | EngineStatus.upmixCapability
+        let client = FakeEngineClient()
+        client.stateReadHandler = { .running(presetId: "custom", revision: 1, capabilities: caps) }
+        let model = RoomcutViewModel(client: client, debounceNanoseconds: 1_000_000)
+        await model.refreshNow()
+
+        // Both run 0...100 — they steer material, so there is no such thing as a
+        // negative amount of it.
+        model.setCenterWidth(-40)
+        XCTAssertEqual(model.centerWidth, 0)
+        model.setCenterWidth(500)
+        XCTAssertEqual(model.centerWidth, 100)
+        model.setSurroundDepth(-1)
+        XCTAssertEqual(model.surroundDepth, 0)
+        model.setSurroundDepth(140)
+        XCTAssertEqual(model.surroundDepth, 100)
+
+        model.setSpatialOutput(headphone: true)
+        XCTAssertTrue(model.centerWidthApplies)
+        // Two speakers have no discrete centre channel, so the control folds
+        // back to where it started and measurably changes nothing.
+        model.setSpatialOutput(headphone: false)
+        XCTAssertFalse(model.centerWidthApplies)
+    }
+
+    func testUpmixNeedsAnEngineThatRendersIt() async throws {
+        let client = FakeEngineClient()
+        client.stateReadHandler = {
+            .running(presetId: "custom", revision: 1, capabilities: EngineStatus.spatialParamsCapability)
+        }
+        let model = RoomcutViewModel(client: client, debounceNanoseconds: 1_000_000)
+        await model.refreshNow()
+        XCTAssertFalse(model.upmixAvailable, "an engine without the upmix cannot be asked for one")
+        XCTAssertEqual(model.surroundChoices, [.off, .ambience],
+                       "only the ambience surround is on offer")
+    }
+
+    func testEngineWithoutUpmixInItsComparisonPayloadDoesNotResetIt() async throws {
+        // Same hazard the virtual room hit: an engine one version behind sends
+        // no upmix, and adopting its zeros would switch off a layout the user
+        // just picked.
+        let caps = EngineStatus.spatialParamsCapability
+            | EngineStatus.upmixCapability
+            | EngineStatus.levelMatchCapability
+        final class Revision: @unchecked Sendable { var value: UInt32 = 1 }
+        let revision = Revision()
+        let client = FakeEngineClient()
+        client.offersComparison = true
+        client.comparisonCarriesUpmix = false
+        client.stateReadHandler = { .running(presetId: "custom", revision: revision.value, capabilities: caps) }
+        let model = RoomcutViewModel(client: client, debounceNanoseconds: 1_000_000)
+        await model.refreshNow()
+        model.setSpatialOutput(headphone: true)
+        XCTAssertTrue(model.upmixAvailable)
+
+        model.setSurroundType(2)
+        XCTAssertEqual(model.surroundType, 2)
+        for _ in 0..<40 where client.setComparisonCalls.isEmpty {
+            try await Task.sleep(nanoseconds: 25_000_000)
+        }
+        revision.value += 1
+        await model.refreshNow()
+        XCTAssertEqual(model.surroundType, 2, "a payload without an upmix leaves the layout alone")
+
+        client.comparisonCarriesUpmix = true
+        client.params.surroundType = 0
+        revision.value += 1
+        await model.refreshNow()
+        XCTAssertEqual(model.surroundType, 0, "the engine's own layout wins once it reports one")
+    }
+
+    func testHeadTrackingRefusesAnEngineThatCannotRenderIt() async throws {
+        // Asking for head tracking on an engine without the renderer must say so
+        // rather than silently streaming poses nobody reads.
+        let client = FakeEngineClient()
+        client.states = [.running(presetId: "flat", revision: 0,
+                                  capabilities: EngineStatus.spatialParamsCapability)]
+        let model = RoomcutViewModel(client: client, debounceNanoseconds: 1_000_000)
+        await model.refreshNow()
+        model.setSpatialOutput(headphone: true)
+
+        XCTAssertFalse(model.headTrackingAvailable, "the engine cannot render head tracking")
+        model.setHeadTracking(true)
+        XCTAssertFalse(model.headTrackingOn, "so it never starts")
+        XCTAssertEqual(model.errorBanner, "이 헤드폰은 헤드 트래킹을 지원하지 않습니다")
+    }
+
+    func testVirtualRoomPushesTypeAndAmount() async throws {
+        let client = FakeEngineClient()
+        client.states = [.running(presetId: "flat", revision: 0)]
+        let model = RoomcutViewModel(client: client, debounceNanoseconds: 1_000_000)
+
+        await model.refreshNow()
+        XCTAssertTrue(model.virtualRoomAvailable)
+        model.setRoomType(2)
+        model.setRoomAmount(140)          // out of range: clamps to 100
+        try await Task.sleep(nanoseconds: 40_000_000)
+
+        XCTAssertEqual(model.roomType, 2)
+        XCTAssertEqual(model.roomAmount, 100)
+        XCTAssertEqual(client.setParamsValues.last?.roomType, 2)
+        XCTAssertEqual(client.setParamsValues.last?.roomAmount, 100)
+    }
+
+    func testVirtualRoomIsUnavailableOnAnEngineWithoutIt() async throws {
+        let client = FakeEngineClient()
+        client.states = [.running(presetId: "flat", revision: 0,
+                                  capabilities: EngineStatus.spatialParamsCapability)]
+        let model = RoomcutViewModel(client: client, debounceNanoseconds: 1_000_000)
+
+        await model.refreshNow()
+        XCTAssertFalse(model.virtualRoomAvailable)
+        model.setRoomType(3)
+        try await Task.sleep(nanoseconds: 40_000_000)
+
+        // The push is still allowed (spatial is supported) but the engine's
+        // capability set strips the room, so nothing claims a room is playing.
+        XCTAssertEqual(client.setParamsValues.last?.roomType ?? 0, 0)
+    }
+
     func testParametricBandPushesAndClamps() async throws {
         let client = FakeEngineClient()
         client.states = [.running(presetId: "flat", revision: 0)]
@@ -860,6 +1124,34 @@ final class FakeEngineClient: EngineClientProtocol {
         self.params = params
     }
 
+    // Level-match fixture: an engine that answers from whatever was last pushed,
+    // and can pretend to be one whose payload predates the virtual room.
+    var offersComparison = false
+    var comparisonCarriesRoom = true
+    var comparisonCarriesUpmix = true
+    var comparisonRevision: UInt64 = 1
+    var setComparisonCalls: [(EngineComparisonTarget, EngineParameters, Bool)] = []
+    func getComparison() async throws -> EngineComparisonState {
+        guard offersComparison else { throw EngineClientError.transport(-3) }
+        var state = EngineComparisonState(current: params, reference: params, presetID: "custom",
+                                          revision: comparisonRevision, renderedRevision: comparisonRevision)
+        state.carriesVirtualRoom = comparisonCarriesRoom
+        if !comparisonCarriesRoom {
+            state.current.roomType = 0; state.current.roomAmount = 0
+            state.reference.roomType = 0; state.reference.roomAmount = 0
+        }
+        state.carriesUpmix = comparisonCarriesUpmix
+        if !comparisonCarriesUpmix {
+            state.current.surroundType = 0; state.reference.surroundType = 0
+        }
+        return state
+    }
+    func setComparison(_ target: EngineComparisonTarget, reference: EngineParameters, enabled: Bool) async throws {
+        setComparisonCalls.append((target, reference, enabled))
+        if case .parameters(let value) = target { params = value }
+        comparisonRevision += 1
+    }
+
     var devices: [OutputDeviceChoice] = []
     var setDeviceUIDs: [String] = []
     var volume: Double? = 0.5
@@ -884,6 +1176,7 @@ private extension EngineStatus {
             | EngineStatus.parametricCapability
             | EngineStatus.analyzerCapability
             | EngineStatus.dynamicsCapability
+            | EngineStatus.virtualRoomCapability
     ) -> EngineStatus {
         var status = EngineStatus()
         status.reachable = true

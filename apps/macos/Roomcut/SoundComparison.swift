@@ -26,6 +26,12 @@ public struct EngineComparisonState: Equatable {
     public var renderedRevision: UInt64
     public var currentReductionDb: Float
     public var referenceReductionDb: Float
+    // An engine built before the virtual room replies without it. Adopting its
+    // zeros would switch a running room off behind the user's back, so callers
+    // keep their own value when this is false.
+    public var carriesVirtualRoom: Bool = true
+    // Same again for the upmix, which was appended one version later.
+    public var carriesUpmix: Bool = true
 
     public init(current: EngineParameters = .flat, reference: EngineParameters = .flat,
                 presetID: String = "custom", enabled: Bool = false, state: LevelMatchState = .disabled,
@@ -46,6 +52,8 @@ public struct EngineComparisonState: Equatable {
                   state: LevelMatchState(rawValue: native.state) ?? .unavailable,
                   revision: native.revision, renderedRevision: native.renderedRevision,
                   currentReductionDb: native.currentReductionDb, referenceReductionDb: native.referenceReductionDb)
+        self.carriesVirtualRoom = native.payloadVersion >= 3
+        self.carriesUpmix = native.payloadVersion >= 4
     }
 }
 
@@ -96,7 +104,10 @@ extension EngineParameters {
         self.init(preampDb: native.preampDb, eqGainsDb: gains, limiterReleaseMs: native.limiterReleaseMs,
                   outputGainDb: native.outputGainDb, spatialWidth: native.spatialWidth, centerFocus: native.centerFocus,
                   crossfeed: native.crossfeed, roomReduce: native.roomReduce, spatialMode: native.spatialMode,
-                  highpassHz: native.highpassHz, compAmount: native.compAmount, parametric: bands)
+                  highpassHz: native.highpassHz, compAmount: native.compAmount,
+                  roomType: native.roomType, roomAmount: native.roomAmount,
+                  surroundType: native.surroundType, centerWidth: native.centerWidth,
+                  surroundDepth: native.surroundDepth, parametric: bands)
     }
 
     func nativeValues() -> RoomcutClientParams {
@@ -107,6 +118,9 @@ extension EngineParameters {
         result.centerFocus = value.centerFocus; result.crossfeed = value.crossfeed
         result.roomReduce = value.roomReduce; result.spatialMode = value.spatialMode
         result.highpassHz = value.highpassHz; result.compAmount = value.compAmount
+        result.roomType = value.roomType; result.roomAmount = value.roomAmount
+        result.surroundType = value.surroundType; result.centerWidth = value.centerWidth
+        result.surroundDepth = value.surroundDepth
         withUnsafeMutableBytes(of: &result.eqGainsDb) { bytes in
             let gains = bytes.bindMemory(to: Double.self)
             for b in 0..<Self.bandCount { gains[b] = value.eqGainsDb[b] }

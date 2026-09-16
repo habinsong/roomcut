@@ -1,5 +1,6 @@
 #include "Control.hpp"
 #include "ControlValidation.hpp"
+#include <cmath>
 #include <cstdio>
 #include <cstring>
 #include <thread>
@@ -40,6 +41,32 @@ static void requestBoundaries() {
     changed = valid; std::memset(changed.comparisonRequest.presetId, 'x', ROOMCUT_PRESET_ID_MAX);
     CHECK(!roomcut::normalizeControlRequest(changed), "preset identifiers must terminate within their field");
 
+    // A version-2 app sends the comparison pair without the trailing room.
+    auto preRoomPair = request(ROOMCUT_MSG_SET_COMPARISON,
+                               offsetof(RoomcutComparisonRequest, currentRoomType));
+    preRoomPair.comparisonRequest.version = 2;
+    preRoomPair.comparisonRequest.enabled = 1;
+    CHECK(roomcut::normalizeControlRequest(preRoomPair), "a pre-room comparison pair remains supported");
+    CHECK(preRoomPair.comparisonRequest.currentRoomType == 0 && preRoomPair.comparisonRequest.referenceRoomType == 0,
+          "an absent comparison room reads as zero, and the engine keeps the live one");
+    auto futurePair = valid; futurePair.comparisonRequest.version = ROOMCUT_COMPARISON_VERSION + 1;
+    CHECK(!roomcut::normalizeControlRequest(futurePair), "a newer comparison payload is still rejected");
+    auto ancientPair = valid; ancientPair.comparisonRequest.version = ROOMCUT_COMPARISON_MIN_VERSION - 1;
+    CHECK(!roomcut::normalizeControlRequest(ancientPair), "a payload older than the supported range is rejected");
+
+    // Live head pose: a small fixed message, and a bad one must not reach the
+    // render thread — a NaN angle there would poison the delay interpolation.
+    auto pose = request(ROOMCUT_MSG_SET_HEAD_POSE, sizeof(RoomcutSetHeadPoseRequest));
+    pose.setHeadPose.active = 1;
+    pose.setHeadPose.yawDeg = 30.0;
+    CHECK(roomcut::normalizeControlRequest(pose), "a well-formed head pose is accepted");
+    auto badPose = pose; badPose.setHeadPose.yawDeg = std::nan("");
+    CHECK(!roomcut::normalizeControlRequest(badPose), "a non-finite head angle is rejected");
+    badPose = pose; badPose.setHeadPose.active = 7;
+    CHECK(!roomcut::normalizeControlRequest(badPose), "the tracker flag is validated");
+    badPose = pose; badPose.raw.header.msgh_size -= 8;
+    CHECK(!roomcut::normalizeControlRequest(badPose), "a truncated head pose is rejected");
+
     auto legacy = request(ROOMCUT_MSG_SET_PARAMS, offsetof(RoomcutSetParamsRequest, highpassHz));
     mach_msg_trailer_t trailer{MACH_MSG_TRAILER_FORMAT_0, sizeof(mach_msg_trailer_t)};
     std::memcpy(reinterpret_cast<char*>(&legacy) + legacy.raw.header.msgh_size, &trailer, sizeof(trailer));
@@ -49,6 +76,68 @@ static void requestBoundaries() {
           "omitted fields are zero, not trailer bytes");
     legacy.raw.header.msgh_size = offsetof(RoomcutSetParamsRequest, spatialWidth) - 4;
     CHECK(!roomcut::normalizeControlRequest(legacy), "partial mandatory values are rejected");
+
+    // An app built before the virtual room stops right after the dynamics. The
+    // engine has to keep taking it, or updating one half of the pair goes silent.
+    auto preRoom = request(ROOMCUT_MSG_SET_PARAMS, offsetof(RoomcutSetParamsRequest, roomType));
+    std::memcpy(reinterpret_cast<char*>(&preRoom) + preRoom.raw.header.msgh_size, &trailer, sizeof(trailer));
+    CHECK(roomcut::normalizeControlRequest(preRoom), "a pre-room parameter message remains supported");
+    CHECK(preRoom.setParams.roomType == 0 && preRoom.setParams.roomAmount == 0,
+          "an absent room reads as off, not as trailer bytes");
+
+    // Same again one field group later: an app built before the upmix stops
+    // right after the room.
+    auto preUpmix = request(ROOMCUT_MSG_SET_PARAMS, offsetof(RoomcutSetParamsRequest, surroundType));
+    std::memcpy(reinterpret_cast<char*>(&preUpmix) + preUpmix.raw.header.msgh_size, &trailer, sizeof(trailer));
+    CHECK(roomcut::normalizeControlRequest(preUpmix), "a pre-upmix parameter message remains supported");
+    CHECK(preUpmix.setParams.surroundType == 0 && preUpmix.setParams.centerWidth == 0
+          && preUpmix.setParams.surroundDepth == 0,
+          "an absent upmix reads as off, not as trailer bytes");
+
+    // And a version-3 comparison, which stops right before the appended upmix.
+    auto preUpmixPair = request(ROOMCUT_MSG_SET_COMPARISON,
+                                offsetof(RoomcutComparisonRequest, currentSurroundType));
+    preUpmixPair.comparisonRequest.version = 3;
+    std::memcpy(reinterpret_cast<char*>(&preUpmixPair) + preUpmixPair.raw.header.msgh_size,
+                &trailer, sizeof(trailer));
+    CHECK(roomcut::normalizeControlRequest(preUpmixPair), "a version-3 comparison remains supported");
+    CHECK(preUpmixPair.comparisonRequest.currentSurroundType == 0
+          && preUpmixPair.comparisonRequest.referenceSurroundType == 0,
+          "an absent upmix in a comparison reads as off");
+}
+
+static void replyBoundaries() {
+    // The mirror image: a reply from an engine built before the virtual room.
+    // This is what breaks first when a field is appended without registering
+    // its offset — the app can no longer read any parameter at all.
+    auto reply = request(ROOMCUT_MSG_GET_PARAMS, offsetof(RoomcutGetParamsReply, roomType));
+    reply.raw.header.msgh_bits = 0;
+    reply.raw.header.msgh_remote_port = MACH_PORT_NULL;
+    mach_msg_trailer_t trailer{MACH_MSG_TRAILER_FORMAT_0, sizeof(mach_msg_trailer_t)};
+    std::memcpy(reinterpret_cast<char*>(&reply) + reply.raw.header.msgh_size, &trailer, sizeof(trailer));
+    CHECK(roomcut::normalizeControlReply(reply, ROOMCUT_MSG_GET_PARAMS),
+          "a pre-room parameter reply remains readable");
+    CHECK(reply.paramsReply.roomType == 0 && reply.paramsReply.roomAmount == 0,
+          "an absent room reads as off in a reply too");
+
+    auto full = request(ROOMCUT_MSG_GET_PARAMS, sizeof(RoomcutGetParamsReply));
+    full.raw.header.msgh_bits = 0;
+    full.raw.header.msgh_remote_port = MACH_PORT_NULL;
+    full.paramsReply.roomType = 2;
+    full.paramsReply.roomAmount = 65;
+    CHECK(roomcut::normalizeControlReply(full, ROOMCUT_MSG_GET_PARAMS), "a current reply is accepted");
+    CHECK(full.paramsReply.roomType == 2 && full.paramsReply.roomAmount == 65,
+          "a current reply keeps its room fields");
+
+    auto preUpmix = request(ROOMCUT_MSG_GET_PARAMS, offsetof(RoomcutGetParamsReply, surroundType));
+    preUpmix.raw.header.msgh_bits = 0;
+    preUpmix.raw.header.msgh_remote_port = MACH_PORT_NULL;
+    std::memcpy(reinterpret_cast<char*>(&preUpmix) + preUpmix.raw.header.msgh_size,
+                &trailer, sizeof(trailer));
+    CHECK(roomcut::normalizeControlReply(preUpmix, ROOMCUT_MSG_GET_PARAMS),
+          "a pre-upmix parameter reply remains readable");
+    CHECK(preUpmix.paramsReply.surroundType == 0 && preUpmix.paramsReply.centerWidth == 0,
+          "an absent upmix reads as off in a reply too");
 }
 
 static void truncatedAcknowledgementIsNotSuccess() {
@@ -80,6 +169,7 @@ static void truncatedAcknowledgementIsNotSuccess() {
 
 int main() {
     requestBoundaries();
+    replyBoundaries();
     truncatedAcknowledgementIsNotSuccess();
     if (!failures) std::puts("all control validation tests passed");
     return failures ? 1 : 0;

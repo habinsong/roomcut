@@ -21,7 +21,10 @@ public struct SoundSnapshot: Equatable {
             limiterReleaseMs: preset.limiterReleaseMs, outputGainDb: preset.outputGainDb,
             spatialWidth: preset.spatialWidth, centerFocus: preset.centerFocus,
             crossfeed: preset.crossfeed, roomReduce: preset.roomReduce, spatialMode: preset.spatialMode,
-            highpassHz: preset.highpassHz, compAmount: preset.compAmount, parametric: preset.parametric),
+            highpassHz: preset.highpassHz, compAmount: preset.compAmount,
+            roomType: preset.roomType, roomAmount: preset.roomAmount,
+            surroundType: preset.surroundType, centerWidth: preset.centerWidth,
+            surroundDepth: preset.surroundDepth, parametric: preset.parametric),
             macros: Dictionary(uniqueKeysWithValues: preset.eqMacros.compactMap { key, value in
                 EqMacro(rawValue: key).map { ($0, value) }
             }), savedPresetName: preset.builtin ? nil : preset.name,
@@ -35,7 +38,10 @@ public struct SoundSnapshot: Equatable {
             crossfeed: p.crossfeed, roomReduce: p.roomReduce, spatialMode: p.spatialMode,
             eqMacros: Dictionary(uniqueKeysWithValues: macros.map { ($0.key.rawValue, $0.value) }),
             parametric: p.parametric, limiterReleaseMs: p.limiterReleaseMs,
-            highpassHz: p.highpassHz, compAmount: p.compAmount, folder: folder, roomTuneInfo: roomTuneInfo)
+            highpassHz: p.highpassHz, compAmount: p.compAmount,
+            roomType: p.roomType, roomAmount: p.roomAmount,
+            surroundType: p.surroundType, centerWidth: p.centerWidth,
+            surroundDepth: p.surroundDepth, folder: folder, roomTuneInfo: roomTuneInfo)
     }
 
     static func clamp(_ value: Double, _ minimum: Double, _ maximum: Double) -> Double {
@@ -51,7 +57,9 @@ extension EngineParameters {
             limiterReleaseMs: limiterReleaseMs, outputGainDb: outputGainDb,
             spatialWidth: spatialWidth, centerFocus: centerFocus, crossfeed: crossfeed,
             roomReduce: roomReduce, spatialMode: spatialMode, highpassHz: highpassHz,
-            compAmount: compAmount, parametric: parametric)
+            compAmount: compAmount, roomType: roomType, roomAmount: roomAmount,
+            surroundType: surroundType, centerWidth: centerWidth,
+            surroundDepth: surroundDepth, parametric: parametric)
         let clamp = SoundSnapshot.clamp
         p.preampDb = clamp(p.preampDb, -24, 12)
         p.outputGainDb = clamp(p.outputGainDb, -24, 12)
@@ -64,6 +72,13 @@ extension EngineParameters {
         p.spatialMode = clamp(p.spatialMode, 0, 3).rounded()
         p.highpassHz = clamp(p.highpassHz, 0, 400)
         p.compAmount = clamp(p.compAmount, 0, 100)
+        p.roomType = clamp(p.roomType, 0, 3).rounded()
+        p.roomAmount = clamp(p.roomAmount, 0, 100)
+        // 1 is not a layout: the older ambience surround lives in spatialMode.
+        p.surroundType = clamp(p.surroundType, 0, 3).rounded()
+        if p.surroundType == 1 { p.surroundType = 0 }
+        p.centerWidth = clamp(p.centerWidth, 0, 100)
+        p.surroundDepth = clamp(p.surroundDepth, 0, 100)
         p.parametric = p.parametric.map { band in
             let tonal = (0...2).contains(band.type)
             return ParametricBand(enabled: band.enabled, type: (0...5).contains(band.type) ? band.type : 0,
@@ -83,6 +98,10 @@ extension EngineParameters {
             p.spatialWidth = 0; p.centerFocus = 0; p.crossfeed = 0; p.roomReduce = 0; p.spatialMode = 0
         }
         if !status.supportsDynamics { p.highpassHz = 0; p.compAmount = 0 }
+        // An engine that predates the virtual room would ignore these anyway;
+        // clearing them keeps the UI honest about what is actually playing.
+        if !status.supportsVirtualRoom { p.roomType = 0 }
+        if !status.supportsUpmix { p.surroundType = 0 }
         if !status.supportsDynamicEq {
             p.parametric = p.parametric.map {
                 var band = $0; band.dynamic = false; return band

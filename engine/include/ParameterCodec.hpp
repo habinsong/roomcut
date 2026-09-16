@@ -3,10 +3,20 @@
 
 #include "dsp/ChainParams.hpp"
 
+#include <type_traits>
+
 namespace roomcut {
 
 // The legacy messages, comparison payload and C shim share named fields but
 // different layouts. Keep field conversion explicit rather than memcpying them.
+// The comparison payload carries no virtual room (see RoomcutParameterValues),
+// so the room is copied only for the wire types that actually have it.
+template<class Wire, class = void> struct HasVirtualRoom : std::false_type {};
+template<class Wire> struct HasVirtualRoom<Wire, std::void_t<decltype(Wire::roomType)>> : std::true_type {};
+template<class Wire> inline constexpr bool hasVirtualRoom = HasVirtualRoom<Wire>::value;
+template<class Wire, class = void> struct HasUpmix : std::false_type {};
+template<class Wire> struct HasUpmix<Wire, std::void_t<decltype(Wire::surroundType)>> : std::true_type {};
+template<class Wire> inline constexpr bool hasUpmix = HasUpmix<Wire>::value;
 template<class Wire> ChainParams decodeParameters(const Wire& value) {
     ChainParams result;
     result.preampDb = value.preampDb;
@@ -20,6 +30,15 @@ template<class Wire> ChainParams decodeParameters(const Wire& value) {
     result.spatialMode = value.spatialMode;
     result.highpassHz = value.highpassHz;
     result.compAmount = value.compAmount;
+    if constexpr (hasVirtualRoom<Wire>) {
+        result.roomType = value.roomType;
+        result.roomAmount = value.roomAmount;
+    }
+    if constexpr (hasUpmix<Wire>) {
+        result.surroundType = value.surroundType;
+        result.centerWidth = value.centerWidth;
+        result.surroundDepth = value.surroundDepth;
+    }
     for (std::size_t b = 0; b < result.parametric.size(); ++b) {
         const auto& band = value.parametric[b];
         const auto& dyn = value.dynamics[b];
@@ -42,6 +61,15 @@ template<class Wire> void encodeParameters(const ChainParams& value, Wire& resul
     result.spatialMode = value.spatialMode;
     result.highpassHz = value.highpassHz;
     result.compAmount = value.compAmount;
+    if constexpr (hasVirtualRoom<Wire>) {
+        result.roomType = value.roomType;
+        result.roomAmount = value.roomAmount;
+    }
+    if constexpr (hasUpmix<Wire>) {
+        result.surroundType = value.surroundType;
+        result.centerWidth = value.centerWidth;
+        result.surroundDepth = value.surroundDepth;
+    }
     for (std::size_t b = 0; b < value.parametric.size(); ++b) {
         const auto& band = value.parametric[b];
         result.parametric[b].enabled = band.enabled ? 1 : 0;

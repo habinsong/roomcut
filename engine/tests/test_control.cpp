@@ -133,6 +133,8 @@ void* serverThread(void* arg) {
                 CHECK(std::fabs(buf.setParams.dynamics[1].rangeDb - 7.5) < 0.001, "server received the range");
                 CHECK(std::fabs(buf.setParams.dynamics[1].attackMs - 15.0) < 0.001, "server received the attack");
                 CHECK(std::fabs(buf.setParams.dynamics[1].releaseMs - 180.0) < 0.001, "server received the release");
+                CHECK(std::fabs(buf.setParams.roomType - 2.0) < 0.001, "server received the virtual room type");
+                CHECK(std::fabs(buf.setParams.roomAmount - 65.0) < 0.001, "server received the virtual room amount");
                 kr = roomcut::controlReplyAck(buf.setParams.header, ROOMCUT_MSG_SET_PARAMS, 0);
                 CHECK(kr == KERN_SUCCESS, "server replied set params");
                 break;
@@ -219,7 +221,7 @@ int main() {
     reference.parametric[5] = {true, 2, 16000, -3, 0.8};
     roomcut::encodeParameters(reference, comparison.reference);
     uint32_t comparisonStatus = 99;
-    CHECK(roomcut::controlSetComparison(service, comparison, 2000, &comparisonStatus) == KERN_SUCCESS && comparisonStatus == 0,
+    CHECK(roomcut::controlSetComparison(service, comparison, ROOMCUT_COMPARISON_VERSION, 2000, &comparisonStatus) == KERN_SUCCESS && comparisonStatus == 0,
           "builtin and reference are applied as one transaction");
     RoomcutComparisonReply comparisonReply{};
     CHECK(roomcut::controlGetComparison(service, 2000, &comparisonReply) == KERN_SUCCESS,
@@ -230,7 +232,7 @@ int main() {
     const auto savedCurrent = roomcut::decodeParameters(comparisonReply.current);
     std::snprintf(comparison.presetId, sizeof(comparison.presetId), "%s", "missing");
     comparison.reference.preampDb = -20;
-    CHECK(roomcut::controlSetComparison(service, comparison, 2000, &comparisonStatus) == KERN_SUCCESS && comparisonStatus == 1,
+    CHECK(roomcut::controlSetComparison(service, comparison, ROOMCUT_COMPARISON_VERSION, 2000, &comparisonStatus) == KERN_SUCCESS && comparisonStatus == 1,
           "unknown preset is an engine error");
     CHECK(roomcut::controlGetComparison(service, 2000, &comparisonReply) == KERN_SUCCESS
           && comparisonReply.revision == 1 && roomcut::decodeParameters(comparisonReply.current) == savedCurrent
@@ -291,7 +293,9 @@ int main() {
     sendDynamics[1].releaseMs = 180.0;
     kr = roomcut::controlSetParams(service, -6.0, gains, 75.0, 1.0,
                                    -25.0, 30.0, 10.0, 45.0, 1.0 /* mode */,
-                                   90.0, 60.0 /* dynamics */, sendBands, sendDynamics, 2000, &status);
+                                   90.0, 60.0 /* dynamics */, 2.0, 65.0 /* virtual room */,
+                                   3.0, -2.5, 1.5 /* upmix */,
+                                   sendBands, sendDynamics, 2000, &status);
     CHECK(kr == KERN_SUCCESS, "client set params");
     CHECK(status == 0, "set params status");
 

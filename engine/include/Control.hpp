@@ -57,9 +57,16 @@ kern_return_t controlSetParams(mach_port_t servicePort,
                                double centerFocus, double crossfeed,
                                double roomReduce, double spatialMode,
                                double highpassHz, double compAmount,
+                               double roomType, double roomAmount,
+                               double surroundType, double centerWidth, double surroundDepth,
                                const RoomcutParamBand* parametric,
                                const RoomcutParamDynamics* dynamics,
                                uint32_t timeoutMs, uint32_t* outStatus);
+
+// Push the listener's current head orientation (degrees, + = turned right).
+// `active` false tells the engine the tracker stopped delivering.
+kern_return_t controlSetHeadPose(mach_port_t servicePort, double yawDeg, bool active,
+                                 uint32_t timeoutMs, uint32_t* outStatus);
 
 // Fetch the engine status snapshot.
 kern_return_t controlGetState(mach_port_t servicePort, uint32_t timeoutMs,
@@ -71,8 +78,12 @@ kern_return_t controlGetParams(mach_port_t servicePort, uint32_t timeoutMs,
 kern_return_t controlGetAnalysis(mach_port_t servicePort, uint32_t timeoutMs,
                                  RoomcutAnalysisReply* outReply);
 
+// `peerVersion` is the comparison payload version the ENGINE speaks, derived
+// from its capability bits. The message is sent at that version with every
+// field it covers — including fields whose value is zero, which is how "off"
+// travels.
 kern_return_t controlSetComparison(mach_port_t servicePort, RoomcutComparisonRequest request,
-                                   uint32_t timeoutMs, uint32_t* outStatus);
+                                   uint32_t peerVersion, uint32_t timeoutMs, uint32_t* outStatus);
 kern_return_t controlGetComparison(mach_port_t servicePort, uint32_t timeoutMs,
                                    RoomcutComparisonReply* outReply);
 
