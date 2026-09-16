@@ -235,7 +235,6 @@ public:
         for (std::size_t i = 0; i < kSurroundLine; ++i) {
             line_[i] = lineR_[i] = backLine_[i] = backLineR_[i] = 0.0;
         }
-        backL_ = backR_ = 0.0;
         write_ = 0;
         lowL_ = lowR_ = 0.0;
         dryEnergy_ = wetEnergy_ = 0.0;
@@ -270,12 +269,47 @@ public:
             return;
         }
 
-        double feed[kMaxSpeakers];
-        double surroundL = 0.0, surroundR = 0.0;
-        const std::size_t count = fillFeed(dryL, dryR, feed, surroundL, surroundR);
-
         const bool upmixing = layout_ >= Upmixer::k51;
+        UpmixFrame up;
+        if (upmixing) {
+            upmix_.process(dryL, dryR, up);
+        } else {
+            up.frontL = dryL;
+            up.frontR = dryR;
+        }
         double wetL = 0.0, wetR = 0.0;
+        renderBed(up, wetL, wetR);
+        if (upmixing) {
+            // The match owns the level on this path, so it has to be the LAST
+            // thing: a fixed bus gain applied after it would simply reappear as
+            // an offset (it did — a measured +1.7 dB).
+            matchLevel(dryL, dryR, wetL, wetR);
+        } else {
+            wetL *= kBusGain;
+            wetR *= kBusGain;
+        }
+        frame[0] = static_cast<float>(dryL + (wetL - dryL) * mix_);
+        frame[1] = static_cast<float>(dryR + (wetR - dryR) * mix_);
+    }
+
+    // The headphone render of one frame of channels, before any level matching
+    // or bus gain: C/L/R on their virtual speakers, the surrounds on the diffuse
+    // bus. processFrame() feeds it the upmix; it is public so a single channel
+    // can be driven on its own, which is how its direction is measured. With
+    // the plain stereo layout only frontL/frontR are read.
+    inline void renderBed(const UpmixFrame& up, double& wetL, double& wetR) {
+        const bool upmixing = layout_ >= Upmixer::k51;
+        double feed[kMaxSpeakers];
+        std::size_t count = 2;
+        if (upmixing) {
+            feed[0] = up.centre;
+            feed[1] = up.frontL;
+            feed[2] = up.frontR;
+            count = 3;
+        } else {
+            feed[0] = up.frontL;
+            feed[1] = up.frontR;
+        }
         for (std::size_t i = 0; i < count; ++i) {
             double l = 0.0, r = 0.0;
             speaker_[i].process(upmixing ? colour_[i].process(feed[i]) : feed[i], l, r);
@@ -289,23 +323,14 @@ public:
         }
         if (upmixing) {
             double envL = 0.0, envR = 0.0;
-            envelop(surroundL, surroundR, backL_, backR_, envL, envR);
+            envelop(up.sideL, up.sideR, up.backL, up.backR, envL, envR);
             wetL += envL;
             wetR += envR;
-            // The match owns the level on this path, so it has to be the LAST
-            // thing: a fixed bus gain applied after it would simply reappear as
-            // an offset (it did — a measured +1.7 dB).
-            matchLevel(dryL, dryR, wetL, wetR);
-        } else {
-            wetL *= kBusGain;
-            wetR *= kBusGain;
         }
-        frame[0] = static_cast<float>(dryL + (wetL - dryL) * mix_);
-        frame[1] = static_cast<float>(dryR + (wetR - dryR) * mix_);
     }
 
 private:
-    // ITU-R BS.775, in the order fillFeed() builds: C, L, R, then the surrounds.
+    // ITU-R BS.775, in the order renderBed() feeds: C, L, R, then the surrounds.
     static constexpr double kStereoAngles[2] = {-kBaseAngleDegrees, kBaseAngleDegrees};
     static constexpr double k51Angles[5] = {0.0, -kBaseAngleDegrees, kBaseAngleDegrees, -110.0, 110.0};
     static constexpr double k71Angles[7] = {0.0, -kBaseAngleDegrees, kBaseAngleDegrees,
@@ -344,26 +369,6 @@ private:
             farTargetL_[i] = lean > 0.0 ? std::pow(10.0, -kIldEmphasisDb * lean / 20.0) : 1.0;
             farTargetR_[i] = lean < 0.0 ? std::pow(10.0, kIldEmphasisDb * lean / 20.0) : 1.0;
         }
-    }
-
-    inline std::size_t fillFeed(double left, double right, double (&feed)[kMaxSpeakers],
-                                double& surroundL, double& surroundR) {
-        surroundL = surroundR = backL_ = backR_ = 0.0;
-        if (layout_ < Upmixer::k51) {
-            feed[0] = left;
-            feed[1] = right;
-            return 2;
-        }
-        UpmixFrame up;
-        upmix_.process(left, right, up);
-        feed[0] = up.centre;
-        feed[1] = up.frontL;
-        feed[2] = up.frontR;
-        surroundL = up.sideL;
-        surroundR = up.sideR;
-        backL_ = up.backL;
-        backR_ = up.backR;
-        return 3;
     }
 
     // One scalar on both ears, tracking the level that came in. A scalar cannot
@@ -414,13 +419,17 @@ private:
     bool headphone_ = true;
     int layout_ = Upmixer::kOff;
     SpeakerColour colour_[kMaxSpeakers]{};
-    // 20 ms at 768 kHz is 15360 samples; 16384 (pow2) covers the top rate.
-    static constexpr std::size_t kSurroundLine = 16384;
+    // Long enough for the latest arrival (back pair plus its skew, 32 ms) at the
+    // top rate the engine accepts, 768 kHz, plus the two slots the read index
+    // keeps free. It was 16384, sized for 20 ms, and clamped the 7.1 back pair
+    // above 512 kHz with no error: at 768 kHz both back ears landed at 21.3 ms.
+    static constexpr double kMaxRateHz = 768000.0;
+    static constexpr std::size_t kSurroundLine =
+        static_cast<std::size_t>((kBackDelayMs + kBackSkewMs) * 0.001 * kMaxRateHz) + 2;
     double line_[kSurroundLine] = {0.0};
     double lineR_[kSurroundLine] = {0.0};
     double backLine_[kSurroundLine] = {0.0};
     double backLineR_[kSurroundLine] = {0.0};
-    double backL_ = 0.0, backR_ = 0.0;
     std::size_t write_ = 0, delay_ = 624, delaySkew_ = 936, backDelay_ = 1104, backSkew_ = 1536;
     double lowA_ = 0.5, lowL_ = 0.0, lowR_ = 0.0;
     double matchA_ = 0.0002, matchStep_ = 0.0002;

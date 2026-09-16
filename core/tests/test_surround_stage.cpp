@@ -387,7 +387,45 @@ static void test_upmix_render_path_does_not_allocate() {
     CHECK(g_allocated == 0, "the upmixed render path and its setters allocate nothing");
 }
 
+// The diffuse bus promises fixed arrival times: sides at 13 ms (right ear 6.5 ms
+// later), backs at 23 ms (right ear 9 ms later). Each is driven on its own and
+// the first sample that reaches either ear must land exactly there, at every
+// rate the engine accepts (it gates at 768 kHz). The line was once sized for
+// 20 ms, which silently clamped the 7.1 back pair above 512 kHz.
+static void test_surround_arrivals_hold_at_every_rate() {
+    const double rates[] = {44100.0, 48000.0, 88200.0, 96000.0, 176400.0,
+                            192000.0, 352800.0, 384000.0, 705600.0, 768000.0};
+    struct Feed { double UpmixFrame::*channel; double ms; const char* name; };
+    const Feed feeds[] = {{&UpmixFrame::sideL, SurroundStage::kSurroundDelayMs, "sideL"},
+                          {&UpmixFrame::sideR, SurroundStage::kSurroundDelayMs + SurroundStage::kSurroundSkewMs, "sideR"},
+                          {&UpmixFrame::backL, SurroundStage::kBackDelayMs, "backL"},
+                          {&UpmixFrame::backR, SurroundStage::kBackDelayMs + SurroundStage::kBackSkewMs, "backR"}};
+    for (double fs : rates) {
+        for (const Feed& feed : feeds) {
+            SurroundStage stage;
+            stage.prepare(fs);
+            stage.setLayout(3);
+            stage.reset();
+            const long expected = std::lround(fs * feed.ms * 0.001);
+            long firstL = -1, firstR = -1;
+            for (long i = 0; i <= expected + 8; ++i) {
+                UpmixFrame up;
+                up.*feed.channel = i == 0 ? 1.0 : 0.0;
+                double l = 0.0, r = 0.0;
+                stage.renderBed(up, l, r);
+                if (firstL < 0 && l != 0.0) firstL = i;
+                if (firstR < 0 && r != 0.0) firstR = i;
+            }
+            char msg[160];
+            std::snprintf(msg, sizeof msg, "%s arrives at %ld samples at %.0f Hz (L %ld, R %ld)",
+                          feed.name, expected, fs, firstL, firstR);
+            CHECK(firstL == expected && firstR == expected, msg);
+        }
+    }
+}
+
 int main() {
+    test_surround_arrivals_hold_at_every_rate();
     test_off_is_bit_identical();
     test_centre_stays_centred_facing_forward();
     test_turning_the_head_moves_the_image();
