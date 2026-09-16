@@ -37,6 +37,14 @@ final class NowPlayingLyricsTests: XCTestCase {
         .init(key: key, title: "Title \(key)", artist: "Artist", album: album, duration: 200)
     }
     private func settle() async throws { try await Task.sleep(nanoseconds: 30_000_000) }
+    // Waits for the state a test is about instead of for a fixed time. A main
+    // thread that stalls past a fixed sleep (a busy CI runner) resumes the test
+    // before the debounce's own main-actor hop has landed, and the test then
+    // reads a request or reply that is merely late as one that never happened.
+    private func waitUntil(_ condition: () -> Bool) async throws {
+        let deadline = Date().addingTimeInterval(5)
+        while !condition() && Date() < deadline { try await Task.sleep(nanoseconds: 5_000_000) }
+    }
 
     func testAKnownAlbumIsLookedUpWithoutWaiting() async throws {
         let network = Network()
@@ -61,6 +69,9 @@ final class NowPlayingLyricsTests: XCTestCase {
         let lyrics = NowPlayingLyrics(debounceNanoseconds: 40_000_000, fetch: network.fetcher())
         lyrics.trackChanged(to: track("a", album: ""))
         lyrics.trackChanged(to: track("b", album: ""))
+        try await waitUntil { !network.requests.isEmpty }
+        // Both debounces would have run out together; give a lookup of "a" the
+        // same time again to show up if it were going to.
         try await Task.sleep(nanoseconds: 80_000_000)
         XCTAssertEqual(network.requests, ["b"], "the track that is gone is not looked up")
     }
@@ -72,15 +83,15 @@ final class NowPlayingLyricsTests: XCTestCase {
         lyrics.onLines = { published += 1 }
 
         lyrics.trackChanged(to: track("a"))
-        try await settle()
+        try await waitUntil { network.requests == ["a"] }
         lyrics.trackChanged(to: track("b"))
-        try await settle()
+        try await waitUntil { network.requests == ["a", "b"] }
         network.answer("b", with: lines("for b"))
-        try await settle()
+        try await waitUntil { lyrics.lines.first?.text == "for b" }
         XCTAssertEqual(lyrics.lines.first?.text, "for b")
 
         network.answer("a", with: lines("for a"))   // the old request finally lands
-        try await settle()
+        try await waitUntil { lyrics.cached("a") != nil }
         XCTAssertEqual(lyrics.lines.first?.text, "for b", "the screen keeps the track it is on")
         XCTAssertEqual(lyrics.cached("a")?.first?.text, "for a", "but the answer is not thrown away")
         XCTAssertGreaterThan(published, 0)
