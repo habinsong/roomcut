@@ -20,6 +20,7 @@ public struct EngineStatus {
     public static let virtualRoomCapability = UInt32(ROOMCUT_CLIENT_CAP_VIRTUAL_ROOM)
     public static let upmixCapability = UInt32(ROOMCUT_CLIENT_CAP_UPMIX)
     public static let headTrackingCapability = UInt32(ROOMCUT_CLIENT_CAP_HEAD_TRACKING)
+    public static let bedRendererCapability = UInt32(ROOMCUT_CLIENT_CAP_BED_RENDERER)
 
     public var reachable = false
     public var state: UInt32 = EngineStatus.stopped
@@ -37,6 +38,12 @@ public struct EngineStatus {
     public var volumeBoost = 1.0
     // What the engine adds on purpose. 0 means an engine that doesn't report it.
     public var engineLatencyMs = 0.0
+    // The headphone bed renderer the engine has attached right now. False on an
+    // engine without one (or one that predates the report): built-in only.
+    public var systemBedRenderer = false
+    public var bedPersonalizedHrtf = false
+    public var bedExternalGain: Float = 0   // 0..1 of the bed the system renderer renders now
+    public var bedUnitRate: Float = 0
 
     public init() {}
 
@@ -71,6 +78,10 @@ public struct EngineStatus {
 
     public var supportsHeadTracking: Bool {
         (capabilities & Self.headTrackingCapability) != 0
+    }
+
+    public var supportsBedRenderer: Bool {
+        (capabilities & Self.bedRendererCapability) != 0
     }
 
     public var stateName: String {

@@ -8,8 +8,7 @@ final class SoundEditingIntegrationTests: XCTestCase {
     private var defaults: UserDefaults!
 
     override func setUp() async throws {
-        suite = "roomcut-edit-tests-\(UUID().uuidString)"
-        defaults = UserDefaults(suiteName: suite)!
+        (suite, defaults) = makeTestDefaults(name)
     }
 
     override func tearDown() async throws { defaults.removePersistentDomain(forName: suite) }
@@ -26,6 +25,34 @@ final class SoundEditingIntegrationTests: XCTestCase {
             try await Task.sleep(nanoseconds: 5_000_000)
         }
         XCTFail("asynchronous operation did not finish", file: file, line: line)
+    }
+
+    // A measurement import replaces all six bands; one undo has to bring every
+    // one of them back, not the last band it happened to write.
+    func testMeasurementImportIsOneUndoStep() async throws {
+        let client = EditingTestClient()
+        let model = await model(client)
+        model.setParametricBand(0, ParametricBand(enabled: true, type: 0, freqHz: 500, gainDb: -2, q: 1))
+        try await waitUntil { !model.isSoundWritePending }
+        let before = model.parametric
+        var lines: [String] = []
+        var f = 20.0
+        while f <= 20000 {
+            lines.append(String(format: "%.2f,%.3f", f, 4 * exp(-pow(log2(f / 100), 2)) - 6 * exp(-pow(log2(f / 3000) / 0.5, 2))))
+            f *= pow(2, 1.0 / 24)
+        }
+        let correction = try XCTUnwrap(model.importMeasurement(Data(lines.joined(separator: "\n").utf8)))
+        try await waitUntil { !model.isSoundWritePending }
+        XCTAssertEqual(model.parametric, correction.bands)
+        XCTAssertNotEqual(model.parametric, before)
+
+        model.undoSound()
+        try await waitUntil { !model.isSoundWritePending }
+        XCTAssertEqual(model.parametric, before, "one undo restores all six bands")
+        XCTAssertEqual(client.params.parametric, before, "and the engine gets them back")
+        model.redoSound()
+        try await waitUntil { !model.isSoundWritePending }
+        XCTAssertEqual(model.parametric, correction.bands)
     }
 
     func testGestureUndoRedoUpdatesEngineAndMacroState() async throws {

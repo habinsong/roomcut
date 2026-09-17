@@ -61,6 +61,7 @@ public:
         transitionParams_.surroundType = params.surroundType;
         transitionParams_.centerWidth = params.centerWidth;
         transitionParams_.surroundDepth = params.surroundDepth;
+        transitionParams_.bedRenderer = params.bedRenderer;
         applyRoom();
         applyHeadPose();
         if (!transitioning_ && (pathsDirty_ || !(params_ == transitionParams_))) beginTransition();
@@ -97,7 +98,12 @@ public:
         }
     }
 
+    // Listening tests: see SurroundStage::startProbe.
+    void startChannelProbe(int channel, double seconds, double levelDb) { head_.startProbe(channel, seconds, levelDb); }
+
     bool headTracking() const { return head_.enabled(); }
+    // 0..1: how much of the headphone bed the attached renderer renders now.
+    double externalBedGain() const { return head_.externalBedGain(); }
 
     bool bypassed() const { return bypass_; }
 
@@ -243,6 +249,7 @@ private:
         head_.setHeadphone(headphone);
         head_.setLayout(upmixing ? surround : Upmixer::kOff);
         head_.setSurroundLevels(params_.centerWidth, params_.surroundDepth);
+        head_.setPreferExternalBed(std::lround(params_.bedRenderer) != 1);
         head_.setEnabled(tracking || upmixing);
         head_.setYawDegrees(tracking ? headYawDeg_ : 0.0);
     }

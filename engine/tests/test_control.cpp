@@ -135,6 +135,7 @@ void* serverThread(void* arg) {
                 CHECK(std::fabs(buf.setParams.dynamics[1].releaseMs - 180.0) < 0.001, "server received the release");
                 CHECK(std::fabs(buf.setParams.roomType - 2.0) < 0.001, "server received the virtual room type");
                 CHECK(std::fabs(buf.setParams.roomAmount - 65.0) < 0.001, "server received the virtual room amount");
+                CHECK(buf.setParams.bedRenderer == 1.0, "server received the bed renderer");
                 kr = roomcut::controlReplyAck(buf.setParams.header, ROOMCUT_MSG_SET_PARAMS, 0);
                 CHECK(kr == KERN_SUCCESS, "server replied set params");
                 break;
@@ -294,7 +295,7 @@ int main() {
     kr = roomcut::controlSetParams(service, -6.0, gains, 75.0, 1.0,
                                    -25.0, 30.0, 10.0, 45.0, 1.0 /* mode */,
                                    90.0, 60.0 /* dynamics */, 2.0, 65.0 /* virtual room */,
-                                   3.0, -2.5, 1.5 /* upmix */,
+                                   3.0, -2.5, 1.5 /* upmix */, 1.0 /* built-in bed */,
                                    sendBands, sendDynamics, 2000, &status);
     CHECK(kr == KERN_SUCCESS, "client set params");
     CHECK(status == 0, "set params status");

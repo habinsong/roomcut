@@ -67,6 +67,27 @@ static void requestBoundaries() {
     badPose = pose; badPose.raw.header.msgh_size -= 8;
     CHECK(!roomcut::normalizeControlRequest(badPose), "a truncated head pose is rejected");
 
+    // Listening-test burst: the length and level reach the render thread as
+    // they are, so both are held to their ranges here. Any channel is allowed —
+    // one outside 0-6 is how a burst is stopped.
+    auto probe = request(ROOMCUT_MSG_PROBE_CHANNEL, sizeof(RoomcutProbeChannelRequest));
+    probe.probeChannel.channel = 3;
+    probe.probeChannel.seconds = 0.5;
+    probe.probeChannel.levelDb = -20.0;
+    CHECK(roomcut::normalizeControlRequest(probe), "a well-formed probe is accepted");
+    auto stop = probe; stop.probeChannel.channel = -1;
+    CHECK(roomcut::normalizeControlRequest(stop), "a stop (channel outside 0-6) is accepted");
+    for (double seconds : {0.0, -1.0, 10.5, std::nan("")}) {
+        auto bad = probe; bad.probeChannel.seconds = seconds;
+        CHECK(!roomcut::normalizeControlRequest(bad), "a probe length outside (0, 10] s is rejected");
+    }
+    for (double level : {0.5, -60.5, std::nan("")}) {
+        auto bad = probe; bad.probeChannel.levelDb = level;
+        CHECK(!roomcut::normalizeControlRequest(bad), "a probe level outside [-60, 0] dB is rejected");
+    }
+    auto shortProbe = probe; shortProbe.raw.header.msgh_size -= 8;
+    CHECK(!roomcut::normalizeControlRequest(shortProbe), "a truncated probe is rejected");
+
     auto legacy = request(ROOMCUT_MSG_SET_PARAMS, offsetof(RoomcutSetParamsRequest, highpassHz));
     mach_msg_trailer_t trailer{MACH_MSG_TRAILER_FORMAT_0, sizeof(mach_msg_trailer_t)};
     std::memcpy(reinterpret_cast<char*>(&legacy) + legacy.raw.header.msgh_size, &trailer, sizeof(trailer));
@@ -104,6 +125,21 @@ static void requestBoundaries() {
     CHECK(preUpmixPair.comparisonRequest.currentSurroundType == 0
           && preUpmixPair.comparisonRequest.referenceSurroundType == 0,
           "an absent upmix in a comparison reads as off");
+
+    // An app built before the bed renderer stops right after the upmix; its
+    // absent renderer reads 0, which is the system renderer — the default.
+    auto preBed = request(ROOMCUT_MSG_SET_PARAMS, offsetof(RoomcutSetParamsRequest, bedRenderer));
+    std::memcpy(reinterpret_cast<char*>(&preBed) + preBed.raw.header.msgh_size, &trailer, sizeof(trailer));
+    CHECK(roomcut::normalizeControlRequest(preBed), "a pre-renderer parameter message remains supported");
+    CHECK(preBed.setParams.bedRenderer == 0, "an absent bed renderer reads as the default, not as trailer bytes");
+    auto preBedPair = request(ROOMCUT_MSG_SET_COMPARISON, offsetof(RoomcutComparisonRequest, currentBedRenderer));
+    preBedPair.comparisonRequest.version = 4;
+    std::memcpy(reinterpret_cast<char*>(&preBedPair) + preBedPair.raw.header.msgh_size, &trailer, sizeof(trailer));
+    CHECK(roomcut::normalizeControlRequest(preBedPair), "a version-4 comparison remains supported");
+    CHECK(preBedPair.comparisonRequest.currentBedRenderer == 0 && preBedPair.comparisonRequest.referenceBedRenderer == 0,
+          "an absent renderer in a comparison reads as zero, and the engine keeps the live one");
+    auto cutBed = request(ROOMCUT_MSG_SET_PARAMS, offsetof(RoomcutSetParamsRequest, bedRenderer) + 4);
+    CHECK(!roomcut::normalizeControlRequest(cutBed), "half a bed renderer field is rejected");
 }
 
 static void replyBoundaries() {
@@ -138,6 +174,29 @@ static void replyBoundaries() {
           "a pre-upmix parameter reply remains readable");
     CHECK(preUpmix.paramsReply.surroundType == 0 && preUpmix.paramsReply.centerWidth == 0,
           "an absent upmix reads as off in a reply too");
+
+    auto preBed = request(ROOMCUT_MSG_GET_PARAMS, offsetof(RoomcutGetParamsReply, bedRenderer));
+    preBed.raw.header.msgh_bits = 0;
+    preBed.raw.header.msgh_remote_port = MACH_PORT_NULL;
+    std::memcpy(reinterpret_cast<char*>(&preBed) + preBed.raw.header.msgh_size, &trailer, sizeof(trailer));
+    CHECK(roomcut::normalizeControlReply(preBed, ROOMCUT_MSG_GET_PARAMS), "a pre-renderer parameter reply remains readable");
+    CHECK(preBed.paramsReply.bedRenderer == 0, "an absent renderer reads as the default in a reply");
+
+    // A state reply from an engine before the renderer status: no renderer.
+    auto preBedState = request(ROOMCUT_MSG_STATE, offsetof(RoomcutStateReply, bedRenderer));
+    preBedState.raw.header.msgh_bits = 0;
+    preBedState.raw.header.msgh_remote_port = MACH_PORT_NULL;
+    std::memcpy(reinterpret_cast<char*>(&preBedState) + preBedState.raw.header.msgh_size, &trailer, sizeof(trailer));
+    CHECK(roomcut::normalizeControlReply(preBedState, ROOMCUT_MSG_STATE), "a pre-renderer state reply remains readable");
+    CHECK(preBedState.stateReply.bedRenderer == 0 && preBedState.stateReply.bedExternalGain == 0
+          && preBedState.stateReply.bedUnitRate == 0, "and reports no system renderer rather than trailer bytes");
+
+    auto preBedPair = request(ROOMCUT_MSG_GET_COMPARISON, offsetof(RoomcutComparisonReply, currentBedRenderer));
+    preBedPair.raw.header.msgh_bits = 0;
+    preBedPair.raw.header.msgh_remote_port = MACH_PORT_NULL;
+    preBedPair.comparisonReply.version = 4;
+    std::memcpy(reinterpret_cast<char*>(&preBedPair) + preBedPair.raw.header.msgh_size, &trailer, sizeof(trailer));
+    CHECK(roomcut::normalizeControlReply(preBedPair, ROOMCUT_MSG_GET_COMPARISON), "a version-4 comparison reply remains readable");
 }
 
 static void truncatedAcknowledgementIsNotSuccess() {

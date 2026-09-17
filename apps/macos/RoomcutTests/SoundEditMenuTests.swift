@@ -8,8 +8,7 @@ final class SoundEditMenuTests: XCTestCase {
     private var defaults: UserDefaults!
 
     override func setUp() async throws {
-        suite = "roomcut-menu-tests-\(UUID().uuidString)"
-        defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        (suite, defaults) = makeTestDefaults(name)
     }
 
     override func tearDown() async throws { defaults.removePersistentDomain(forName: suite) }

@@ -7,8 +7,7 @@ final class DeviceCommandTests: XCTestCase {
     private var suite = ""
     private var defaults: UserDefaults!
     override func setUp() async throws {
-        suite = "roomcut-device-command-tests-\(UUID().uuidString)"
-        defaults = UserDefaults(suiteName: suite)!
+        (suite, defaults) = makeTestDefaults(name)
     }
     override func tearDown() async throws { defaults.removePersistentDomain(forName: suite) }
     private func waitUntil(_ predicate: () -> Bool) async throws {

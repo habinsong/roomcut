@@ -90,10 +90,12 @@ struct EngineContext {
 
     RenderPipeline         render;              // render-thread only after prepare()
     // One AUSpatialMixer per A/B chain, opened with the output (control thread,
-    // IO stopped) when --bed-renderer system asked for it.
-    bool                   useSystemBedRenderer = false;
+    // IO stopped) unless --bed-renderer builtin turned it off.
+    bool                   useSystemBedRenderer = true;
     SpatialMixerBedRenderer bedCurrent;
     SpatialMixerBedRenderer bedReference;
+    bool                   bedAttached = false;          // control thread
+    std::atomic<uint32_t>  bedExternalGainBits{0};       // float bits, render → control
     std::atomic<uint32_t>  renderPeakBits{0};   // float bits of the last block's peak
     std::atomic<uint64_t>  framesRendered{0};
     std::atomic<uint64_t>  renderUnderruns{0};  // output pulled more than the ring had
@@ -113,6 +115,14 @@ struct EngineContext {
     // thread reads; never persisted.
     std::atomic<uint32_t>  headYawBits{0};
     std::atomic<bool>      headPoseActive{false};
+    // Listening-test burst (PROBE_CHANNEL). The control thread writes the three
+    // values, then bumps the generation; the render thread starts the burst when
+    // the generation moves. probeSeen is render-thread only.
+    std::atomic<int32_t>   probeChannel{-1};
+    std::atomic<uint32_t>  probeSecondsBits{0};   // float bits
+    std::atomic<uint32_t>  probeLevelBits{0};     // float bits
+    std::atomic<uint32_t>  probeGeneration{0};
+    uint32_t               probeSeen = 0;
     RealtimeMailbox<ComparisonMetrics> comparisonMeters; // render → control
     ComparisonMetrics comparisonSnapshot;        // control-owned last received metrics
     std::atomic<uint32_t>  limiterGRBits{0};       // float bits, render → control
@@ -192,6 +202,15 @@ void pullRender(void* vctx, float* dst, uint32_t frames, uint32_t channels) {
         std::memcpy(&yaw, &yawBits, sizeof(yaw));
         ctx->render.setHeadPose(yaw, ctx->headPoseActive.load(std::memory_order_relaxed));
     }
+    if (const uint32_t generation = ctx->probeGeneration.load(std::memory_order_relaxed); generation != ctx->probeSeen) {
+        ctx->probeSeen = generation;
+        const uint32_t secondsBits = ctx->probeSecondsBits.load(std::memory_order_relaxed);
+        const uint32_t levelBits = ctx->probeLevelBits.load(std::memory_order_relaxed);
+        float seconds = 0.0f, level = 0.0f;
+        std::memcpy(&seconds, &secondsBits, sizeof(seconds));
+        std::memcpy(&level, &levelBits, sizeof(level));
+        ctx->render.startChannelProbe(ctx->probeChannel.load(std::memory_order_relaxed), seconds, level);
+    }
     const RenderMetrics metrics = ctx->render.render(
         dst, frames, &ringInput, ctx, ctx->volume.renderGain());
     ctx->safeBypass.store(metrics.safeBypass, std::memory_order_relaxed);
@@ -202,6 +221,8 @@ void pullRender(void* vctx, float* dst, uint32_t frames, uint32_t channels) {
     ctx->limiterGRBits.store(bits, std::memory_order_relaxed);
     ctx->framesRendered.fetch_add(frames, std::memory_order_relaxed);
     ctx->renderUnderruns.fetch_add(metrics.shortfallFrames, std::memory_order_relaxed);
+    std::memcpy(&bits, &metrics.bedExternalGain, sizeof(bits));
+    ctx->bedExternalGainBits.store(bits, std::memory_order_relaxed);
     ctx->comparisonMeters.publish(ctx->render.comparisonMetrics());
 
     ctx->analysis.push(dst, frames);
@@ -285,18 +306,25 @@ OSStatus openOutputOn(EngineContext& ctx, OutputDevice& output,
     ctx.comparisonSnapshot = {};
     BedRenderer* bedCurrent = nullptr;
     BedRenderer* bedReference = nullptr;
+    ctx.bedAttached = false;
+    ctx.bedExternalGainBits.store(0, std::memory_order_relaxed);
     if (ctx.useSystemBedRenderer) {
         std::string bedError;
         if (ctx.bedCurrent.prepare(output.sampleRate(), bedError) && ctx.bedReference.prepare(output.sampleRate(), bedError)) {
             bedCurrent = &ctx.bedCurrent;
             bedReference = &ctx.bedReference;
-            std::fprintf(stderr, "[engine] bed renderer: AUSpatialMixer at %.0f Hz (+%zu frames)\n",
-                         output.sampleRate(), SpatialMixerBedRenderer::kBlockFrames);
+            ctx.bedAttached = true;
+            std::fprintf(stderr, "[engine] bed renderer: AUSpatialMixer at %.0f Hz, units at %.0f Hz (+%zu frames), personalized HRTF %s\n",
+                         output.sampleRate(), ctx.bedCurrent.unitRate(),
+                         ctx.bedCurrent.blockFrames() + ctx.bedCurrent.latencyFrames(),
+                         ctx.bedCurrent.personalizedHrtfInUse() || ctx.bedReference.personalizedHrtfInUse() ? "in use" : "not in use");
         } else {
             ctx.bedCurrent.release();
             ctx.bedReference.release();
             std::fprintf(stderr, "[engine] bed renderer: built-in (%s)\n", bedError.c_str());
         }
+    } else {
+        std::fprintf(stderr, "[engine] bed renderer: built-in (--bed-renderer builtin)\n");
     }
     ctx.render.attachBedRenderers(bedCurrent, bedReference);
     try {

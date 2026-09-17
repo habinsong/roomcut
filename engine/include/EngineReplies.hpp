@@ -20,6 +20,8 @@ struct EngineStatusSnapshot {
     bool keepDefault = false;
     double volumeBoost = 1;
     double engineLatencyMs = 0;   // limiter look-ahead + resampler group delay
+    bool bedRendererAttached = false, bedPersonalizedHrtf = false;
+    float bedExternalGain = 0, bedUnitRate = 0;
 };
 
 RoomcutEngineState presentedEngineState(RoomcutEngineLifecycle lifecycle, bool manualBypass, bool safeBypass);

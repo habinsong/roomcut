@@ -1,4 +1,5 @@
 #include "SpatialMixerBedRenderer.hpp"
+#include "SpatialMixerDiffuseField.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -38,16 +39,46 @@ std::string failure(const char* step, OSStatus status) {
 bool SpatialMixerBedRenderer::prepare(double sampleRate, std::string& error) {
     release();
     if (!(sampleRate > 0.0) || sampleRate > kMaxSampleRate) {
-        error = "sample rate " + std::to_string(static_cast<long>(sampleRate)) + " Hz is above the 192 kHz the unit renders correctly";
+        error = "sample rate " + std::to_string(static_cast<long>(sampleRate)) + " Hz is above the 768 kHz the bed renderer takes";
         return false;
     }
-    if (!openUnit(units_[0], k51Azimuths, 5, sampleRate, error) || !openUnit(units_[1], k71Azimuths, 7, sampleRate, error)) {
+    // The smallest whole fraction of the stream the units render correctly at.
+    factor_ = static_cast<std::size_t>(std::ceil(sampleRate / kMaxUnitRate));
+    unitRate_ = sampleRate / static_cast<double>(factor_);
+    if (!openUnit(units_[0], k51Azimuths, 5, unitRate_, error) || !openUnit(units_[1], k71Azimuths, 7, unitRate_, error)) {
         release();
         return false;
     }
+    personalizedHrtf_ = false;
+    for (const Unit& unit : units_) {
+        UInt32 inUse = 0, size = sizeof inUse;
+        if (AudioUnitGetProperty(unit.au, kAudioUnitProperty_SpatialMixerAnyInputIsUsingPersonalizedHRTF,
+                                 kAudioUnitScope_Global, 0, &inUse, &size) == noErr && inUse != 0)
+            personalizedHrtf_ = true;
+    }
+    {
+        ParametricFitSettings fit;
+        fit.sampleRate = unitRate_;
+        fit.minHz = 50.0;
+        fit.maxHz = std::min(16000.0, 0.45 * unitRate_);
+        const std::vector<ResponsePoint> measured(std::begin(kSpatialMixerDiffuseField48k), std::end(kSpatialMixerDiffuseField48k));
+        const ParametricFitResult result = fitParametricCorrection(measured, fit);
+        diffuseBands_ = result.bands;
+        diffuseBandCount_ = result.bandsUsed;
+        for (std::size_t b = 0; b < diffuseFilters_.size(); ++b) {
+            const ParametricBand& band = diffuseBands_[b];
+            if (b < diffuseBandCount_) diffuseFilters_[b].set(static_cast<BiquadType>(band.type), unitRate_, band.freqHz, band.gainDb, band.q);
+            else diffuseFilters_[b].setIdentity();
+            diffuseFilters_[b].reset();
+        }
+        diffuseCorrection_ = true;
+    }
+    down_.prepare(sampleRate, factor_, 7);
+    up_.prepare(sampleRate, factor_, 2);
+    for (std::size_t c = 0; c < unitIn_.size(); ++c) unitInRead_[c] = unitInWrite_[c] = unitIn_[c].data();
     for (std::size_t c = 0; c < silence_.size(); ++c) silencePointers_[c] = silence_[c].data();
-    flushBlocks_ = static_cast<std::size_t>(std::ceil(kFlushSeconds * sampleRate / kBlockFrames));
-    fadeBlocks_ = std::max<std::size_t>(1, static_cast<std::size_t>(std::ceil(kFadeSeconds * sampleRate / kBlockFrames)));
+    flushBlocks_ = static_cast<std::size_t>(std::ceil(kFlushSeconds * unitRate_ / kBlockFrames));
+    fadeBlocks_ = std::max<std::size_t>(1, static_cast<std::size_t>(std::ceil(kFadeSeconds * unitRate_ / kBlockFrames)));
     fadeBlocksLeft_ = 0;
     activeLayout_ = fadingLayout_ = Upmixer::kOff;
     ready_ = true;
@@ -56,6 +87,9 @@ bool SpatialMixerBedRenderer::prepare(double sampleRate, std::string& error) {
 
 void SpatialMixerBedRenderer::release() {
     ready_ = false;
+    factor_ = 1;
+    unitRate_ = 0.0;
+    personalizedHrtf_ = false;
     for (Unit& unit : units_) {
         if (!unit.au) continue;
         AudioUnitUninitialize(unit.au);
@@ -82,7 +116,7 @@ bool SpatialMixerBedRenderer::openUnit(Unit& unit, const double* azimuths, UInt3
     const UInt32 algorithm = kSpatializationAlgorithm_UseOutputType;
     const UInt32 sourceMode = kSpatialMixerSourceMode_AmbienceBed;
     const UInt32 outputType = kSpatialMixerOutputType_Headphones;
-    const UInt32 noReverb = 0, genericHrtf = kSpatialMixerPersonalizedHRTFMode_Off;
+    const UInt32 noReverb = 0, hrtfMode = kSpatialMixerPersonalizedHRTFMode_Auto;
     const UInt32 maxFrames = kBlockFrames;
 
     std::vector<uint8_t> layout(offsetof(AudioChannelLayout, mChannelDescriptions) + channels * sizeof(AudioChannelDescription), 0);
@@ -111,7 +145,7 @@ bool SpatialMixerBedRenderer::openUnit(Unit& unit, const double* azimuths, UInt3
         && set(kAudioUnitProperty_SpatialMixerSourceMode, kAudioUnitScope_Input, &sourceMode, sizeof sourceMode, "source mode")
         && set(kAudioUnitProperty_SpatialMixerOutputType, kAudioUnitScope_Global, &outputType, sizeof outputType, "output type")
         && set(kAudioUnitProperty_UsesInternalReverb, kAudioUnitScope_Global, &noReverb, sizeof noReverb, "internal reverb")
-        && set(kAudioUnitProperty_SpatialMixerPersonalizedHRTFMode, kAudioUnitScope_Global, &genericHrtf, sizeof genericHrtf, "HRTF mode")
+        && set(kAudioUnitProperty_SpatialMixerPersonalizedHRTFMode, kAudioUnitScope_Global, &hrtfMode, sizeof hrtfMode, "HRTF mode")
         && set(kAudioUnitProperty_MaximumFramesPerSlice, kAudioUnitScope_Global, &maxFrames, sizeof maxFrames, "slice size")
         && set(kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, &callback, sizeof callback, "render callback");
     if (!configured) return false;
@@ -168,7 +202,33 @@ void SpatialMixerBedRenderer::renderUnit(Unit& unit, const float* const* channel
     unit.sampleTime += kBlockFrames;
 }
 
+void SpatialMixerBedRenderer::equalise(float* left, float* right) {
+    if (!diffuseCorrection_) return;
+    for (std::size_t b = 0; b < diffuseBandCount_; ++b) {
+        Biquad& filter = diffuseFilters_[b];
+        for (std::size_t i = 0; i < kBlockFrames; ++i) {
+            left[i] = filter.processSample(left[i], 0);
+            right[i] = filter.processSample(right[i], 1);
+        }
+    }
+}
+
 void SpatialMixerBedRenderer::render(int layout, const float* const* channels, double headYawDegrees, float* left, float* right) {
+    if (factor_ == 1) {
+        renderAtUnitRate(layout, channels, headYawDegrees, left, right);
+        equalise(left, right);
+        return;
+    }
+    down_.process(channels, unitInWrite_, kBlockFrames);
+    renderAtUnitRate(layout, unitInRead_, headYawDegrees, unitLeft_.data(), unitRight_.data());
+    equalise(unitLeft_.data(), unitRight_.data());
+    const float* unitOut[2] = {unitLeft_.data(), unitRight_.data()};
+    float* streamOut[2] = {left, right};
+    up_.process(unitOut, streamOut, kBlockFrames);
+}
+
+void SpatialMixerBedRenderer::renderAtUnitRate(int layout, const float* const* channels, double headYawDegrees,
+                                               float* left, float* right) {
     Unit* unit = canRender(layout) ? unitFor(layout) : nullptr;
     if (!unit) {
         std::fill(left, left + kBlockFrames, 0.0f);

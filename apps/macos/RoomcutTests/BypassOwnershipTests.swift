@@ -6,8 +6,7 @@ final class BypassOwnershipTests: XCTestCase {
     private var defaults: UserDefaults!
     private var suite = ""
     override func setUp() async throws {
-        suite = "roomcut-bypass-tests-\(UUID())"
-        defaults = UserDefaults(suiteName: suite)!
+        (suite, defaults) = makeTestDefaults(name)
     }
     override func tearDown() async throws { defaults.removePersistentDomain(forName: suite) }
     private func waitUntil(_ condition: () -> Bool) async throws {

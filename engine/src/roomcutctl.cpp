@@ -21,9 +21,11 @@
 
 #include "presets/BuiltinPresets.hpp"
 
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <strings.h>
 
 #include <bootstrap.h>
 
@@ -62,13 +64,14 @@ mach_port_t lookupEngine() {
 int usage(const char* argv0) {
     std::fprintf(stderr,
         "usage: %s status [--json] | preset list [--json] | preset <id> | "
-        "params get [--json] | analysis --json | "
+        "params get [--json] | params set <field> <value> [<field> <value> ...] | analysis --json | "
         "params <preamp> <g0..g9> <releaseMs> <outDb> "
         "[<width> <centerFocus> <crossfeed> <roomReduce> "
         "[<mode> <highpassHz> <compAmount> [<roomType> <roomAmount> "
-        "[<surroundType> <centerWidth> <surroundDepth>]]]] | "
+        "[<surroundType> <centerWidth> <surroundDepth> [<bedRenderer 0=system 1=builtin>]]]]] | "
         "peq <type> <freqHz> <gainDb> <q> | "
         "headpose <yawDeg> [on|off] | "
+        "probe <C|L|R|Ls|Rs|Lb|Rb|stop> [seconds=0.5] [levelDb=-20] | "
         "device <uid|auto> | "
         "bypass on|off | keepdefault on|off | health\n",
         argv0);
@@ -134,7 +137,9 @@ int main(int argc, char** argv) {
                 "\"paramsRevision\":%u,\"capabilities\":%u,\"volumeBoost\":%.4f,"
                 "\"manualBypass\":%s,\"safeBypass\":%s,\"limiterGrDb\":%.4f,"
                 "\"peak\":%.6f,\"frames\":%llu,\"underruns\":%llu,"
-                "\"outputDevice\":\"%s\",\"keepDefault\":%s}\n",
+                "\"outputDevice\":\"%s\",\"keepDefault\":%s,\"engineLatencyMs\":%.4f,"
+                "\"bedRenderer\":\"%s\",\"bedUnitRate\":%.1f,\"bedExternalGain\":%.4f,"
+                "\"bedPersonalizedHrtf\":%s}\n",
                 stateName(st.state), st.presetId, st.paramsRevision, st.capabilities,
                 volumeBoost,
                 st.manualBypass ? "true" : "false",
@@ -143,7 +148,10 @@ int main(int argc, char** argv) {
                 (unsigned long long)st.framesRendered,
                 (unsigned long long)st.ringUnderruns,
                 st.outputDeviceUID,
-                st.keepDefault ? "true" : "false");
+                st.keepDefault ? "true" : "false",
+                st.engineLatencyMs,
+                st.bedRenderer ? "system" : "builtin", (double)st.bedUnitRate,
+                (double)st.bedExternalGain, st.bedPersonalizedHrtf ? "true" : "false");
         } else {
             std::printf("state:    %s\n", stateName(st.state));
             std::printf("preset:   %s\n", st.presetId);
@@ -166,6 +174,13 @@ int main(int argc, char** argv) {
                         (unsigned long long)st.ringUnderruns);
             std::printf("output:   %s\n",
                         st.outputDeviceUID[0] ? st.outputDeviceUID : "(none)");
+            std::printf("latency:  %.3f ms\n", st.engineLatencyMs);
+            if (st.bedRenderer)
+                std::printf("bed:      AUSpatialMixer, units at %.0f Hz, rendering %.0f%% of the bed, personalized HRTF %s\n",
+                            (double)st.bedUnitRate, 100.0 * (double)st.bedExternalGain,
+                            st.bedPersonalizedHrtf ? "in use" : "not in use");
+            else
+                std::printf("bed:      built-in only\n");
         }
         return 0;
     }
@@ -287,13 +302,13 @@ int main(int argc, char** argv) {
                     "\"highpassHz\":%.4f,\"compAmount\":%.4f,"
                     "\"roomType\":%.4f,\"roomAmount\":%.4f,"
                     "\"surroundType\":%.4f,\"centerWidth\":%.4f,"
-                    "\"surroundDepth\":%.4f}\n",
+                    "\"surroundDepth\":%.4f,\"bedRenderer\":%.4f}\n",
                     params.limiterReleaseMs,
                     params.outputGainDb, params.spatialWidth,
                     params.centerFocus, params.crossfeed, params.roomReduce,
                     params.spatialMode, params.highpassHz, params.compAmount,
                     params.roomType, params.roomAmount,
-                    params.surroundType, params.centerWidth, params.surroundDepth);
+                    params.surroundType, params.centerWidth, params.surroundDepth, params.bedRenderer);
                 rc = 0;
             } else {
                 std::printf("preset:   %s\n", params.presetId);
@@ -316,10 +331,55 @@ int main(int argc, char** argv) {
                             params.roomType, params.roomAmount);
                 std::printf("upmix:    type %.0f, centre width %.0f%%, surround depth %.0f%%\n",
                             params.surroundType, params.centerWidth, params.surroundDepth);
+                std::printf("bed:      %s\n", params.bedRenderer == 1.0 ? "built-in" : "system");
                 rc = 0;
             }
         }
-    } else if (std::strcmp(cmd, "params") == 0 && (argc == 15 || argc == 19 || argc == 22 || argc == 24 || argc == 27)) {
+    } else if (std::strcmp(cmd, "params") == 0 && argc >= 3 && std::strcmp(argv[2], "set") == 0) {
+        // params set <field> <value> [...] — changes only the named fields and
+        // sends everything else back as the engine has it, parametric bands and
+        // their dynamics included (the positional form below resets those).
+        // What the listening test switches between conditions with.
+        RoomcutGetParamsReply p;
+        kern_return_t kr = controlGetParams(service, kTimeoutMs, &p);
+        struct Field { const char* name; double* value; };
+        const Field fields[] = {
+            {"preampDb", &p.preampDb}, {"limiterReleaseMs", &p.limiterReleaseMs}, {"outputGainDb", &p.outputGainDb},
+            {"spatialWidth", &p.spatialWidth}, {"centerFocus", &p.centerFocus}, {"crossfeed", &p.crossfeed},
+            {"roomReduce", &p.roomReduce}, {"spatialMode", &p.spatialMode}, {"highpassHz", &p.highpassHz},
+            {"compAmount", &p.compAmount}, {"roomType", &p.roomType}, {"roomAmount", &p.roomAmount},
+            {"surroundType", &p.surroundType}, {"centerWidth", &p.centerWidth},
+            {"surroundDepth", &p.surroundDepth}, {"bedRenderer", &p.bedRenderer}};
+        bool ok = argc >= 5 && (argc - 3) % 2 == 0;
+        for (int a = 3; ok && a + 1 < argc; a += 2) {
+            char* end = nullptr;
+            const double value = std::strtod(argv[a + 1], &end);
+            bool known = false;
+            for (const Field& f : fields) {
+                if (std::strcmp(argv[a], f.name) == 0) { *f.value = value; known = true; }
+            }
+            ok = known && end != argv[a + 1] && *end == '\0' && std::isfinite(value);
+            if (!ok) std::fprintf(stderr, "roomcutctl: params set: bad field or value '%s %s'\n", argv[a], argv[a + 1]);
+        }
+        if (!ok) {
+            rc = usage(argv[0]);
+        } else if (kr != KERN_SUCCESS) {
+            std::fprintf(stderr, "roomcutctl: params get failed (%d)\n", kr);
+        } else {
+            uint32_t status = 1;
+            kr = controlSetParams(service, p.preampDb, p.eqGainsDb, p.limiterReleaseMs, p.outputGainDb,
+                                  p.spatialWidth, p.centerFocus, p.crossfeed, p.roomReduce, p.spatialMode,
+                                  p.highpassHz, p.compAmount, p.roomType, p.roomAmount,
+                                  p.surroundType, p.centerWidth, p.surroundDepth, p.bedRenderer,
+                                  p.parametric, p.dynamics, kTimeoutMs, &status);
+            if (kr != KERN_SUCCESS || status != 0) {
+                std::fprintf(stderr, "roomcutctl: params set failed (%d, status %u)\n", kr, status);
+            } else {
+                std::printf("params -> set %d field(s), the rest kept\n", (argc - 3) / 2);
+                rc = 0;
+            }
+        }
+    } else if (std::strcmp(cmd, "params") == 0 && (argc == 15 || argc == 19 || argc == 22 || argc == 24 || argc == 27 || argc == 28)) {
         double preamp = std::strtod(argv[2], nullptr);
         double gains[10];
         for (int b = 0; b < 10; ++b) gains[b] = std::strtod(argv[3 + b], nullptr);
@@ -334,9 +394,10 @@ int main(int argc, char** argv) {
         double comp = argc >= 22 ? std::strtod(argv[21], nullptr) : 0.0;
         double roomType = argc >= 24 ? std::strtod(argv[22], nullptr) : 0.0;
         double roomAmount = argc >= 24 ? std::strtod(argv[23], nullptr) : 50.0;
-        double surroundType = argc == 27 ? std::strtod(argv[24], nullptr) : 0.0;
-        double centerWidth = argc == 27 ? std::strtod(argv[25], nullptr) : 0.0;
-        double surroundDepth = argc == 27 ? std::strtod(argv[26], nullptr) : 0.0;
+        double surroundType = argc >= 27 ? std::strtod(argv[24], nullptr) : 0.0;
+        double centerWidth = argc >= 27 ? std::strtod(argv[25], nullptr) : 0.0;
+        double surroundDepth = argc >= 27 ? std::strtod(argv[26], nullptr) : 0.0;
+        double bedRenderer = argc == 28 ? std::strtod(argv[27], nullptr) : 0.0;
         uint32_t status = 1;
         // CLI does not edit parametric bands — pass none (the engine keeps the
         // band array flat for a custom set from the CLI).
@@ -344,7 +405,7 @@ int main(int argc, char** argv) {
                                             releaseMs, outDb,
                                             width, center, crossfeed, room, mode,
                                             hpf, comp, roomType, roomAmount,
-                                            surroundType, centerWidth, surroundDepth,
+                                            surroundType, centerWidth, surroundDepth, bedRenderer,
                                             nullptr, nullptr, kTimeoutMs, &status);
         if (kr != KERN_SUCCESS || status != 0) {
             std::fprintf(stderr, "roomcutctl: params failed (%d)\n", kr);
@@ -363,6 +424,32 @@ int main(int argc, char** argv) {
             std::fprintf(stderr, "roomcutctl: head pose failed (%d)\n", kr);
         } else {
             std::printf("head pose -> yaw %.1f deg, %s\n", yaw, active ? "active" : "inactive");
+            rc = 0;
+        }
+    } else if (std::strcmp(cmd, "probe") == 0 && argc >= 3 && argc <= 5) {
+        // probe <channel> [seconds] [levelDb] — a pink-noise burst on one channel
+        // of the headphone upmix, for the listening test (PRD P0-4). The chain
+        // has to be rendering 5.1/7.1 for headphones to hear it.
+        static const char* const kNames[] = {"C", "L", "R", "Ls", "Rs", "Lb", "Rb"};
+        int channel = -1;
+        for (int c = 0; c < 7; ++c) if (strcasecmp(argv[2], kNames[c]) == 0) channel = c;
+        const bool stop = strcasecmp(argv[2], "stop") == 0;
+        const double seconds = argc >= 4 ? std::strtod(argv[3], nullptr) : 0.5;
+        const double levelDb = argc >= 5 ? std::strtod(argv[4], nullptr) : -20.0;
+        if ((channel < 0 && !stop) || !(seconds > 0.0 && seconds <= 10.0) || !(levelDb >= -60.0 && levelDb <= 0.0)) {
+            std::fprintf(stderr, "roomcutctl: probe wants C|L|R|Ls|Rs|Lb|Rb|stop, 0 < seconds <= 10, -60 <= levelDb <= 0\n");
+            return 2;
+        }
+        uint32_t status = 1;
+        kern_return_t kr = controlProbeChannel(service, channel, seconds, levelDb, kTimeoutMs, &status);
+        if (kr != KERN_SUCCESS || status != 0) {
+            std::fprintf(stderr, "roomcutctl: probe failed (%d)\n", kr);
+        } else if (stop) {
+            std::printf("probe -> stopped\n");
+            rc = 0;
+        } else {
+            std::printf("probe -> %s, %.2f s at %.1f dBFS (heard on a 5.1/7.1 headphone bed)\n",
+                        kNames[channel], seconds, levelDb);
             rc = 0;
         }
     } else if (std::strcmp(cmd, "peq") == 0 && (argc == 6 || argc == 10)) {
@@ -393,7 +480,7 @@ int main(int argc, char** argv) {
                                             100.0, 0.0,
                                             0.0, 0.0, 0.0, 0.0, 0.0,
                                             0.0, 0.0, 0.0, 50.0,
-                                            0.0, 0.0, 0.0,
+                                            0.0, 0.0, 0.0, 0.0,
                                             bands, dynamics, kTimeoutMs, &status);
         if (kr != KERN_SUCCESS || status != 0) {
             std::fprintf(stderr, "roomcutctl: peq failed (%d)\n", kr);

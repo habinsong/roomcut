@@ -41,7 +41,8 @@ std::string serializeParamsLine(const ChainParams& params) {
         // written before that change stores a 0 that used to mean "no trim" and
         // now reads as "extract no centre at all". A file without this marker is
         // from before, so those two are ignored and the defaults stand.
-        << ' ' << kParamsSchema;
+        << ' ' << kParamsSchema
+        << ' ' << params.bedRenderer;
     return output.str();
 }
 
@@ -50,7 +51,7 @@ bool parseParamsLine(const std::string& line, ChainParams* params) {
     std::istringstream input(line);
     input.imbue(std::locale::classic());
     constexpr size_t base = GraphicEQ::kNumBands + 3;
-    constexpr size_t fields = base + 13;  // spatial (5) + dynamics (2) + room (2) + upmix (3) + schema
+    constexpr size_t fields = base + 14;  // spatial (5) + dynamics (2) + room (2) + upmix (3) + schema + bed renderer
     double values[fields]{};
     size_t read = 0;
     for (size_t i = 0; i < fields; ++i) {
@@ -87,6 +88,8 @@ bool parseParamsLine(const std::string& line, ChainParams* params) {
             params->surroundDepth = values[base + 11];
         }
     }
+    // A file from before the bed renderer keeps the default (system renderer).
+    if (read >= base + 14) params->bedRenderer = values[base + 13];
     return true;
 }
 

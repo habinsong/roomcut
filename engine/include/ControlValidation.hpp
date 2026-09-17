@@ -46,22 +46,28 @@ inline bool normalizeControlRequest(RoomcutControlMsgBuffer& buffer) {
         valid = sizeMatches(size, sizeof(RoomcutSetHeadPoseRequest))
             && buffer.setHeadPose.active <= 1 && std::isfinite(buffer.setHeadPose.yawDeg);
         break;
+    case ROOMCUT_MSG_PROBE_CHANNEL:
+        valid = sizeMatches(size, sizeof(RoomcutProbeChannelRequest))
+            && buffer.probeChannel.seconds > 0.0 && buffer.probeChannel.seconds <= 10.0
+            && buffer.probeChannel.levelDb >= -60.0 && buffer.probeChannel.levelDb <= 0.0;
+        break;
     case ROOMCUT_MSG_SET_PARAMS:
         valid = sizeMatches(size, sizeof(RoomcutSetParamsRequest), {
             offsetof(RoomcutSetParamsRequest, spatialWidth), offsetof(RoomcutSetParamsRequest, spatialMode),
             offsetof(RoomcutSetParamsRequest, parametric), offsetof(RoomcutSetParamsRequest, highpassHz),
             offsetof(RoomcutSetParamsRequest, dynamics), offsetof(RoomcutSetParamsRequest, roomType),
-            offsetof(RoomcutSetParamsRequest, surroundType)});
+            offsetof(RoomcutSetParamsRequest, surroundType), offsetof(RoomcutSetParamsRequest, bedRenderer)});
         break;
     case ROOMCUT_MSG_STATE: case ROOMCUT_MSG_GET_PARAMS: case ROOMCUT_MSG_GET_ANALYSIS:
         valid = sizeMatches(size, sizeof(RoomcutStateRequest), {sizeof(mach_msg_header_t) + sizeof(uint32_t)});
         break;
     case ROOMCUT_MSG_SET_COMPARISON:
         // A version-2 sender stops right before the appended virtual room, a
-        // version-3 one right before the appended upmix.
+        // version-3 one before the upmix, a version-4 one before the renderer.
         valid = sizeMatches(size, sizeof(RoomcutComparisonRequest),
                             {offsetof(RoomcutComparisonRequest, currentRoomType),
-                             offsetof(RoomcutComparisonRequest, currentSurroundType)})
+                             offsetof(RoomcutComparisonRequest, currentSurroundType),
+                             offsetof(RoomcutComparisonRequest, currentBedRenderer)})
             && buffer.comparisonRequest.version >= ROOMCUT_COMPARISON_MIN_VERSION
             && buffer.comparisonRequest.version <= ROOMCUT_COMPARISON_VERSION
             && buffer.comparisonRequest.enabled <= 1 && buffer.comparisonRequest.kind <= ROOMCUT_COMPARISON_PRESET;
@@ -91,20 +97,21 @@ inline bool normalizeControlReply(RoomcutControlMsgBuffer& buffer, uint32_t expe
         valid = sizeMatches(size, sizeof(RoomcutStateReply), {
             offsetof(RoomcutStateReply, outputDeviceUID), offsetof(RoomcutStateReply, keepDefault),
             offsetof(RoomcutStateReply, capabilities), offsetof(RoomcutStateReply, volumeBoost),
-            offsetof(RoomcutStateReply, engineLatencyMs)});
+            offsetof(RoomcutStateReply, engineLatencyMs), offsetof(RoomcutStateReply, bedRenderer)});
         break;
     case ROOMCUT_MSG_GET_PARAMS:
         valid = sizeMatches(size, sizeof(RoomcutGetParamsReply), {
             offsetof(RoomcutGetParamsReply, spatialWidth), offsetof(RoomcutGetParamsReply, spatialMode),
             offsetof(RoomcutGetParamsReply, parametric), offsetof(RoomcutGetParamsReply, highpassHz),
             offsetof(RoomcutGetParamsReply, dynamics), offsetof(RoomcutGetParamsReply, roomType),
-            offsetof(RoomcutGetParamsReply, surroundType)});
+            offsetof(RoomcutGetParamsReply, surroundType), offsetof(RoomcutGetParamsReply, bedRenderer)});
         break;
     case ROOMCUT_MSG_GET_ANALYSIS: valid = sizeMatches(size, sizeof(RoomcutAnalysisReply)); break;
     case ROOMCUT_MSG_GET_COMPARISON:
         valid = sizeMatches(size, sizeof(RoomcutComparisonReply),
                             {offsetof(RoomcutComparisonReply, currentRoomType),
-                             offsetof(RoomcutComparisonReply, currentSurroundType)})
+                             offsetof(RoomcutComparisonReply, currentSurroundType),
+                             offsetof(RoomcutComparisonReply, currentBedRenderer)})
             && buffer.comparisonReply.version >= ROOMCUT_COMPARISON_MIN_VERSION
             && buffer.comparisonReply.version <= ROOMCUT_COMPARISON_VERSION
             && buffer.comparisonReply.enabled <= 1 && buffer.comparisonReply.state <= 5

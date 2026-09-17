@@ -9,8 +9,7 @@ final class SoundComparisonTests: XCTestCase {
     private var defaults: UserDefaults!
 
     override func setUp() async throws {
-        suite = "roomcut-comparison-tests-\(UUID().uuidString)"
-        defaults = UserDefaults(suiteName: suite)!
+        (suite, defaults) = makeTestDefaults(name)
     }
     override func tearDown() async throws { defaults.removePersistentDomain(forName: suite) }
 

@@ -116,6 +116,25 @@ struct InspectTab: View {
                 RoomcutRow(L("상태", "Status", "状態", "État", "Status"), systemImage: "bolt") {
                     valueText(stateLabel, tint: stateTint)
                 }
+                if model.status.reachable && model.status.supportsBedRenderer {
+                    // What renders the 5.1/7.1 headphone bed. The share rendered
+                    // right now changes every poll, so it is not shown here.
+                    RoomcutDivider()
+                    RoomcutRow(L("헤드폰 렌더러", "Headphone renderer", "ヘッドホンレンダラー",
+                                 "Rendu casque", "Kopfhörer-Renderer"), systemImage: "headphones") {
+                        valueText(bedRendererLabel, tint: RoomcutTokens.blue(scheme))
+                    }
+                    if model.systemBedInUse {
+                        RoomcutDivider()
+                        RoomcutRow(L("개인화 HRTF", "Personalized HRTF", "パーソナライズされたHRTF",
+                                     "HRTF personnalisée", "Personalisierte HRTF"), systemImage: "person.crop.circle") {
+                            valueText(model.status.bedPersonalizedHrtf
+                                      ? L("사용 중", "In use", "使用中", "Utilisée", "Aktiv")
+                                      : L("사용 안 함", "Not in use", "未使用", "Non utilisée", "Nicht aktiv"),
+                                      tint: model.status.bedPersonalizedHrtf ? RoomcutTokens.blue(scheme) : .secondary)
+                        }
+                    }
+                }
                 RoomcutDivider()
                 RoomcutRow(L("Preamp", "Preamp", "プリアンプ", "Préampli", "Vorverstärker"), systemImage: "dial.min") {
                     valueText(dbLabel(model.preampDb), tint: gainTint(model.preampDb))
@@ -163,6 +182,15 @@ struct InspectTab: View {
         case EngineStatus.stopped: return L("정지", "Stopped", "停止", "Arrêté", "Gestoppt")
         default: return L("실행 중", "Running", "実行中", "En cours", "Aktiv")
         }
+    }
+    private var bedRendererLabel: String {
+        // The engine may have AUSpatialMixer attached while this sound picks the
+        // built-in bed (Space › Surround); show what this sound renders with.
+        guard model.systemBedInUse else {
+            return L("내장", "Built-in", "内蔵", "Intégré", "Integriert")
+        }
+        let rate = model.status.bedUnitRate
+        return rate > 0 ? String(format: "AUSpatialMixer · %g kHz", Double(rate) / 1000) : "AUSpatialMixer"
     }
     private var stateTint: Color {
         model.status.reachable ? RoomcutTokens.blue(scheme) : .secondary

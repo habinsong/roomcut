@@ -9,7 +9,19 @@
 // So this walks all of them: two outputs x four surround settings x three head
 // angles x four rooms x bypass. For each it asserts the things that must hold no
 // matter what is switched on.
+//
+// Built twice: as it stands, and with ROOMCUT_MATRIX_SPATIAL_MIXER, where every
+// chain has AUSpatialMixer attached for its headphone bed (a fresh unit per
+// render, so no case inherits another's history). That build walks one more
+// axis, the bed renderer each sound picks — Apple's, or the built-in bed with
+// Apple's still attached — because both are one tap away in the Space tab.
+// Every reference is rendered the same way, so the checks mean the same thing
+// for either bed renderer.
 #include "DSPChain.hpp"
+#ifdef ROOMCUT_MATRIX_SPATIAL_MIXER
+#include "SpatialMixerBedRenderer.hpp"
+#include <cstdlib>
+#endif
 
 #include <cmath>
 #include <cstdio>
@@ -43,6 +55,7 @@ struct Case {
     bool controlsEngaged = false;
     // Deliberately non-zero by default: nothing may double up on it.
     double crossfeed = 40.0;
+    double bedRenderer = 0.0;   // 0 = the attached system renderer, 1 = built-in
 
     std::string name() const {
         std::string out = headphone ? "headphone" : "speaker  ";
@@ -51,6 +64,7 @@ struct Case {
         out += roomType >= 3 ? " hall " : (roomType >= 2 ? " liv  " : (roomType >= 1 ? " stud " : " dry  "));
         out += controlsEngaged ? " ctl" : "";
         out += bypass ? " bypass" : "";
+        out += bedRenderer >= 1.0 ? " builtin-bed" : "";
         return out;
     }
 
@@ -61,6 +75,7 @@ struct Case {
         p.roomType = roomType;
         p.roomAmount = 50.0;
         p.crossfeed = crossfeed;
+        p.bedRenderer = bedRenderer;
         if (controlsEngaged) {
             p.spatialWidth = 120.0;
             p.centerFocus = 80.0;
@@ -95,6 +110,15 @@ Probe makeProbe(bool centred, std::size_t frames) {
 
 std::vector<float> render(const Case& c, const Probe& probe) {
     DSPChain chain;
+#ifdef ROOMCUT_MATRIX_SPATIAL_MIXER
+    SpatialMixerBedRenderer renderer;
+    std::string error;
+    if (!renderer.prepare(kFs, error)) {
+        std::fprintf(stderr, "FAIL: AUSpatialMixer did not open: %s\n", error.c_str());
+        std::exit(1);
+    }
+    chain.attachBedRenderer(&renderer);
+#endif
     chain.prepare(kFs, 2);
     chain.setParams(c.params());
     chain.setBypass(c.bypass);
@@ -141,7 +165,13 @@ int main() {
     const std::vector<float> bypassCentred = render(bypassedBare, centred);
     const std::vector<float> bypassStereo = render(bypassedBare, stereo);
 
+#ifdef ROOMCUT_MATRIX_SPATIAL_MIXER
+    static constexpr double kBeds[] = {0.0, 1.0};
+#else
+    static constexpr double kBeds[] = {0.0};
+#endif
     int cases = 0;
+    for (double bed : kBeds)
     for (bool headphone : {true, false})
     for (double surround : {0.0, 2.0, 3.0})
     for (bool ambience : {false, true})
@@ -153,6 +183,7 @@ int main() {
         Case c{headphone, surround, ambience,
                head == 2 ? 40.0 : 0.0, head != 0, room, bypass};
         c.controlsEngaged = controls;
+        c.bedRenderer = bed;
         ++cases;
         const std::string tag = c.name();
 
@@ -261,6 +292,20 @@ int main() {
         }
     }
 
+#ifndef ROOMCUT_MATRIX_SPATIAL_MIXER
+    // With no renderer attached there is only one bed, so the choice of renderer
+    // must not change a single sample.
+    for (const Probe* probe : {&centred, &stereo}) {
+        Case apple{true, 3.0, false, 40.0, true, 3.0, false};
+        apple.controlsEngaged = true;
+        Case builtin = apple;
+        builtin.bedRenderer = 1.0;
+        CHECK(render(apple, *probe) == render(builtin, *probe),
+              apple.name() + ": without a system renderer the renderer choice changes nothing");
+    }
+#else
+    std::printf("bed renderer: AUSpatialMixer attached, both renderer choices walked\n");
+#endif
     std::printf("spatial matrix: %d combinations, %d checks\n", cases, g_checked);
     if (g_failures == 0) { std::printf("all spatial-matrix checks passed\n"); return 0; }
     std::fprintf(stderr, "%d spatial-matrix check(s) failed\n", g_failures);

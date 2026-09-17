@@ -14,6 +14,7 @@
 // that was the source of the scroll jank and "heavy" feel.
 //
 import SwiftUI
+import UniformTypeIdentifiers
 import RoomcutCore
 import RoomcutPresentationCore
 
@@ -24,6 +25,8 @@ struct ParametricEditor: View {
     // a card opens ONLY when tapped; the toggle just engages the band. Default
     // (and newly-revealed bands) stay collapsed.
     @State private var expanded: Set<Int> = []
+    // What the last measurement import did, shown beside its button.
+    @State private var importNote: String?
 
     private var accent: Color { RoomcutTokens.blue(scheme) }
 
@@ -60,6 +63,24 @@ struct ParametricEditor: View {
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
                         .strokeBorder(RoomcutTokens.textTertiary(scheme).opacity(0.14), lineWidth: 0.5))
 
+            HStack(spacing: 8) {
+                Button(action: importMeasurement) {
+                    Label(L("측정 곡선 가져오기…", "Import Measurement…", "測定カーブを読み込む…",
+                            "Importer une mesure…", "Messkurve importieren…"),
+                          systemImage: "square.and.arrow.down")
+                        .font(.system(size: 11, weight: .medium))
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(accent)
+                if let importNote {
+                    Text(importNote)
+                        .font(.system(size: 11).monospacedDigit())
+                        .foregroundStyle(RoomcutTokens.textSecondary(scheme))
+                        .lineLimit(1)
+                }
+                Spacer(minLength: 0)
+            }
+
             // Band cards — the control layer gets the Liquid Glass. Grouped in a
             // container so the active cards share one sampling region (consistent
             // material + cheaper to render).
@@ -94,6 +115,28 @@ struct ParametricEditor: View {
         }
         .disabled(!model.parametricAvailable)
         .onDisappear { model.endParameterEdit() }
+    }
+
+    private func importMeasurement() {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.commaSeparatedText, .tabSeparatedText, .plainText]
+        panel.allowsMultipleSelection = false
+        guard panel.runModal() == .OK, let url = panel.url, let data = try? Data(contentsOf: url) else { return }
+        guard let correction = model.importMeasurement(data) else { importNote = nil; return }
+        withAnimation(.smooth(duration: 0.3)) {
+            importNote = String(format: "%@ · %.1f → %.1f dB RMS", bandsLabel(correction.bandsUsed),
+                                correction.rmsBeforeDb, correction.rmsAfterDb)
+        }
+    }
+
+    private func bandsLabel(_ n: Int) -> String {
+        switch AppLanguage.effective {
+        case .korean:   return "\(n)밴드"
+        case .japanese: return "\(n) バンド"
+        case .french:   return "\(n) bandes"
+        case .german:   return "\(n) Bänder"
+        default:        return "\(n) bands"
+        }
     }
 
     private func toggleExpanded(_ i: Int) {

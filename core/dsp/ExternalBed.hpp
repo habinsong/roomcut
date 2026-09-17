@@ -2,12 +2,13 @@
  * ExternalBed.hpp — sends SurroundStage's headphone bed through a BedRenderer.
  *
  * The stage works a frame at a time; a renderer such as AUSpatialMixer works a
- * block at a time. This bridges the two with a fixed delay of one block:
+ * block at a time. This bridges the two with a fixed delay of one block, plus
+ * whatever the renderer's own output lags its input:
  *
- *   - Every frame entering the stage is delayed by blockFrames(), whatever the
- *     stage then does with it, so switching between the built-in render and
- *     the external one never jumps in time. The latency is constant while a
- *     renderer is attached, which is what makes it reportable.
+ *   - Every frame entering the stage is delayed by latencyFrames(), whatever
+ *     the stage then does with it, so switching between the built-in render
+ *     and the external one never jumps in time. The latency is constant while
+ *     a renderer is attached, which is what makes it reportable.
  *   - The undelayed frame is upmixed here (a second Upmixer, so the stage's own
  *     path is untouched) and queued; each full block goes to the renderer, and
  *     its output lines up exactly with the delayed frame.
@@ -33,21 +34,25 @@ namespace roomcut {
 
 class ExternalBed {
 public:
-    static constexpr std::size_t kMaxBlockFrames = 256;
+    static constexpr std::size_t kMaxBlockFrames = 512;
+    static constexpr std::size_t kMaxRendererLatencyFrames = 128;
     static constexpr std::size_t kChannels = 7;
     static constexpr double kFadeSeconds = 0.020;
 
-    // Before prepare(). A renderer whose block does not fit is not attached.
+    // Before prepare(). A renderer whose block or latency does not fit is not
+    // attached.
     void attach(BedRenderer* renderer) { renderer_ = renderer; }
     bool attached() const { return renderer_ != nullptr; }
-    std::size_t latencyFrames() const { return attached() ? block_ : 0; }
+    std::size_t latencyFrames() const { return attached() ? delay_ : 0; }
 
     void prepare(double fs) {
         block_ = renderer_ ? renderer_->blockFrames() : 0;
-        if (block_ == 0 || block_ > kMaxBlockFrames) {
+        const std::size_t lag = renderer_ ? renderer_->latencyFrames() : 0;
+        if (block_ == 0 || block_ > kMaxBlockFrames || lag > kMaxRendererLatencyFrames) {
             renderer_ = nullptr;
             block_ = 0;
         }
+        delay_ = renderer_ ? block_ + lag : 0;
         upmix_.prepare(fs);
         gainStep_ = 1.0 / std::max(1.0, fs * kFadeSeconds);
         for (std::size_t c = 0; c < kChannels; ++c) channelPointers_[c] = input_[c].data();
@@ -75,14 +80,16 @@ public:
     }
 
     // Call first thing for every frame the stage sees. Replaces left/right with
-    // the frame from latencyFrames() ago.
-    inline void input(double& left, double& right, int layout, bool wanted, double headYawDegrees) {
+    // the frame from latencyFrames() ago. `replace`, when given, is what the
+    // renderer gets instead of this frame's upmix (a probe burst).
+    inline void input(double& left, double& right, int layout, bool wanted, double headYawDegrees,
+                      const UpmixFrame* replace = nullptr) {
         const double inL = left, inR = right;
         left = delayL_[delayWrite_];
         right = delayR_[delayWrite_];
         delayL_[delayWrite_] = inL;
         delayR_[delayWrite_] = inR;
-        delayWrite_ = delayWrite_ + 1 < block_ ? delayWrite_ + 1 : 0;
+        delayWrite_ = delayWrite_ + 1 < delay_ ? delayWrite_ + 1 : 0;
 
         const bool target = wanted && renderer_->canRender(layout);
         if (target) {
@@ -94,6 +101,7 @@ public:
             externalR_ = outputR_[fill_];
             UpmixFrame up;
             upmix_.process(inL, inR, up);
+            if (replace) up = *replace;
             const double channels[kChannels] = {up.centre, up.frontL, up.frontR, up.sideL, up.sideR, up.backL, up.backR};
             for (std::size_t c = 0; c < kChannels; ++c) input_[c][fill_] = static_cast<float>(channels[c]);
             if (++fill_ == block_) {
@@ -135,13 +143,13 @@ private:
     }
 
     BedRenderer* renderer_ = nullptr;
-    std::size_t block_ = 0, delayWrite_ = 0, fill_ = 0;
+    std::size_t block_ = 0, delay_ = 0, delayWrite_ = 0, fill_ = 0;
     bool running_ = false;
     int renderLayout_ = Upmixer::kOff;
     double gain_ = 0.0, gainStep_ = 1.0;
     double externalL_ = 0.0, externalR_ = 0.0;
     Upmixer upmix_{};
-    std::array<double, kMaxBlockFrames> delayL_{}, delayR_{};
+    std::array<double, kMaxBlockFrames + kMaxRendererLatencyFrames> delayL_{}, delayR_{};
     std::array<std::array<float, kMaxBlockFrames>, kChannels> input_{};
     std::array<float, kMaxBlockFrames> outputL_{}, outputR_{};
     const float* channelPointers_[kChannels] = {};

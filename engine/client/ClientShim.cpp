@@ -12,6 +12,7 @@
 #include "ParameterCodec.hpp"
 #include "CoreAudioDevices.hpp"
 
+#include "dsp/ParametricFit.hpp"
 #include "presets/BuiltinPresets.hpp"
 
 #include <cmath>
@@ -98,6 +99,10 @@ int roomcutClientGetState(RoomcutClientState* out) {
     out->capabilities = rep.capabilities;
     out->engineLatencyMs = rep.engineLatencyMs;
     out->volumeBoost = clampVolumeBoost(rep.volumeBoost);
+    out->bedRenderer = rep.bedRenderer;
+    out->bedPersonalizedHrtf = rep.bedPersonalizedHrtf;
+    out->bedExternalGain = rep.bedExternalGain;
+    out->bedUnitRate = rep.bedUnitRate;
     return 0;
 }
 
@@ -130,6 +135,8 @@ int roomcutClientGetComparison(RoomcutClientComparison* out) {
     out->reference.surroundType = reply.referenceSurroundType;
     out->reference.centerWidth = reply.referenceCenterWidth;
     out->reference.surroundDepth = reply.referenceSurroundDepth;
+    out->current.bedRenderer = reply.currentBedRenderer;
+    out->reference.bedRenderer = reply.referenceBedRenderer;
     return 0;
 }
 
@@ -155,12 +162,14 @@ int roomcutClientSetComparison(const RoomcutClientParams* current,
         request.currentSurroundType = current->surroundType;
         request.currentCenterWidth = current->centerWidth;
         request.currentSurroundDepth = current->surroundDepth;
+        request.currentBedRenderer = current->bedRenderer;
     }
     request.referenceRoomType = reference->roomType;
     request.referenceRoomAmount = reference->roomAmount;
     request.referenceSurroundType = reference->surroundType;
     request.referenceCenterWidth = reference->centerWidth;
     request.referenceSurroundDepth = reference->surroundDepth;
+    request.referenceBedRenderer = reference->bedRenderer;
     return withEngine([&](mach_port_t service, uint32_t* status) {
         return roomcut::controlSetComparison(service, request, peerComparisonVersion,
                                              kTimeoutMs, status);
@@ -409,6 +418,7 @@ int roomcutClientSetParams(double preampDb,
                            double highpassHz, double compAmount,
                            double roomType, double roomAmount,
                            double surroundType, double centerWidth, double surroundDepth,
+                           double bedRenderer,
                            const RoomcutClientParamBand parametric[ROOMCUT_CLIENT_PARAM_BANDS],
                            const RoomcutClientParamDynamics dynamics[ROOMCUT_CLIENT_PARAM_BANDS]) {
     if (eqGainsDb == nullptr) {
@@ -446,7 +456,7 @@ int roomcutClientSetParams(double preampDb,
                                          outputGainDb, spatialWidth,
                                          centerFocus, crossfeed, roomReduce, spatialMode,
                                          highpassHz, compAmount, roomType, roomAmount,
-                                         surroundType, centerWidth, surroundDepth,
+                                         surroundType, centerWidth, surroundDepth, bedRenderer,
                                          bands, dyn, kTimeoutMs, status);
     });
 }
@@ -459,6 +469,34 @@ int roomcutClientSetHeadPose(double yawDeg, int active) {
 
 int roomcutClientPresetCount(void) {
     return (int)roomcut::builtinPresets().size();
+}
+
+int roomcutClientFitCorrection(const double* freqHz, const double* db, int count, double sampleRate,
+                               RoomcutClientParamBand* out,
+                               double* rmsBeforeDb, double* rmsAfterDb) {
+    if (freqHz == nullptr || db == nullptr || out == nullptr || count < 0 || !(sampleRate > 0.0)) {
+        return -1;
+    }
+    static_assert(ROOMCUT_CLIENT_PARAM_BANDS == roomcut::ParametricEQ::kNumBands,
+                  "the fit returns one band per client parametric slot");
+    std::vector<roomcut::ResponsePoint> points((size_t)count);
+    for (int i = 0; i < count; ++i) points[(size_t)i] = {freqHz[i], db[i]};
+    roomcut::ParametricFitSettings settings;
+    settings.sampleRate = sampleRate;
+    const auto fit = roomcut::fitParametricCorrection(points, settings);
+    if (fit.gridPoints == 0) return -2;
+    for (size_t b = 0; b < ROOMCUT_CLIENT_PARAM_BANDS; ++b) {
+        const auto& band = fit.bands[b];
+        out[b] = {};
+        out[b].enabled = b < fit.bandsUsed ? 1u : 0u;
+        out[b].type = (uint32_t)band.type;
+        out[b].freqHz = band.freqHz;
+        out[b].gainDb = band.gainDb;
+        out[b].q = band.q;
+    }
+    if (rmsBeforeDb != nullptr) *rmsBeforeDb = fit.rmsBeforeDb;
+    if (rmsAfterDb != nullptr) *rmsAfterDb = fit.rmsAfterDb;
+    return (int)fit.bandsUsed;
 }
 
 int roomcutClientPresetInfo(int index, char* idOut, int idCap,

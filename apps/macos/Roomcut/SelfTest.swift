@@ -99,7 +99,7 @@ func runSelfTest() -> Int32 {
                                            params.highpassHz, params.compAmount,
                                            params.roomType, params.roomAmount,
                                            params.surroundType, params.centerWidth,
-                                           params.surroundDepth,
+                                           params.surroundDepth, params.bedRenderer,
                                            pbuf.baseAddress, dbuf.baseAddress)
                 }
             }
@@ -121,7 +121,8 @@ func runSelfTest() -> Int32 {
               after.roomAmount == params.roomAmount,
               after.surroundType == params.surroundType,
               after.centerWidth == params.centerWidth,
-              after.surroundDepth == params.surroundDepth else {
+              after.surroundDepth == params.surroundDepth,
+              after.bedRenderer == params.bedRenderer else {
             stderrPrint("selftest: params readback mismatch (rc \(rc))")
             return 1
         }

@@ -101,6 +101,7 @@ let package = Package(
                 "RoomTuneWorkflow.swift",
                 "RoomTuneWorkQueue.swift",
                 "RoomTuneRound.swift",
+                "MeasurementCorrection.swift",
                 "RoomTuneRecorder.swift",
                 "RoomTuneAudioSession.swift",
                 "RoomTuneSweep.swift",
@@ -256,6 +257,7 @@ let package = Package(
                 "RoomTuneWorkflow.swift",
                 "RoomTuneWorkQueue.swift",
                 "RoomTuneRound.swift",
+                "MeasurementCorrection.swift",
             ],
             swiftSettings: [.swiftLanguageMode(.v5)]
         ),
@@ -293,6 +295,7 @@ let package = Package(
                 "RoomTuneWorkflow.swift",
                 "RoomTuneWorkQueue.swift",
                 "RoomTuneRound.swift",
+                "MeasurementCorrection.swift",
                 "EngineClient.swift",
                 "EngineDeviceTypes.swift",
                 "EngineStatus.swift",

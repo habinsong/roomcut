@@ -112,6 +112,7 @@ static void soundRoundTrip(const std::filesystem::path& directory) {
     auto current = ChainParams::flat();
     current.preampDb = -3.25; current.eqGainsDb[4] = 5.5; current.spatialWidth = -25;
     current.parametric[1] = {true, 2, 8000, 2.5, 0.75};
+    current.bedRenderer = 1;   // built-in: not the default, so a dropped field shows
     RoomcutControlMsgBuffer request{};
     encodeParameters(current, request.setParams);
     uint32_t status = 99;
@@ -137,9 +138,11 @@ static void soundRoundTrip(const std::filesystem::path& directory) {
     // what made a freshly picked room snap back to off).
     current.roomType = 2; current.roomAmount = 65;
     reference.roomType = 1; reference.roomAmount = 40;
+    reference.bedRenderer = 0;   // A/B between the built-in bed and the system renderer
     encodeParameters(current, comparison.current); encodeParameters(reference, comparison.reference);
     comparison.currentRoomType = current.roomType; comparison.currentRoomAmount = current.roomAmount;
     comparison.referenceRoomType = reference.roomType; comparison.referenceRoomAmount = reference.roomAmount;
+    comparison.currentBedRenderer = current.bedRenderer; comparison.referenceBedRenderer = reference.bedRenderer;
     comparison.enabled = 1;
     CHECK(controlSetComparison(service.port, comparison, ROOMCUT_COMPARISON_VERSION, 1000, &status) == KERN_SUCCESS && status == 0, "comparison command is accepted atomically");
     RoomcutComparisonReply compared{};
@@ -149,11 +152,15 @@ static void soundRoundTrip(const std::filesystem::path& directory) {
     CHECK(compared.currentRoomType == current.roomType && compared.currentRoomAmount == current.roomAmount &&
           compared.referenceRoomType == reference.roomType && compared.referenceRoomAmount == reference.roomAmount,
           "each comparison side keeps its own virtual room");
+    CHECK(compared.currentBedRenderer == 1 && compared.referenceBedRenderer == 0,
+          "each comparison side keeps its own bed renderer");
     {   // The parameter blocks themselves carry no room, so compare them without it.
         auto currentWire = decodeParameters(compared.current);
         auto referenceWire = decodeParameters(compared.reference);
         currentWire.roomType = current.roomType; currentWire.roomAmount = current.roomAmount;
         referenceWire.roomType = reference.roomType; referenceWire.roomAmount = reference.roomAmount;
+        currentWire.bedRenderer = compared.currentBedRenderer;
+        referenceWire.bedRenderer = compared.referenceBedRenderer;
         CHECK(currentWire == current && referenceWire == reference,
               "comparison reply preserves every other parameter on both sides");
     }
@@ -183,6 +190,26 @@ static void soundRoundTrip(const std::filesystem::path& directory) {
     CHECK(controlSetComparison(service.port, comparison, ROOMCUT_COMPARISON_VERSION, 1000, &status) == KERN_SUCCESS
           && status == 0, "comparison restored after the off round trip");
     CHECK(controlGetComparison(service.port, 1000, &compared) == KERN_SUCCESS, "reply after restoring");
+    CHECK(compared.currentBedRenderer == 1 && compared.referenceBedRenderer == 0, "the live side plays the built-in bed");
+
+    // An app one version behind (4) sends no renderer. Both sides keep the
+    // renderer that is playing (built-in here) rather than reading the absent
+    // zeros as a choice of the system renderer.
+    {
+        RoomcutComparisonRequest older = comparison;
+        older.currentBedRenderer = 0; older.referenceBedRenderer = 0;   // not sent at version 4 anyway
+        CHECK(controlSetComparison(service.port, older, 4, 1000, &status) == KERN_SUCCESS && status == 0,
+              "a version-4 comparison is accepted");
+        RoomcutComparisonReply back{};
+        CHECK(controlGetComparison(service.port, 1000, &back) == KERN_SUCCESS && back.version == ROOMCUT_COMPARISON_VERSION,
+              "reply after the version-4 request");
+        CHECK(back.currentBedRenderer == 1 && back.referenceBedRenderer == 1,
+              "a version-4 request adopts the live renderer on both sides");
+        CHECK(controlSetComparison(service.port, comparison, ROOMCUT_COMPARISON_VERSION, 1000, &status) == KERN_SUCCESS
+              && status == 0, "comparison restored after the version-4 request");
+        CHECK(controlGetComparison(service.port, 1000, &compared) == KERN_SUCCESS
+              && compared.referenceBedRenderer == 0, "reply after restoring again");
+    }
 
     const auto revision = compared.revision;
     comparison.kind = ROOMCUT_COMPARISON_PRESET;
@@ -193,6 +220,7 @@ static void soundRoundTrip(const std::filesystem::path& directory) {
         auto referenceWire = decodeParameters(compared.reference);
         referenceWire.roomType = compared.referenceRoomType;
         referenceWire.roomAmount = compared.referenceRoomAmount;
+        referenceWire.bedRenderer = compared.referenceBedRenderer;
         CHECK(controlGetComparison(service.port, 1000, &compared) == KERN_SUCCESS && compared.revision == revision &&
               referenceWire == reference, "rejected preset changes neither reference nor revision");
     }

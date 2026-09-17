@@ -1028,6 +1028,95 @@ final class RoomcutViewModelTests: XCTestCase {
         UserDefaults.standard.removeObject(forKey: "com.roomcut.savedPresets")
     }
 
+    // Apple's renderer or the built-in bed: offered only where both can play,
+    // and what is picked is what gets pushed.
+    func testBedRendererChoiceIsOfferedWhereBothCanPlayAndReachesTheEngine() async throws {
+        let caps = EngineStatus.spatialParamsCapability | EngineStatus.upmixCapability
+            | EngineStatus.bedRendererCapability
+        final class Attached: @unchecked Sendable { var value = true }
+        let attached = Attached()
+        let client = FakeEngineClient()
+        client.stateReadHandler = {
+            var status = EngineStatus.running(presetId: "custom", revision: 1, capabilities: caps)
+            status.systemBedRenderer = attached.value
+            return status
+        }
+        let model = RoomcutViewModel(client: client, debounceNanoseconds: 1_000_000)
+        await model.refreshNow()
+        model.setSpatialOutput(headphone: true)
+        model.setSurroundChoice(.off)
+        XCTAssertFalse(model.bedRendererChoiceAvailable, "no layout, no bed to render")
+        model.setSurroundChoice(.virtual71)
+        XCTAssertTrue(model.bedRendererChoiceAvailable)
+        XCTAssertEqual(model.bedRendererChoice, .system, "Apple's renderer is the default")
+        XCTAssertTrue(model.systemBedInUse, "and the Inspect tab says it is the one in use")
+
+        model.setBedRendererChoice(.builtIn)
+        XCTAssertFalse(model.systemBedInUse, "a sound that picks the built-in bed is not reported as Apple's")
+        for _ in 0..<40 where client.setParamsValues.last?.bedRenderer != 1 {
+            try await Task.sleep(nanoseconds: 25_000_000)
+        }
+        XCTAssertEqual(client.setParamsValues.last?.bedRenderer, 1, "the choice is pushed")
+
+        model.setSpatialOutput(headphone: false)
+        XCTAssertFalse(model.bedRendererChoiceAvailable, "speakers never render a headphone bed")
+        model.setSpatialOutput(headphone: true)
+        XCTAssertTrue(model.bedRendererChoiceAvailable)
+
+        attached.value = false
+        await model.refreshNow()
+        XCTAssertFalse(model.bedRendererChoiceAvailable, "an engine without the system renderer offers no choice")
+        model.setBedRendererChoice(.system)
+        XCTAssertFalse(model.systemBedInUse, "nor reports it in use")
+    }
+
+    func testEngineWithoutBedRendererInItsComparisonPayloadDoesNotResetIt() async throws {
+        let caps = EngineStatus.spatialParamsCapability | EngineStatus.upmixCapability
+            | EngineStatus.levelMatchCapability | EngineStatus.bedRendererCapability
+        final class Revision: @unchecked Sendable { var value: UInt32 = 1 }
+        let revision = Revision()
+        let client = FakeEngineClient()
+        client.offersComparison = true
+        client.comparisonCarriesBedRenderer = false
+        client.stateReadHandler = {
+            var status = EngineStatus.running(presetId: "custom", revision: revision.value, capabilities: caps)
+            status.systemBedRenderer = true
+            return status
+        }
+        let model = RoomcutViewModel(client: client, debounceNanoseconds: 1_000_000)
+        await model.refreshNow()
+        model.setSpatialOutput(headphone: true)
+        model.setSurroundChoice(.virtual51)
+        model.setBedRendererChoice(.builtIn)
+        for _ in 0..<40 where client.setComparisonCalls.isEmpty {
+            try await Task.sleep(nanoseconds: 25_000_000)
+        }
+        revision.value += 1
+        await model.refreshNow()
+        XCTAssertEqual(model.bedRenderer, 1, "a payload without a renderer leaves the choice alone")
+
+        client.comparisonCarriesBedRenderer = true
+        client.params.bedRenderer = 0
+        revision.value += 1
+        await model.refreshNow()
+        XCTAssertEqual(model.bedRenderer, 0, "the engine's own renderer wins once it reports one")
+    }
+
+    func testSavedPresetKeepsItsBedRendererAndOlderSavesUseTheDefault() throws {
+        let preset = SavedPreset(name: "Built-in bed", preampDb: 0,
+                                 eqGainsDb: Array(repeating: 0, count: 10), outputGainDb: 0,
+                                 surroundType: 3, bedRenderer: 1)
+        let back = try JSONDecoder().decode(SavedPreset.self, from: try JSONEncoder().encode(preset))
+        XCTAssertEqual(back.bedRenderer, 1)
+        XCTAssertEqual(SoundSnapshot(preset: back).parameters.bedRenderer, 1)
+        let legacy = #"{"name":"X","preampDb":0,"eqGainsDb":[0,0,0,0,0,0,0,0,0,0],"outputGainDb":0,"surroundType":2}"#
+        let old = try JSONDecoder().decode(SavedPreset.self, from: Data(legacy.utf8))
+        XCTAssertEqual(old.bedRenderer, 0, "a save from before the field plays through the system renderer")
+        var odd = EngineParameters.flat
+        odd.bedRenderer = 7
+        XCTAssertEqual(odd.normalized().bedRenderer, 1, "out-of-range renderers clamp onto the two choices")
+    }
+
     func testSavedPresetRoomTuneInfoRoundtripsAndBackCompat() throws {
         let preset = SavedPreset(name: "Room Tune", preampDb: 0,
                                  eqGainsDb: Array(repeating: 0, count: 10), outputGainDb: 0,
@@ -1129,6 +1218,7 @@ final class FakeEngineClient: EngineClientProtocol {
     var offersComparison = false
     var comparisonCarriesRoom = true
     var comparisonCarriesUpmix = true
+    var comparisonCarriesBedRenderer = true
     var comparisonRevision: UInt64 = 1
     var setComparisonCalls: [(EngineComparisonTarget, EngineParameters, Bool)] = []
     func getComparison() async throws -> EngineComparisonState {
@@ -1143,6 +1233,10 @@ final class FakeEngineClient: EngineClientProtocol {
         state.carriesUpmix = comparisonCarriesUpmix
         if !comparisonCarriesUpmix {
             state.current.surroundType = 0; state.reference.surroundType = 0
+        }
+        state.carriesBedRenderer = comparisonCarriesBedRenderer
+        if !comparisonCarriesBedRenderer {
+            state.current.bedRenderer = 0; state.reference.bedRenderer = 0
         }
         return state
     }

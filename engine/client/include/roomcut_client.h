@@ -42,6 +42,7 @@ enum {
 #define ROOMCUT_CLIENT_CAP_VIRTUAL_ROOM   0x00000080u
 #define ROOMCUT_CLIENT_CAP_HEAD_TRACKING  0x00000100u
 #define ROOMCUT_CLIENT_CAP_UPMIX          0x00000200u
+#define ROOMCUT_CLIENT_CAP_BED_RENDERER   0x00000400u
 #define ROOMCUT_CLIENT_ANALYSIS_SPECTRUM_BINS 24
 
 /* One parametric-EQ band (mirrors RoomcutParamBand on the wire). `type` indexes
@@ -80,6 +81,10 @@ typedef struct {
     uint32_t capabilities;
     double   volumeBoost;
     double   engineLatencyMs;   /* limiter look-ahead + resampler; 0 = not reported */
+    uint32_t bedRenderer;          /* 0 = built-in only, 1 = AUSpatialMixer attached */
+    uint32_t bedPersonalizedHrtf;  /* 1 = the unit reports a personalized HRTF in use */
+    float    bedExternalGain;      /* 0..1 of the headphone bed the system renderer renders now */
+    float    bedUnitRate;          /* Hz the system renderer's units run at; 0 without one */
 } RoomcutClientState;
 
 typedef struct {
@@ -99,6 +104,7 @@ typedef struct {
     double surroundType;      /* upmix: 0 = off, 2 = virtual 5.1, 3 = virtual 7.1 */
     double centerWidth;     /* upmix centre trim, -12..+6 */
     double surroundDepth;   /* upmix surround trim, -12..+6 */
+    double bedRenderer;     /* headphone bed: 0 = system renderer where attached, 1 = built-in */
     RoomcutClientParamBand parametric[ROOMCUT_CLIENT_PARAM_BANDS];
     RoomcutClientParamDynamics dynamics[ROOMCUT_CLIENT_PARAM_BANDS];
 } RoomcutClientParams;
@@ -107,8 +113,8 @@ typedef struct {
     uint32_t enabled;
     uint32_t state;
     /* Payload version the engine replied with. Below 3 it carries no virtual
-     * room and below 4 no upmix; in either case the caller must keep whatever
-     * it already had rather than reading the zeros. */
+     * room, below 4 no upmix and below 5 no bed renderer; in each case the
+     * caller must keep whatever it already had rather than reading the zeros. */
     uint32_t payloadVersion;
     uint64_t revision;
     uint64_t renderedRevision;
@@ -267,6 +273,7 @@ int roomcutClientSetParams(double preampDb,
                            double highpassHz, double compAmount,
                            double roomType, double roomAmount,
                            double surroundType, double centerWidth, double surroundDepth,
+                           double bedRenderer,
                            const RoomcutClientParamBand parametric[ROOMCUT_CLIENT_PARAM_BANDS],
                            const RoomcutClientParamDynamics dynamics[ROOMCUT_CLIENT_PARAM_BANDS]);
 
@@ -274,6 +281,17 @@ int roomcutClientSetParams(double preampDb,
  * active = 0 means the tracker stopped delivering and the renderer fades out.
  * Cheap enough to call at the tracker's own rate (AirPods deliver ~50 Hz). */
 int roomcutClientSetHeadPose(double yawDeg, int active);
+
+/* Parametric bands that flatten a measured response: `count` points of
+ * frequency (Hz) and level (dB), bands judged at `sampleRate`. Computed in this
+ * process (no engine connection) and it allocates, so not on a realtime thread.
+ * Fills all ROOMCUT_CLIENT_PARAM_BANDS entries of `out` (unused ones disabled)
+ * and returns how many bands it used (0 = already flat); -1 for a null pointer,
+ * a negative count or a sample rate that is not positive; -2 when the points do
+ * not span enough of 20 Hz - 16 kHz to fit. rmsBeforeDb / rmsAfterDb may be NULL. */
+int roomcutClientFitCorrection(const double* freqHz, const double* db, int count, double sampleRate,
+                               RoomcutClientParamBand* out,
+                               double* rmsBeforeDb, double* rmsAfterDb);
 
 /* Builtin preset enumeration (no engine connection needed). */
 int roomcutClientPresetCount(void);

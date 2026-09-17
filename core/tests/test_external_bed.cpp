@@ -3,7 +3,7 @@
 // (C + L + Ls + Lb on the left, C + R + Rs + Rb on the right), which by the
 // Upmixer's partition property reconstructs the programme — so what the stage
 // should output with the renderer in charge is known exactly: the input, one
-// block later.
+// block later (plus the renderer's own lag, when it declares one).
 #include "ComparisonProcessor.hpp"
 #include "DSPChain.hpp"
 #include "SurroundStage.hpp"
@@ -39,9 +39,10 @@ namespace {
 
 class FoldingRenderer : public BedRenderer {
 public:
-    explicit FoldingRenderer(std::size_t block, bool can51 = true, bool can71 = true)
-        : block_(block), can51_(can51), can71_(can71) {}
+    explicit FoldingRenderer(std::size_t block, bool can51 = true, bool can71 = true, std::size_t lag = 0)
+        : block_(block), lag_(lag), can51_(can51), can71_(can71), lagL_(lag + 1, 0.0f), lagR_(lag + 1, 0.0f) {}
     std::size_t blockFrames() const override { return block_; }
+    std::size_t latencyFrames() const override { return lag_; }
     bool canRender(int layout) const override {
         return (layout == Upmixer::k51 && can51_) || (layout == Upmixer::k71 && can71_);
     }
@@ -51,8 +52,13 @@ public:
         lastYaw = yaw;
         const bool back = layout == Upmixer::k71;
         for (std::size_t i = 0; i < block_; ++i) {
-            left[i] = ch[0][i] + ch[1][i] + ch[3][i] + (back ? ch[5][i] : 0.0f);
-            right[i] = ch[0][i] + ch[2][i] + ch[4][i] + (back ? ch[6][i] : 0.0f);
+            // A renderer with a lag: the folded frame comes out lag_ frames later.
+            lagL_[lagAt_] = ch[0][i] + ch[1][i] + ch[3][i] + (back ? ch[5][i] : 0.0f);
+            lagR_[lagAt_] = ch[0][i] + ch[2][i] + ch[4][i] + (back ? ch[6][i] : 0.0f);
+            const std::size_t oldest = (lagAt_ + 1) % lagL_.size();
+            left[i] = lagL_[oldest];
+            right[i] = lagR_[oldest];
+            lagAt_ = oldest;
         }
     }
     std::size_t calls = 0;
@@ -60,8 +66,10 @@ public:
     double lastYaw = 0.0;
 
 private:
-    std::size_t block_;
+    std::size_t block_, lag_;
     bool can51_, can71_;
+    std::vector<float> lagL_, lagR_;
+    std::size_t lagAt_ = 0;
 };
 
 struct Stereo { std::vector<float> left, right; };
@@ -280,6 +288,137 @@ static void test_the_render_path_does_not_allocate() {
     CHECK(g_allocated == 0, "rendering through an external bed allocates nothing");
 }
 
+// A renderer that lags its input: the stage waits for it. Unused, the stage is
+// a pure delay of block + lag; in charge, the programme comes back that late,
+// and the chain reports it.
+static void test_a_renderer_lag_is_waited_for() {
+    const double fs = 48000.0;
+    for (std::size_t block : {std::size_t{64}, std::size_t{256}}) {
+        for (std::size_t lag : {std::size_t{1}, std::size_t{18}, std::size_t{36}, ExternalBed::kMaxRendererLatencyFrames}) {
+            const std::size_t delay = block + lag;
+            const Stereo in = programme(fs, 0.6, 0.6);
+            {
+                FoldingRenderer renderer(block, false, false, lag);
+                SurroundStage plain, delayed;
+                configure(plain, fs, {true, Upmixer::k51, true, 0.0}, nullptr);
+                configure(delayed, fs, {true, Upmixer::k51, true, 0.0}, &renderer);
+                const Stereo a = run(plain, in), b = run(delayed, in);
+                bool identical = true;
+                for (std::size_t i = delay; i < in.left.size(); ++i)
+                    identical = identical && b.left[i] == a.left[i - delay] && b.right[i] == a.right[i - delay];
+                char msg[120];
+                std::snprintf(msg, sizeof msg, "block %zu lag %zu: unused, the stage only delays by %zu frames", block, lag, delay);
+                CHECK(identical && delayed.latencyFrames() == delay, msg);
+            }
+            for (int layout : {Upmixer::k51, Upmixer::k71}) {
+                FoldingRenderer renderer(block, true, true, lag);
+                SurroundStage stage;
+                configure(stage, fs, {true, layout, true, 0.0}, &renderer);
+                const Stereo out = run(stage, in);
+                double worst = 0.0;
+                for (std::size_t i = static_cast<std::size_t>(fs * 0.3); i < in.left.size(); ++i) {
+                    worst = std::max(worst, static_cast<double>(std::fabs(out.left[i] - in.left[i - delay])));
+                    worst = std::max(worst, static_cast<double>(std::fabs(out.right[i] - in.right[i - delay])));
+                }
+                char msg[140];
+                std::snprintf(msg, sizeof msg, "block %zu lag %zu layout %d: in charge, the output is the input %zu frames later (worst %.2e)",
+                              block, lag, layout, delay, worst);
+                CHECK(worst < 1.0e-4, msg);
+            }
+        }
+    }
+    FoldingRenderer a(64, true, true, 36), b(64, true, true, 36);
+    DSPChain plain, chain;
+    plain.prepare(fs, 2);
+    chain.attachBedRenderer(&a);
+    chain.prepare(fs, 2);
+    CHECK(std::fabs(chain.latencySeconds() - plain.latencySeconds() - 100.0 / fs) < 1e-12, "DSPChain reports block plus lag");
+
+    FoldingRenderer tooSlow(64, true, true, ExternalBed::kMaxRendererLatencyFrames + 1);
+    SurroundStage refused;
+    configure(refused, fs, {true, Upmixer::k51, true, 0.0}, &tooSlow);
+    run(refused, programme(fs, 0.1, 0.6));
+    CHECK(refused.latencyFrames() == 0 && tooSlow.calls == 0, "a renderer lagging past the limit is not attached");
+}
+
+// ChainParams::bedRenderer picks who renders: 1 keeps the built-in bed even
+// with a renderer attached (the chain is then the unattached chain, one block
+// later, sample for sample), 0 hands it to the renderer, and switching either
+// way mid-programme fades instead of stepping.
+static void test_the_chain_parameter_chooses_the_renderer() {
+    const double fs = 48000.0;
+    const std::size_t block = 64;
+    ChainParams builtIn;
+    builtIn.spatialMode = 1.0;
+    builtIn.surroundType = Upmixer::k51;
+    builtIn.bedRenderer = 1.0;
+    ChainParams system = builtIn;
+    system.bedRenderer = 0.0;
+
+    {
+        FoldingRenderer renderer(block);
+        DSPChain plain, chain;
+        plain.prepare(fs, 2);
+        plain.setParams(builtIn);
+        plain.reset();
+        chain.attachBedRenderer(&renderer);
+        chain.prepare(fs, 2);
+        chain.setParams(builtIn);
+        chain.reset();
+        const Stereo in = programme(fs, 0.5, 0.6);
+        std::vector<float> a(in.left.size() * 2), b;
+        for (std::size_t i = 0; i < in.left.size(); ++i) { a[2 * i] = in.left[i]; a[2 * i + 1] = in.right[i]; }
+        b = a;
+        plain.processInterleaved(a.data(), in.left.size());
+        chain.processInterleaved(b.data(), in.left.size());
+        // The room fades in over its first 20 ms from t = 0 in both chains, so
+        // the delayed chain meets that fade a block later: measured 2 samples
+        // apart by 8e-6 inside it, identical after it.
+        const std::size_t roomFade = static_cast<std::size_t>(fs * 0.020);
+        bool identical = true;
+        double worstInFade = 0.0;
+        for (std::size_t i = block; i < in.left.size(); ++i) {
+            for (std::size_t c = 0; c < 2; ++c) {
+                const double d = std::fabs(b[2 * i + c] - a[2 * (i - block) + c]);
+                if (i < roomFade + block) worstInFade = std::max(worstInFade, d);
+                else identical = identical && d == 0.0;
+            }
+        }
+        CHECK(identical && worstInFade < 1.0e-4 && renderer.calls == 0 && chain.externalBedGain() == 0.0,
+              "bedRenderer 1: the attached renderer is never called and the chain only adds its block");
+    }
+
+    for (double hz : {200.0, 1000.0}) {
+        FoldingRenderer renderer(block);
+        DSPChain chain;
+        chain.attachBedRenderer(&renderer);
+        chain.prepare(fs, 2);
+        chain.setParams(system);
+        chain.reset();
+        const Stereo in = sine(fs, 1.2, hz);
+        double drySlope = 0.0;
+        for (std::size_t i = 1; i < in.left.size(); ++i) drySlope = std::max(drySlope, static_cast<double>(std::fabs(in.left[i] - in.left[i - 1])));
+        double worstStep = 0.0, gainAtSystem = -1.0, gainAtBuiltIn = -1.0;
+        std::size_t callsAtSwitch = 0, callsAfterBuiltIn = 0;
+        float previous = 0.0f;
+        for (std::size_t i = 0; i < in.left.size(); ++i) {
+            if (i == static_cast<std::size_t>(fs * 0.4)) { gainAtSystem = chain.externalBedGain(); chain.setParams(builtIn); }
+            if (i == static_cast<std::size_t>(fs * 0.5)) callsAtSwitch = renderer.calls;
+            if (i == static_cast<std::size_t>(fs * 0.8)) { gainAtBuiltIn = chain.externalBedGain(); callsAfterBuiltIn = renderer.calls; chain.setParams(system); }
+            float frame[2] = {in.left[i], in.right[i]};
+            chain.processInterleaved(frame, 1);
+            if (i > static_cast<std::size_t>(fs * 0.1)) worstStep = std::max(worstStep, static_cast<double>(std::fabs(frame[0] - previous)));
+            previous = frame[0];
+        }
+        char msg[160];
+        std::snprintf(msg, sizeof msg, "%.0f Hz: system -> built-in -> system fades (step %.4f, dry slope %.4f)", hz, worstStep, drySlope);
+        CHECK(worstStep < drySlope * 4.0, msg);
+        CHECK(gainAtSystem == 1.0 && gainAtBuiltIn == 0.0, "the external share follows the parameter");
+        CHECK(callsAfterBuiltIn == callsAtSwitch && renderer.calls > callsAfterBuiltIn,
+              "the renderer stops once built-in has taken over and resumes when handed back");
+    }
+}
+
 int main() {
     test_an_unused_renderer_is_a_pure_delay();
     test_the_renderer_takes_over_the_bed();
@@ -289,6 +428,8 @@ int main() {
     test_latency_is_reported_by_the_chain();
     test_the_ab_frame_path_still_renders_blocks();
     test_the_render_path_does_not_allocate();
+    test_a_renderer_lag_is_waited_for();
+    test_the_chain_parameter_chooses_the_renderer();
     if (g_failures == 0) std::printf("test_external_bed: all checks passed\n");
     return g_failures == 0 ? 0 : 1;
 }

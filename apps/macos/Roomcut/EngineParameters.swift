@@ -120,6 +120,7 @@ public struct EngineParameters: Equatable {
     public var surroundType: Double    // upmix: 0 = off, 2 = virtual 5.1, 3 = virtual 7.1
     public var centerWidth: Double   // upmix centre steering, 0..100
     public var surroundDepth: Double // upmix surround steering, 0..100
+    public var bedRenderer: Double   // headphone 5.1/7.1 bed: 0 = system renderer (Apple), 1 = built-in
     public var parametric: [ParametricBand]
 
     public init(preampDb: Double,
@@ -138,6 +139,7 @@ public struct EngineParameters: Equatable {
                 surroundType: Double = 0.0,
                 centerWidth: Double = 100.0,
                 surroundDepth: Double = 50.0,
+                bedRenderer: Double = 0.0,
                 parametric: [ParametricBand] = []) {
         self.preampDb = preampDb
         self.eqGainsDb = Array(eqGainsDb.prefix(Self.bandCount))
@@ -158,6 +160,7 @@ public struct EngineParameters: Equatable {
         self.surroundType = surroundType
         self.centerWidth = centerWidth
         self.surroundDepth = surroundDepth
+        self.bedRenderer = bedRenderer
         self.parametric = Array(parametric.prefix(Self.paramBandCount))
         if self.parametric.count < Self.paramBandCount {
             self.parametric.append(contentsOf:

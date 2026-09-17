@@ -98,7 +98,7 @@ static void testAnUnwritablePathFails() {
 
 static void testBedRendererIsChosenOnTheCommandLine() {
     EngineOptions options; std::string error;
-    CHECK(parse({"engine"}, options, error) && !options.systemBedRenderer, "the built-in bed renderer is the default");
+    CHECK(parse({"engine"}, options, error) && options.systemBedRenderer, "AUSpatialMixer is attached by default");
     CHECK(parse({"engine", "--bed-renderer", "system"}, options, error) && options.systemBedRenderer, "system selects AUSpatialMixer");
     CHECK(parse({"engine", "--bed-renderer", "builtin"}, options, error) && !options.systemBedRenderer, "builtin selects the stage's own render");
     EngineOptions refused; std::string why;

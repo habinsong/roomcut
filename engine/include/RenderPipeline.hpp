@@ -19,6 +19,7 @@ struct RenderMetrics {
     uint64_t inputFrames = 0;
     uint64_t shortfallFrames = 0;
     bool safeBypass = false;
+    float bedExternalGain = 0.0f;   // 0..1, see DSPChain::externalBedGain
 };
 
 // The engine's complete sample path, independent of Mach, CoreAudio and disk.
@@ -55,6 +56,8 @@ public:
     void setBypass(bool bypass) { dsp_.setBypass(bypass); }
     // Head orientation from the listener's headphones; see DSPChain::setHeadPose.
     void setHeadPose(double yawDegrees, bool active) { dsp_.setHeadPose(yawDegrees, active); }
+    // Listening tests: see SurroundStage::startProbe.
+    void startChannelProbe(int channel, double seconds, double levelDb) { dsp_.startChannelProbe(channel, seconds, levelDb); }
     double ratio() const { return resampler_.ratio(); }
     double resamplerLatencySeconds() const { return resampler_.latencySeconds(); }
     // What the engine adds on purpose, end to end: rate conversion plus the
@@ -86,6 +89,7 @@ public:
         }
         metrics_.limiterReductionDb = (float)dsp_.limiterGainReductionDb();
         metrics_.safeBypass = dsp_.safeBypassed();
+        metrics_.bedExternalGain = static_cast<float>(dsp_.externalBedGain());
         return metrics_;
     }
 

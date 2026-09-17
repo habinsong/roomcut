@@ -46,6 +46,7 @@
 #include <cmath>
 #include <cstddef>
 
+#include "ChannelProbe.hpp"
 #include "ExternalBed.hpp"
 #include "SpeakerColour.hpp"
 #include "Upmixer.hpp"
@@ -162,6 +163,7 @@ public:
         emphasisStep_ = 1.0 - std::exp(-1.0 / (fs_ * 0.012));
         for (auto& speaker : speaker_) speaker.prepare(fs_);
         upmix_.prepare(fs_);
+        probe_.prepare(fs_);
         for (auto& colour : colour_) colour.prepare(fs_);
         delay_ = std::min<std::size_t>(kSurroundLine - 2,
                     static_cast<std::size_t>(std::lround(fs_ * kSurroundDelayMs * 0.001)));
@@ -230,8 +232,21 @@ public:
     // output is delayed by latencyFrames(), in every mode, so nothing jumps in
     // time when the bed moves between the built-in render and the external one.
     void attachBedRenderer(BedRenderer* renderer) { external_.attach(renderer); }
+    // Whether the attached renderer should take the bed when it can (the
+    // default). Off hands it back to the built-in render over the same fade;
+    // the delay stays, so the two can be switched mid-programme.
+    void setPreferExternalBed(bool prefer) { preferExternal_ = prefer; }
     std::size_t latencyFrames() const { return external_.latencyFrames(); }
     double externalBedGain() const { return external_.externalGain(); }
+
+    // A pink-noise burst on one upmix channel instead of the programme's bed,
+    // for listening tests (ChannelProbe). Heard only while the stage renders a
+    // 5.1/7.1 bed for headphones; it skips the level match, so it arrives at
+    // the level asked for even over silence. The time runs either way. The
+    // programme already inside the diffuse bus still plays out over its first
+    // 32 ms.
+    void startProbe(int channel, double seconds, double levelDb) { probe_.start(channel, seconds, levelDb); }
+    bool probing() const { return probe_.active(); }
 
     void setHeadRadiusCm(double cm) {
         for (auto& speaker : speaker_) speaker.setHeadRadiusCm(cm);
@@ -252,15 +267,22 @@ public:
         dryEnergy_ = wetEnergy_ = 0.0;
         matchGain_ = 1.0;
         upmix_.reset();
+        probe_.stop();
         mix_ = enabled_ ? 1.0 : 0.0;
         external_.reset(layout_, externalWanted());
     }
 
     inline void processFrame(float* frame, std::size_t channels) {
         if (channels < 2) return;
+        const bool probing = probe_.active() && headphone_ && layout_ >= Upmixer::k51;
+        UpmixFrame probe;
+        if (probe_.active()) {
+            probe = probe_.next();
+            if (layout_ == Upmixer::k51) probe.backL = probe.backR = 0.0;   // no back pair to put it in
+        }
         if (external_.attached()) {
             double left = frame[0], right = frame[1];
-            external_.input(left, right, layout_, externalWanted(), yaw_);
+            external_.input(left, right, layout_, externalWanted(), yaw_, probing ? &probe : nullptr);
             frame[0] = static_cast<float>(left);
             frame[1] = static_cast<float>(right);
         }
@@ -291,7 +313,8 @@ public:
         const bool upmixing = layout_ >= Upmixer::k51;
         UpmixFrame up;
         if (upmixing) {
-            upmix_.process(dryL, dryR, up);
+            upmix_.process(dryL, dryR, up);   // keeps steering on the programme through a probe
+            if (probing) up = probe;
         } else {
             up.frontL = dryL;
             up.frontR = dryR;
@@ -299,6 +322,11 @@ public:
         double wetL = 0.0, wetR = 0.0;
         renderBed(up, wetL, wetR);
         if (external_.attached()) external_.substitute(wetL, wetR);
+        if (probing) {
+            frame[0] = static_cast<float>(wetL);
+            frame[1] = static_cast<float>(wetR);
+            return;
+        }
         if (upmixing) {
             // The match owns the level on this path, so it has to be the LAST
             // thing: a fixed bus gain applied after it would simply reappear as
@@ -356,7 +384,7 @@ private:
     static constexpr double k71Angles[7] = {0.0, -kBaseAngleDegrees, kBaseAngleDegrees,
                                             -90.0, 90.0, -135.0, 135.0};
 
-    bool externalWanted() const { return headphone_ && enabled_ && layout_ >= Upmixer::k51; }
+    bool externalWanted() const { return preferExternal_ && headphone_ && enabled_ && layout_ >= Upmixer::k51; }
 
     static std::size_t speakerCount(int layout) {
         return layout >= Upmixer::k71 ? 7u : (layout >= Upmixer::k51 ? 5u : 2u);
@@ -439,6 +467,7 @@ private:
     double mix_ = 0.0;
     bool enabled_ = false;
     bool headphone_ = true;
+    bool preferExternal_ = true;
     int layout_ = Upmixer::kOff;
     SpeakerColour colour_[kMaxSpeakers]{};
     // Long enough for the latest arrival (back pair plus its skew, 32 ms) at the
@@ -462,6 +491,7 @@ private:
     double farR_[kMaxSpeakers] = {1,1,1,1,1,1,1};
     double emphasisStep_ = 0.002;
     Upmixer upmix_{};
+    ChannelProbe probe_{};
     VirtualSpeaker speaker_[kMaxSpeakers]{};
     ExternalBed external_{};
 };

@@ -20,21 +20,23 @@ uint32_t applySoundCommand(const RoomcutControlMsgBuffer& request, EngineSoundSt
         const auto& live = sound.parameters();
         const bool carriesRoom = value.version >= 3;
         const bool carriesUpmix = value.version >= 4;
-        struct Space { double roomType, roomAmount, surroundType, centerWidth, surroundDepth; };
+        const bool carriesBedRenderer = value.version >= 5;
+        struct Space { double roomType, roomAmount, surroundType, centerWidth, surroundDepth, bedRenderer; };
         auto withSpace = [&](ChainParams p, const Space& space) {
             p.roomType = carriesRoom ? space.roomType : live.roomType;
             p.roomAmount = carriesRoom ? space.roomAmount : live.roomAmount;
             p.surroundType = carriesUpmix ? space.surroundType : live.surroundType;
             p.centerWidth = carriesUpmix ? space.centerWidth : live.centerWidth;
             p.surroundDepth = carriesUpmix ? space.surroundDepth : live.surroundDepth;
+            p.bedRenderer = carriesBedRenderer ? space.bedRenderer : live.bedRenderer;
             return p;
         };
         const Space referenceSpace{value.referenceRoomType, value.referenceRoomAmount,
                                    value.referenceSurroundType, value.referenceCenterWidth,
-                                   value.referenceSurroundDepth};
+                                   value.referenceSurroundDepth, value.referenceBedRenderer};
         const Space currentSpace{value.currentRoomType, value.currentRoomAmount,
                                  value.currentSurroundType, value.currentCenterWidth,
-                                 value.currentSurroundDepth};
+                                 value.currentSurroundDepth, value.currentBedRenderer};
         const auto reference = withSpace(decodeParameters(value.reference), referenceSpace);
         if (value.kind == ROOMCUT_COMPARISON_PRESET)
             return sound.applyPreset(value.presetId, &reference, value.enabled != 0) ? 0 : 1;

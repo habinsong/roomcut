@@ -30,9 +30,13 @@ RoomcutStateReply makeStateReply(const EngineSoundState& sound, const EngineStat
     reply.capabilities = ROOMCUT_CAP_SPATIAL_PARAMS | ROOMCUT_CAP_PARAMETRIC | ROOMCUT_CAP_ANALYZER
         | ROOMCUT_CAP_VOLUME_BOOST | ROOMCUT_CAP_DYNAMICS | ROOMCUT_CAP_LEVEL_MATCH
         | ROOMCUT_CAP_DYNAMIC_EQ | ROOMCUT_CAP_VIRTUAL_ROOM | ROOMCUT_CAP_HEAD_TRACKING
-        | ROOMCUT_CAP_UPMIX;
+        | ROOMCUT_CAP_UPMIX | ROOMCUT_CAP_BED_RENDERER;
     reply.volumeBoost = runtime.volumeBoost;
     reply.engineLatencyMs = runtime.engineLatencyMs;
+    reply.bedRenderer = runtime.bedRendererAttached ? 1 : 0;
+    reply.bedPersonalizedHrtf = runtime.bedPersonalizedHrtf ? 1 : 0;
+    reply.bedExternalGain = runtime.bedExternalGain;
+    reply.bedUnitRate = runtime.bedUnitRate;
     return reply;
 }
 
@@ -75,6 +79,8 @@ RoomcutComparisonReply makeComparisonReply(const EngineSoundState& sound, const 
     reply.referenceSurroundType = settings.reference.surroundType;
     reply.referenceCenterWidth = settings.reference.centerWidth;
     reply.referenceSurroundDepth = settings.reference.surroundDepth;
+    reply.currentBedRenderer = settings.current.bedRenderer;
+    reply.referenceBedRenderer = settings.reference.bedRenderer;
     return reply;
 }
 

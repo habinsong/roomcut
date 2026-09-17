@@ -181,6 +181,28 @@ kern_return_t controlSetHeadPose(mach_port_t servicePort, double yawDeg, bool ac
     return KERN_SUCCESS;
 }
 
+kern_return_t controlProbeChannel(mach_port_t servicePort, int channel, double seconds, double levelDb,
+                                  uint32_t timeoutMs, uint32_t* outStatus) {
+    RoomcutProbeChannelRequest req;
+    std::memset(&req, 0, sizeof(req));
+    req.msgType = ROOMCUT_MSG_PROBE_CHANNEL;
+    req.channel = channel;
+    req.seconds = seconds;
+    req.levelDb = levelDb;
+
+    RoomcutControlMsgBuffer buf;
+    kern_return_t kr = requestReply(servicePort, &req.header, sizeof(req),
+                                    ROOMCUT_MSG_PROBE_CHANNEL, &buf, timeoutMs);
+    if (kr != KERN_SUCCESS) {
+        return kr;
+    }
+    if (buf.reply.msgType != ROOMCUT_MSG_PROBE_CHANNEL) {
+        return KERN_FAILURE;
+    }
+    if (outStatus) *outStatus = buf.reply.status;
+    return KERN_SUCCESS;
+}
+
 kern_return_t controlSetParams(mach_port_t servicePort,
                                double preampDb, const double* eqGainsDb,
                                double limiterReleaseMs,
@@ -190,6 +212,7 @@ kern_return_t controlSetParams(mach_port_t servicePort,
                                double highpassHz, double compAmount,
                                double roomType, double roomAmount,
                                double surroundType, double centerWidth, double surroundDepth,
+                               double bedRenderer,
                                const RoomcutParamBand* parametric,
                                const RoomcutParamDynamics* dynamics,
                                uint32_t timeoutMs, uint32_t* outStatus) {
@@ -217,6 +240,7 @@ kern_return_t controlSetParams(mach_port_t servicePort,
     req.surroundType     = surroundType;
     req.centerWidth    = centerWidth;
     req.surroundDepth  = surroundDepth;
+    req.bedRenderer    = bedRenderer;
     if (parametric != nullptr) {
         for (int b = 0; b < ROOMCUT_PARAM_BANDS; ++b) req.parametric[b] = parametric[b];
     }
@@ -319,10 +343,11 @@ kern_return_t controlSetComparison(mach_port_t servicePort, RoomcutComparisonReq
         ? ROOMCUT_COMPARISON_MIN_VERSION
         : (peerVersion > ROOMCUT_COMPARISON_VERSION ? ROOMCUT_COMPARISON_VERSION : peerVersion);
     request.version = version;
-    const mach_msg_size_t size = version >= 4
+    const mach_msg_size_t size = version >= 5
         ? static_cast<mach_msg_size_t>(sizeof(request))
-        : (version >= 3 ? static_cast<mach_msg_size_t>(offsetof(RoomcutComparisonRequest, currentSurroundType))
-                        : static_cast<mach_msg_size_t>(offsetof(RoomcutComparisonRequest, currentRoomType)));
+        : version >= 4 ? static_cast<mach_msg_size_t>(offsetof(RoomcutComparisonRequest, currentBedRenderer))
+        : version >= 3 ? static_cast<mach_msg_size_t>(offsetof(RoomcutComparisonRequest, currentSurroundType))
+                       : static_cast<mach_msg_size_t>(offsetof(RoomcutComparisonRequest, currentRoomType));
     RoomcutControlMsgBuffer buffer;
     const auto result = requestReply(servicePort, &request.header, size,
                                      ROOMCUT_MSG_SET_COMPARISON, &buffer, timeoutMs);

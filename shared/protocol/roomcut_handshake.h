@@ -37,6 +37,7 @@
 #define ROOMCUT_CAP_VIRTUAL_ROOM   0x00000080u /* roomType/roomAmount on the wire */
 #define ROOMCUT_CAP_HEAD_TRACKING  0x00000100u /* SET_HEAD_POSE + head-tracked render */
 #define ROOMCUT_CAP_UPMIX          0x00000200u /* surroundType/center+surroundDepth on the wire */
+#define ROOMCUT_CAP_BED_RENDERER   0x00000400u /* bedRenderer on the wire + bed renderer status */
 
 /* Driver → engine: request the handoff. Sent to the engine's service port;
  * header.msgh_local_port carries a reply send-once right. */
@@ -270,6 +271,9 @@ typedef struct {
     double            surroundType;     /* 0 = off, 2 = virtual 5.1, 3 = virtual 7.1 */
     double            centerWidth;    /* -12..+6 */
     double            surroundDepth;  /* -12..+6 */
+    /* Headphone bed renderer (ROOMCUT_CAP_BED_RENDERER), appended: an older
+     * sender leaves it 0, which is the default — the system renderer. */
+    double            bedRenderer;    /* 0 = system (AUSpatialMixer) where attached, 1 = built-in */
 } RoomcutSetParamsRequest;
 
 /* Live head orientation from the listener's headphones. Unlike every other
@@ -282,6 +286,19 @@ typedef struct {
     uint32_t          active;    /* 0 = tracker not delivering; render goes dry */
     double            yawDeg;    /* + = listener turned right */
 } RoomcutSetHeadPoseRequest;
+
+/* Listening tests (PRD P0-4): a pink-noise burst on one channel of the
+ * headphone upmix in place of the programme, at a fixed level, through the
+ * live renderer, room and head tracking. Heard only while the chain renders a
+ * 5.1/7.1 headphone bed. channel 0-6 = C, L, R, Ls, Rs, Lb, Rb (Lb/Rb are
+ * silent in 5.1); any other channel stops a burst that is running. */
+typedef struct {
+    mach_msg_header_t header;
+    uint32_t          msgType;   /* ROOMCUT_MSG_PROBE_CHANNEL */
+    int32_t           channel;
+    double            seconds;   /* (0, 10] */
+    double            levelDb;   /* RMS dBFS on the channel, [-60, 0] */
+} RoomcutProbeChannelRequest;
 
 /* Acknowledgement for SET_* requests. */
 typedef struct {
@@ -330,6 +347,12 @@ typedef struct {
      * resampler's group delay. Appended (see RoomcutSetParamsRequest); 0 from an
      * engine that predates the field, which reads as "not reported". */
     double            engineLatencyMs;
+    /* Headphone bed renderer status (ROOMCUT_CAP_BED_RENDERER), appended; an
+     * older engine leaves all of it 0, which reads as "built-in only". */
+    uint32_t          bedRenderer;          /* 0 = built-in only, 1 = AUSpatialMixer attached */
+    uint32_t          bedPersonalizedHrtf;  /* 1 = the unit reports a personalized HRTF in use */
+    float             bedExternalGain;      /* 0..1 of the bed the attached renderer renders now */
+    float             bedUnitRate;          /* Hz the units run at; 0 without one */
 } RoomcutStateReply;
 
 typedef struct {
@@ -360,6 +383,8 @@ typedef struct {
     double            surroundType;
     double            centerWidth;
     double            surroundDepth;
+    /* Headphone bed renderer — appended (see RoomcutSetParamsRequest). */
+    double            bedRenderer;
 } RoomcutGetParamsReply;
 
 typedef struct {
@@ -391,12 +416,12 @@ typedef struct {
 
 /* A complete A/B update is one transaction. Existing SET_PARAMS layouts stay
  * unchanged; the new payload is versioned independently of the driver ring. */
-/* 2 added RoomcutParamDynamics. 3 adds the virtual room and 4 the upmix — both
- * appended AFTER the two parameter blocks, never inside them:
+/* 2 added RoomcutParamDynamics. 3 adds the virtual room, 4 the upmix and 5 the
+ * bed renderer — all appended AFTER the two parameter blocks, never inside them:
  * RoomcutParameterValues sits twice in a row, so growing it would shift
  * `reference` and break every size-compatible peer. An older peer simply
  * sends/receives the shorter message. */
-#define ROOMCUT_COMPARISON_VERSION 4u
+#define ROOMCUT_COMPARISON_VERSION 5u
 #define ROOMCUT_COMPARISON_MIN_VERSION 2u /* still accept a peer without the room */
 #define ROOMCUT_COMPARISON_PARAMETERS 0u
 #define ROOMCUT_COMPARISON_PRESET 1u
@@ -441,6 +466,10 @@ typedef struct {
     double referenceSurroundType;
     double referenceCenterWidth;
     double referenceSurroundDepth;
+    /* Bed renderer for each side (version 5+). A version-4 sender omits these
+     * and the engine keeps whichever renderer is already playing. */
+    double currentBedRenderer;
+    double referenceBedRenderer;
 } RoomcutComparisonRequest;
 
 typedef struct {
@@ -474,6 +503,9 @@ typedef struct {
     double referenceSurroundType;
     double referenceCenterWidth;
     double referenceSurroundDepth;
+    /* Bed renderer per side (version 5+), appended — see the request. */
+    double currentBedRenderer;
+    double referenceBedRenderer;
 } RoomcutComparisonReply;
 
 typedef union {
@@ -484,6 +516,7 @@ typedef union {
     RoomcutSetVolumeBoostRequest setVolumeBoost;
     RoomcutSetParamsRequest setParams;
     RoomcutSetHeadPoseRequest setHeadPose;
+    RoomcutProbeChannelRequest probeChannel;
     RoomcutStateRequest     stateRequest;
     RoomcutGetParamsRequest getParams;
     RoomcutAnalysisRequest  analysisRequest;

@@ -85,7 +85,8 @@ typedef enum {
     ROOMCUT_MSG_SET_VOLUME_BOOST = 12,
     ROOMCUT_MSG_SET_COMPARISON = 13,
     ROOMCUT_MSG_GET_COMPARISON = 14,
-    ROOMCUT_MSG_SET_HEAD_POSE  = 15  /* app -> engine: live head orientation */
+    ROOMCUT_MSG_SET_HEAD_POSE  = 15, /* app -> engine: live head orientation */
+    ROOMCUT_MSG_PROBE_CHANNEL  = 16  /* CLI -> engine: listening-test burst on one upmix channel */
 } RoomcutMsgType;
 
 typedef enum {

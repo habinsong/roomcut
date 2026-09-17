@@ -66,15 +66,16 @@ sed \
   -e "s|__ERR_LOG__|${ERR_LOG}|g" \
   "${PLIST_TEMPLATE}" > "${TMP_PLIST}"
 plutil -lint "${TMP_PLIST}" >/dev/null
-# ROOMCUT_BED_RENDERER=system routes the headphone upmix through AUSpatialMixer
-# (engine flag --bed-renderer). Unset or builtin keeps the stage's own render.
-case "${ROOMCUT_BED_RENDERER:-builtin}" in
-  builtin) ;;
-  system)
+# The engine attaches AUSpatialMixer to the headphone upmix by default (each
+# parameter set can still pick the built-in bed). ROOMCUT_BED_RENDERER=builtin
+# does not attach it at all (engine flag --bed-renderer builtin).
+case "${ROOMCUT_BED_RENDERER:-system}" in
+  system) ;;
+  builtin)
     plutil -insert ProgramArguments.1 -string "--bed-renderer" "${TMP_PLIST}"
-    plutil -insert ProgramArguments.2 -string "system" "${TMP_PLIST}"
+    plutil -insert ProgramArguments.2 -string "builtin" "${TMP_PLIST}"
     plutil -lint "${TMP_PLIST}" >/dev/null
-    echo "engine: headphone upmix rendered by AUSpatialMixer (--bed-renderer system)"
+    echo "engine: AUSpatialMixer not attached (--bed-renderer builtin)"
     ;;
   *)
     echo "error: ROOMCUT_BED_RENDERER must be system or builtin, got '${ROOMCUT_BED_RENDERER}'" >&2

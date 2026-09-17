@@ -31,6 +31,7 @@ static void testParameterCodec() {
     params.surroundType = 3;
     params.centerWidth = 62.5;
     params.surroundDepth = 37.5;
+    params.bedRenderer = 1;
     params.parametric[1].enabled = true;
     params.parametric[1].freqHz = 1234.125;
     params.parametric[1].gainDb = -2.5;
@@ -119,6 +120,17 @@ static void testParameterCodec() {
     CHECK(stale.centerWidth == ChainParams{}.centerWidth
           && stale.surroundDepth == ChainParams{}.surroundDepth,
           "but its steering values are ignored, not adopted as 0");
+
+    // A file from before the bed renderer (schema marker, nothing after it)
+    // keeps the default renderer; one written now brings its choice back.
+    ChainParams preBed;
+    CHECK(parseParamsLine("0 0 0 0 0 0 0 0 0 0 0 100 0 30 40 15 10 1 80 25 2 65 3 62.5 37.5 1", &preBed),
+          "a params line from before the bed renderer still loads");
+    CHECK(preBed.centerWidth == 62.5 && preBed.bedRenderer == ChainParams{}.bedRenderer,
+          "and keeps the default renderer");
+    ChainParams withBed;
+    CHECK(parseParamsLine("0 0 0 0 0 0 0 0 0 0 0 100 0 30 40 15 10 1 80 25 2 65 3 62.5 37.5 1 1", &withBed)
+          && withBed.bedRenderer == 1, "a saved built-in renderer comes back");
 }
 
 static void testStore(const std::filesystem::path& directory) {

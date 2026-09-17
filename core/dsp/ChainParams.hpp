@@ -43,6 +43,11 @@ struct ChainParams {
     // wider still (-0.43) and tracks less; the control is there to choose.
     double centerWidth = 100.0;
     double surroundDepth = 50.0;
+    // Who renders the headphone 5.1/7.1 bed: 0 = the system renderer
+    // (AUSpatialMixer) wherever the engine has one attached, 1 = the built-in
+    // virtual speakers. 0 is the default so that a sender which predates the
+    // field gets the system renderer. Speakers and plain stereo never use it.
+    double bedRenderer = 0.0;
     std::array<ParametricBand, ParametricEQ::kNumBands> parametric{}; // user EQ bands
 
     // Flat: unity everywhere (eqGainsDb default-initialized to 0).
@@ -57,7 +62,7 @@ struct ChainParams {
             && compAmount == other.compAmount && roomType == other.roomType
             && roomAmount == other.roomAmount && surroundType == other.surroundType
             && centerWidth == other.centerWidth && surroundDepth == other.surroundDepth
-            && parametric == other.parametric;
+            && bedRenderer == other.bedRenderer && parametric == other.parametric;
     }
 };
 

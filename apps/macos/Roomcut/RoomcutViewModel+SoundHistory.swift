@@ -69,6 +69,7 @@ extension RoomcutViewModel {
             value.centerWidth = centerWidth
             value.surroundDepth = surroundDepth
         }
+        if !snapshot.carriesBedRenderer { value.bedRenderer = bedRenderer }
         return value
     }
 
@@ -88,6 +89,7 @@ extension RoomcutViewModel {
                 parameters.centerWidth = centerWidth
                 parameters.surroundDepth = surroundDepth
             }
+            if !value.carriesBedRenderer { parameters.bedRenderer = bedRenderer }
             return (parameters, value)
         }
         return (try await client.getParams(), nil)

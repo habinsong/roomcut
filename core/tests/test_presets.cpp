@@ -145,6 +145,19 @@ static void test_virtual_room_is_a_finite_enum() {
         CHECK(clamped.surroundDepth >= 0.0 && clamped.surroundDepth <= 100.0,
               "surround depth is clamped to 0..100");
     }
+    for (double renderer : {std::nan(""), -1.0, 2.0, 0.5, 1e100}) {
+        auto params = ChainParams::flat();
+        params.bedRenderer = renderer;
+        CHECK(!PresetValidator::validate(params).ok, "invalid bed renderers are rejected");
+        const auto clamped = PresetValidator::clamp(params);
+        CHECK(PresetValidator::validate(clamped).ok && (clamped.bedRenderer == 0.0 || clamped.bedRenderer == 1.0),
+              "bed-renderer clamp lands on 0 or 1");
+    }
+    for (double renderer : {0.0, 1.0}) {
+        auto params = ChainParams::flat();
+        params.bedRenderer = renderer;
+        CHECK(PresetValidator::validate(params).ok, "both bed renderers are valid");
+    }
 }
 
 int main() {

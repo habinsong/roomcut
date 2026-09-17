@@ -162,6 +162,10 @@ public final class LiveEngineClient: EngineClientProtocol {
             Self.rememberComparisonVersion(for: c.capabilities)
             s.volumeBoost = c.volumeBoost
             s.engineLatencyMs = c.engineLatencyMs
+            s.systemBedRenderer = c.bedRenderer != 0
+            s.bedPersonalizedHrtf = c.bedPersonalizedHrtf != 0
+            s.bedExternalGain = c.bedExternalGain
+            s.bedUnitRate = c.bedUnitRate
             return s
         }
     }
@@ -193,7 +197,8 @@ public final class LiveEngineClient: EngineClientProtocol {
     private nonisolated(unsafe) static var comparisonVersion: UInt32 = 2
 
     static func rememberComparisonVersion(for capabilities: UInt32) {
-        let version: UInt32 = (capabilities & UInt32(ROOMCUT_CLIENT_CAP_UPMIX)) != 0 ? 4
+        let version: UInt32 = (capabilities & UInt32(ROOMCUT_CLIENT_CAP_BED_RENDERER)) != 0 ? 5
+            : (capabilities & UInt32(ROOMCUT_CLIENT_CAP_UPMIX)) != 0 ? 4
             : ((capabilities & UInt32(ROOMCUT_CLIENT_CAP_VIRTUAL_ROOM)) != 0 ? 3 : 2)
         comparisonVersionLock.lock()
         comparisonVersion = version
@@ -320,6 +325,7 @@ public final class LiveEngineClient: EngineClientProtocol {
                         params.surroundType,
                         params.centerWidth,
                         params.surroundDepth,
+                        params.bedRenderer,
                         pbuf.baseAddress,
                         dbuf.baseAddress
                     )

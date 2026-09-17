@@ -84,6 +84,11 @@ public:
         for (auto& chain : chains_) chain.setHeadPose(yawDegrees, active);
     }
 
+    // Both chains, so an A/B swap mid-burst keeps the same burst.
+    void startChannelProbe(int channel, double seconds, double levelDb) {
+        for (auto& chain : chains_) chain.startChannelProbe(channel, seconds, levelDb);
+    }
+
     void setBypass(bool bypassed) {
         if (bypassed_ == bypassed) return;
         bypassed_ = bypassed;
@@ -115,6 +120,8 @@ public:
 
     const ChainParams& params() const { return settings_.current; }
     bool safeBypassed() const { return chains_[current_].safeBypassed(); }
+    // The audible chain's share of external bed rendering (see DSPChain).
+    double externalBedGain() const { return chains_[current_].externalBedGain(); }
     double limiterGainReductionDb() const {
         if (selection_.current() != current_)
             return std::max(chains_[0].limiterGainReductionDb(), chains_[1].limiterGainReductionDb());

@@ -24,7 +24,7 @@ public struct SoundSnapshot: Equatable {
             highpassHz: preset.highpassHz, compAmount: preset.compAmount,
             roomType: preset.roomType, roomAmount: preset.roomAmount,
             surroundType: preset.surroundType, centerWidth: preset.centerWidth,
-            surroundDepth: preset.surroundDepth, parametric: preset.parametric),
+            surroundDepth: preset.surroundDepth, bedRenderer: preset.bedRenderer, parametric: preset.parametric),
             macros: Dictionary(uniqueKeysWithValues: preset.eqMacros.compactMap { key, value in
                 EqMacro(rawValue: key).map { ($0, value) }
             }), savedPresetName: preset.builtin ? nil : preset.name,
@@ -41,7 +41,7 @@ public struct SoundSnapshot: Equatable {
             highpassHz: p.highpassHz, compAmount: p.compAmount,
             roomType: p.roomType, roomAmount: p.roomAmount,
             surroundType: p.surroundType, centerWidth: p.centerWidth,
-            surroundDepth: p.surroundDepth, folder: folder, roomTuneInfo: roomTuneInfo)
+            surroundDepth: p.surroundDepth, bedRenderer: p.bedRenderer, folder: folder, roomTuneInfo: roomTuneInfo)
     }
 
     static func clamp(_ value: Double, _ minimum: Double, _ maximum: Double) -> Double {
@@ -59,7 +59,7 @@ extension EngineParameters {
             roomReduce: roomReduce, spatialMode: spatialMode, highpassHz: highpassHz,
             compAmount: compAmount, roomType: roomType, roomAmount: roomAmount,
             surroundType: surroundType, centerWidth: centerWidth,
-            surroundDepth: surroundDepth, parametric: parametric)
+            surroundDepth: surroundDepth, bedRenderer: bedRenderer, parametric: parametric)
         let clamp = SoundSnapshot.clamp
         p.preampDb = clamp(p.preampDb, -24, 12)
         p.outputGainDb = clamp(p.outputGainDb, -24, 12)
@@ -79,6 +79,7 @@ extension EngineParameters {
         if p.surroundType == 1 { p.surroundType = 0 }
         p.centerWidth = clamp(p.centerWidth, 0, 100)
         p.surroundDepth = clamp(p.surroundDepth, 0, 100)
+        p.bedRenderer = clamp(p.bedRenderer, 0, 1).rounded()
         p.parametric = p.parametric.map { band in
             let tonal = (0...2).contains(band.type)
             return ParametricBand(enabled: band.enabled, type: (0...5).contains(band.type) ? band.type : 0,
@@ -102,6 +103,7 @@ extension EngineParameters {
         // clearing them keeps the UI honest about what is actually playing.
         if !status.supportsVirtualRoom { p.roomType = 0 }
         if !status.supportsUpmix { p.surroundType = 0 }
+        if !status.supportsBedRenderer { p.bedRenderer = 0 }
         if !status.supportsDynamicEq {
             p.parametric = p.parametric.map {
                 var band = $0; band.dynamic = false; return band

@@ -71,6 +71,10 @@ public final class RoomcutViewModel: ObservableObject {
         get { editor.snapshot.parameters.surroundDepth }
         set { editor.update { $0.parameters.surroundDepth = newValue } }
     }
+    public var bedRenderer: Double {
+        get { editor.snapshot.parameters.bedRenderer }
+        set { editor.update { $0.parameters.bedRenderer = newValue } }
+    }
     public var compAmount: Double {
         get { editor.snapshot.parameters.compAmount }
         set { editor.update { $0.parameters.compAmount = newValue } }
@@ -181,7 +185,8 @@ public final class RoomcutViewModel: ObservableObject {
         }
         editor.relabel(saved: presetStore.activeSavedName.flatMap { presetStore.contains($0) ? $0 : nil },
                        builtin: presetStore.activeBuiltinID.flatMap { id in
-                           client.presets.contains { $0.id == id } || PresetLibrary.preset(for: id) != nil ? id : nil
+                           client.presets.contains { $0.id == id } || PresetLibrary.preset(for: id) != nil
+                               ? PresetLibrary.currentToken(id) : nil
                        })
         for publisher in [editor.objectWillChange, writer.objectWillChange, presetStore.objectWillChange,
                           preferences.objectWillChange, headTracking.objectWillChange] {
@@ -278,7 +283,7 @@ public final class RoomcutViewModel: ObservableObject {
             editsUnchanged: editRevision == editor.revision && writeRevision == writer.revision,
             lastSeenPresetId: lastSeenPresetId, lastSeenRevision: lastSeenRevision,
             deviceAutoPreset: deviceAutoPresetEnabled,
-            mappedPresetToken: presetStore.deviceMap[nextStatus.outputDeviceUID],
+            mappedPresetToken: presetStore.deviceMap[nextStatus.outputDeviceUID].map(PresetLibrary.currentToken),
             pickerSelection: presetPickerSelection,
             didClaimDefault: didClaimDefaultOutput,
             analyzerVisible: analyzerVisible, hasAnalysis: analysis != nil,

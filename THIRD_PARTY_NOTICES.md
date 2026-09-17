@@ -71,8 +71,11 @@ Lyrics belong to their respective owners.
 
 ## Apple
 
-Roomcut builds against Apple's public Core Audio, AudioUnit, AppKit, and SwiftUI
-APIs and uses SF Symbols under Apple's terms. Roomcut's Now Playing helper
+Roomcut builds against Apple's public Core Audio, AudioUnit, AudioToolbox,
+AVFoundation, CoreMotion, AppKit, and SwiftUI APIs and uses SF Symbols under
+Apple's terms. The headphone 5.1/7.1 bed is rendered at runtime by macOS's own
+`AUSpatialMixer` audio unit; Roomcut neither contains nor redistributes its
+HRTF data. Roomcut's Now Playing helper
 additionally resolves the private MediaRemote framework at runtime; because that
 API is private, this feature may break on any macOS update and rules out Mac App
 Store distribution. Roomcut is not affiliated with, authorized by, or endorsed by

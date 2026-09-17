@@ -14,9 +14,11 @@ struct EngineOptions {
     std::string dumpPath;                       // empty = no capture
     ChainParams params = ChainParams::flat();
     bool eqGiven = false;                       // --eq wins over the resumed state
-    // --bed-renderer system: the headphone upmix goes through AUSpatialMixer
-    // (SpatialMixerBedRenderer). Off by default until listening decides (P0 G1).
-    bool systemBedRenderer = false;
+    // The headphone upmix goes through AUSpatialMixer (SpatialMixerBedRenderer)
+    // wherever it opens — the default since P0 G1; each parameter set can still
+    // pick the built-in bed (ChainParams::bedRenderer), which is how A/B
+    // compares the two. --bed-renderer builtin does not attach it at all.
+    bool systemBedRenderer = true;
 
     bool dumping() const { return !dumpPath.empty(); }
 };

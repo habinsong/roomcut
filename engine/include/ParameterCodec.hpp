@@ -17,6 +17,9 @@ template<class Wire> inline constexpr bool hasVirtualRoom = HasVirtualRoom<Wire>
 template<class Wire, class = void> struct HasUpmix : std::false_type {};
 template<class Wire> struct HasUpmix<Wire, std::void_t<decltype(Wire::surroundType)>> : std::true_type {};
 template<class Wire> inline constexpr bool hasUpmix = HasUpmix<Wire>::value;
+template<class Wire, class = void> struct HasBedRenderer : std::false_type {};
+template<class Wire> struct HasBedRenderer<Wire, std::void_t<decltype(Wire::bedRenderer)>> : std::true_type {};
+template<class Wire> inline constexpr bool hasBedRenderer = HasBedRenderer<Wire>::value;
 template<class Wire> ChainParams decodeParameters(const Wire& value) {
     ChainParams result;
     result.preampDb = value.preampDb;
@@ -39,6 +42,7 @@ template<class Wire> ChainParams decodeParameters(const Wire& value) {
         result.centerWidth = value.centerWidth;
         result.surroundDepth = value.surroundDepth;
     }
+    if constexpr (hasBedRenderer<Wire>) result.bedRenderer = value.bedRenderer;
     for (std::size_t b = 0; b < result.parametric.size(); ++b) {
         const auto& band = value.parametric[b];
         const auto& dyn = value.dynamics[b];
@@ -70,6 +74,7 @@ template<class Wire> void encodeParameters(const ChainParams& value, Wire& resul
         result.centerWidth = value.centerWidth;
         result.surroundDepth = value.surroundDepth;
     }
+    if constexpr (hasBedRenderer<Wire>) result.bedRenderer = value.bedRenderer;
     for (std::size_t b = 0; b < value.parametric.size(); ++b) {
         const auto& band = value.parametric[b];
         result.parametric[b].enabled = band.enabled ? 1 : 0;

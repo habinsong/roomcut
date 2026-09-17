@@ -72,6 +72,10 @@
         "surroundDepth": {
           "description": "How much of the ambient part of the programme is steered behind the listener rather than left in front. 50 is the balance point between envelopment and the head-tracking cue.",
           "type": "number", "minimum": 0, "maximum": 100, "default": 50
+        },
+        "bedRenderer": {
+          "description": "Who renders the headphone 5.1/7.1 bed: 0 the system renderer (AUSpatialMixer) where the engine has one, 1 the built-in virtual speakers.",
+          "type": "integer", "minimum": 0, "maximum": 1, "default": 0
         }
       }
     },

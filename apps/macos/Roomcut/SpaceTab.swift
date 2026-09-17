@@ -195,8 +195,20 @@ struct SpaceTab: View {
                 sliderRow(L("Surround Depth", "Surround Depth", "サラウンド深度", "Profondeur surround", "Surround-Tiefe"),
                           value: model.surroundDepth, in: 0...100) { model.setSurroundDepth($0) }
             }
+            // Apple's renderer or the built-in one — where both can play, so A/B
+            // can put one on each side.
+            if model.bedRendererChoiceAvailable {
+                glassSegmented(RoomcutViewModel.BedRendererChoice.allCases.map(bedRendererLabel),
+                               selected: model.bedRendererChoice.rawValue,
+                               group: "bed-renderer") { idx in
+                    guard let choice = RoomcutViewModel.BedRendererChoice(rawValue: idx) else { return }
+                    model.setBedRendererChoice(choice)
+                }
+                .padding(.horizontal, 12).padding(.vertical, 4)
+            }
         }
         .animation(motion, value: model.surroundType)
+        .animation(motion, value: model.bedRendererChoiceAvailable)
         .animation(motion, value: model.surroundChoices)
     }
 
@@ -347,6 +359,13 @@ struct SpaceTab: View {
         .background(Capsule().fill(.quaternary))
         .help(L("정면 재설정", "Recentre", "正面をリセット", "Recentrer", "Neu zentrieren"))
         .accessibilityLabel(L("정면 재설정", "Recentre", "正面をリセット", "Recentrer", "Neu zentrieren"))
+    }
+
+    private func bedRendererLabel(_ choice: RoomcutViewModel.BedRendererChoice) -> String {
+        switch choice {
+        case .system: return "Apple"
+        case .builtIn: return L("Built-in", "Built-in", "内蔵", "Intégré", "Integriert")
+        }
     }
 
     private func surroundLabel(_ choice: RoomcutViewModel.SurroundChoice) -> String {

@@ -32,6 +32,8 @@ public struct EngineComparisonState: Equatable {
     public var carriesVirtualRoom: Bool = true
     // Same again for the upmix, which was appended one version later.
     public var carriesUpmix: Bool = true
+    // And for the bed renderer, one version after that.
+    public var carriesBedRenderer: Bool = true
 
     public init(current: EngineParameters = .flat, reference: EngineParameters = .flat,
                 presetID: String = "custom", enabled: Bool = false, state: LevelMatchState = .disabled,
@@ -54,6 +56,7 @@ public struct EngineComparisonState: Equatable {
                   currentReductionDb: native.currentReductionDb, referenceReductionDb: native.referenceReductionDb)
         self.carriesVirtualRoom = native.payloadVersion >= 3
         self.carriesUpmix = native.payloadVersion >= 4
+        self.carriesBedRenderer = native.payloadVersion >= 5
     }
 }
 
@@ -107,7 +110,7 @@ extension EngineParameters {
                   highpassHz: native.highpassHz, compAmount: native.compAmount,
                   roomType: native.roomType, roomAmount: native.roomAmount,
                   surroundType: native.surroundType, centerWidth: native.centerWidth,
-                  surroundDepth: native.surroundDepth, parametric: bands)
+                  surroundDepth: native.surroundDepth, bedRenderer: native.bedRenderer, parametric: bands)
     }
 
     func nativeValues() -> RoomcutClientParams {
@@ -121,6 +124,7 @@ extension EngineParameters {
         result.roomType = value.roomType; result.roomAmount = value.roomAmount
         result.surroundType = value.surroundType; result.centerWidth = value.centerWidth
         result.surroundDepth = value.surroundDepth
+        result.bedRenderer = value.bedRenderer
         withUnsafeMutableBytes(of: &result.eqGainsDb) { bytes in
             let gains = bytes.bindMemory(to: Double.self)
             for b in 0..<Self.bandCount { gains[b] = value.eqGainsDb[b] }

@@ -249,6 +249,30 @@ extension RoomcutViewModel {
         schedulePushParams(preservingPresetSelection: true)
     }
 
+    // Who renders a headphone 5.1/7.1 bed: Apple's spatial renderer where the
+    // engine has one attached, or the built-in virtual speakers. A choice only
+    // exists where both could play — headphones, an actual layout, and an engine
+    // that reports the system renderer — so that A/B can compare the two.
+    public enum BedRendererChoice: Int, CaseIterable, Sendable { case system = 0, builtIn = 1 }
+
+    public var bedRendererChoice: BedRendererChoice { bedRenderer >= 1 ? .builtIn : .system }
+
+    public var bedRendererChoiceAvailable: Bool {
+        upmixAvailable && spatialOutputIsHeadphone && surroundType >= 2
+            && status.supportsBedRenderer && status.systemBedRenderer
+    }
+
+    // Whether this sound's headphone bed goes to Apple's renderer: the engine has
+    // one attached and the sound has not picked the built-in bed. (Whether a bed
+    // renders at all is the layout and output, shown elsewhere.)
+    public var systemBedInUse: Bool { status.systemBedRenderer && bedRendererChoice == .system }
+
+    public func setBedRendererChoice(_ choice: BedRendererChoice) {
+        guard ensureSpatialAvailable() else { return }
+        bedRenderer = Double(choice.rawValue)
+        schedulePushParams(preservingPresetSelection: true)
+    }
+
     public func setRoomType(_ type: Double) {
         guard ensureSpatialAvailable() else { return }
         let t = type.rounded()

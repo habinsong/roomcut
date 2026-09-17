@@ -59,6 +59,7 @@ kern_return_t controlSetParams(mach_port_t servicePort,
                                double highpassHz, double compAmount,
                                double roomType, double roomAmount,
                                double surroundType, double centerWidth, double surroundDepth,
+                               double bedRenderer,
                                const RoomcutParamBand* parametric,
                                const RoomcutParamDynamics* dynamics,
                                uint32_t timeoutMs, uint32_t* outStatus);
@@ -67,6 +68,11 @@ kern_return_t controlSetParams(mach_port_t servicePort,
 // `active` false tells the engine the tracker stopped delivering.
 kern_return_t controlSetHeadPose(mach_port_t servicePort, double yawDeg, bool active,
                                  uint32_t timeoutMs, uint32_t* outStatus);
+
+// Listening tests: a burst on one headphone upmix channel (see
+// RoomcutProbeChannelRequest). A channel outside 0-6 stops it.
+kern_return_t controlProbeChannel(mach_port_t servicePort, int channel, double seconds, double levelDb,
+                                  uint32_t timeoutMs, uint32_t* outStatus);
 
 // Fetch the engine status snapshot.
 kern_return_t controlGetState(mach_port_t servicePort, uint32_t timeoutMs,

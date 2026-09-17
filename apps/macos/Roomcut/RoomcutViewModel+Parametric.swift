@@ -66,6 +66,31 @@ extension RoomcutViewModel {
     }
     public var dynamicEqAvailable: Bool { status.reachable && status.supportsDynamicEq }
 
+    // A measured response from a file becomes the parametric bands that flatten
+    // it: all six replaced, the unused ones off. Nil, with the banner saying why,
+    // when the file gives nothing to fit.
+    public func importMeasurement(_ data: Data) -> MeasurementCorrection? {
+        guard ensureParametricAvailable() else { return nil }
+        do {
+            let correction = try MeasurementCorrection.fit(data, sampleRate: audioFormat?.sampleRate ?? 48000)
+            for (index, band) in correction.bands.enumerated() { setParametricBand(index, band) }
+            return correction
+        } catch MeasurementCorrection.Failure.outOfRange {
+            errorBanner = L("측정 곡선이 20 Hz – 16 kHz를 충분히 덮지 않습니다",
+                            "The measurement does not cover enough of 20 Hz – 16 kHz",
+                            "測定カーブが 20 Hz – 16 kHz を十分にカバーしていません",
+                            "La mesure ne couvre pas assez la plage 20 Hz – 16 kHz",
+                            "Die Messung deckt 20 Hz – 16 kHz nicht ausreichend ab")
+        } catch {
+            errorBanner = L("주파수·dB 두 열을 읽을 수 없는 파일입니다",
+                            "No frequency and dB columns could be read from the file",
+                            "周波数と dB の列を読み取れないファイルです",
+                            "Impossible de lire des colonnes fréquence et dB dans ce fichier",
+                            "Aus der Datei ließen sich keine Frequenz- und dB-Spalten lesen")
+        }
+        return nil
+    }
+
     private func ensureParametricAvailable() -> Bool {
         guard parametricAvailable else {
             errorBanner = status.reachable ? "현재 엔진이 Parametric EQ를 지원하지 않습니다" : "연결 끊김"

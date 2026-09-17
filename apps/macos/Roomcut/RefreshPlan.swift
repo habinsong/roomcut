@@ -98,6 +98,12 @@ public enum RefreshPlanner {
             || previous.capabilities != next.capabilities
             || previous.volumeBoost != next.volumeBoost
             || previous.engineLatencyMs != next.engineLatencyMs
+            // Whether Apple's renderer is attached decides which controls exist.
+            // How much of the bed it renders at this instant is not published:
+            // it moves through every 20 ms hand-over and would redraw the tab.
+            || previous.systemBedRenderer != next.systemBedRenderer
+            || previous.bedPersonalizedHrtf != next.bedPersonalizedHrtf
+            || previous.bedUnitRate != next.bedUnitRate
     }
 
     // A dropout worth surfacing: the lifetime counter climbed since the last poll

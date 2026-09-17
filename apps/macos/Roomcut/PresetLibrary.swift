@@ -12,8 +12,19 @@ public enum PresetLibrary {
     public static func token(for preset: SavedPreset) -> String { "library:" + preset.id }
     static func preset(for token: String) -> SavedPreset? {
         guard token.hasPrefix("library:") else { return nil }
-        return all.first { $0.id == String(token.dropFirst(8)) }
+        let id = String(token.dropFirst(8))
+        return all.first { $0.id == (renamed[id] ?? id) }
     }
+    // A token stored by an older build, spelled the way this build names the
+    // preset. Anything that is not a renamed library preset comes back as it was.
+    static func currentToken(_ token: String) -> String {
+        guard token.hasPrefix("library:"), renamed[String(token.dropFirst(8))] != nil,
+              let preset = preset(for: token) else { return token }
+        return self.token(for: preset)
+    }
+    // Library presets renamed since a build that may have stored their token.
+    // "Harman Target" used a trademark as a name; the voicing is unchanged.
+    private static let renamed = ["Headphones/Harman Target": "Headphones/Neutral Target"]
 
     // bands: 31 62 125 250 500 1k 2k 4k 8k 16k
     private static func p(_ name: String, _ folder: String, _ g: [Double],
@@ -56,7 +67,7 @@ public enum PresetLibrary {
     ]
 
     static let headphones: [SavedPreset] = [
-        p("Harman Target", "Headphones", [4, 3.5, 1.5, 0, 0, 0, 1, 0.5, -1, -2], preamp: -2),
+        p("Neutral Target", "Headphones", [4, 3.5, 1.5, 0, 0, 0, 1, 0.5, -1, -2], preamp: -2),
         p("Open-Back",     "Headphones", [2, 2, 1, 0, 0, 0, 0.5, 1, 1.5, 1]),
         p("Closed-Back",   "Headphones", [3, 3, 1, -0.5, 0, 0.5, 1, 0.5, -0.5, -1], preamp: -1),
         p("In-Ear (IEM)",  "Headphones", [4, 3, 1, 0, 0, 0.5, 1.5, 1, 0, -1], preamp: -1.5),

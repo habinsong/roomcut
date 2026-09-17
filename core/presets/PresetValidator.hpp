@@ -96,6 +96,9 @@ public:
             r.fail("surroundType is not an integer");
         checkRange(r, p.centerWidth, PresetBounds::kUpmixSteerMin, PresetBounds::kUpmixSteerMax, "centerWidth");
         checkRange(r, p.surroundDepth, PresetBounds::kUpmixSteerMin, PresetBounds::kUpmixSteerMax, "surroundDepth");
+        checkRange(r, p.bedRenderer, 0.0, 1.0, "bedRenderer");
+        if (std::isfinite(p.bedRenderer) && p.bedRenderer != std::round(p.bedRenderer))
+            r.fail("bedRenderer is not an integer");
         for (std::size_t i = 0; i < p.parametric.size(); ++i) {
             const auto& band = p.parametric[i];
             const std::string tag = "parametric[" + std::to_string(i) + "]";
@@ -138,6 +141,9 @@ public:
                                    PresetBounds::kUpmixSteerMax, "centerWidth");
         p.surroundDepth = clampField(r, p.surroundDepth, PresetBounds::kUpmixSteerMin,
                                      PresetBounds::kUpmixSteerMax, "surroundDepth");
+        p.bedRenderer = clampField(r, p.bedRenderer, 0.0, 1.0, "bedRenderer");
+        if (p.bedRenderer != std::round(p.bedRenderer)) r.fail("bedRenderer rounded to an integer");
+        p.bedRenderer = std::round(p.bedRenderer);
         for (std::size_t i = 0; i < p.parametric.size(); ++i) {
             auto& band = p.parametric[i];
             const std::string tag = "parametric[" + std::to_string(i) + "]";
