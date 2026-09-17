@@ -38,14 +38,14 @@ Roomcut est une application macOS native qui contrôle et calibre l'ensemble du 
 
 ## Installation
 
-Téléchargez la dernière version `Roomcut-1.1.0.pkg` ou `Roomcut-1.1.0.dmg` depuis les [Releases](https://github.com/habinsong/roomcut/releases).
+Téléchargez la dernière version `Roomcut-1.1.1.pkg` ou `Roomcut-1.1.1.dmg` depuis les [Releases](https://github.com/habinsong/roomcut/releases).
 
 > **Avis signature ad-hoc**<br>
 > Si macOS bloque le premier lancement, accédez à **Réglages Système → Confidentialité et sécurité → Ouvrir quand même**.
 
 Installation via Terminal :
 ```sh
-sudo installer -pkg Roomcut-1.1.0.pkg -target /
+sudo installer -pkg Roomcut-1.1.1.pkg -target /
 ```
 
 ### Compiler depuis les sources

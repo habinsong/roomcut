@@ -2,8 +2,11 @@
 # package-release.sh — assemble GitHub release artifacts from the prebuilt
 # components in build/. Produces:
 #
-#   dist/Roomcut-<ver>.pkg   double-click installer (postinstall loads the engine)
-#   dist/Roomcut-<ver>.dmg   disk image containing the installer and instructions
+#   dist/Roomcut-<ver>.pkg   double-click installer: app, HAL driver and engine
+#                            (postinstall loads the engine and restarts coreaudiod);
+#                            shows the Read Me and license before installing
+#   dist/Roomcut-<ver>.dmg   disk image with the installer, Read Me, LICENSE and
+#                            third-party notices
 #
 # Both use the same package. There is no Developer ID signing or notarization
 # here — see the release notes for the Gatekeeper caveat.
@@ -139,8 +142,8 @@ while /usr/libexec/PlistBuddy -c "Print :${i}" "${COMPONENT_PLIST}" >/dev/null 2
   i=$((i + 1))
 done
 
-PKG_OUT="${DIST}/Roomcut-${VERSION}.pkg"
-echo "==> Building ${PKG_OUT}"
+COMPONENT_DIR="${WORK}/component"
+mkdir -p "${COMPONENT_DIR}"
 pkgbuild \
   --root "${PAYLOAD}" \
   --component-plist "${COMPONENT_PLIST}" \
@@ -149,6 +152,49 @@ pkgbuild \
   --version "${VERSION}" \
   --ownership recommended \
   --install-location "/" \
+  "${COMPONENT_DIR}/Roomcut.pkg" >/dev/null
+
+# The installer shows the Read Me and the license (Roomcut's Apache-2.0 plus the
+# third-party notices) before it installs anything.
+INSTALLER_RES="${WORK}/installer-resources"
+mkdir -p "${INSTALLER_RES}"
+sed "s/<version>/${VERSION}/g" "${RELEASE_DIR}/README.txt" > "${INSTALLER_RES}/ReadMe.txt"
+{
+  cat "${REPO_ROOT}/LICENSE"
+  printf '\n\n================================================================================\n\n'
+  cat "${REPO_ROOT}/THIRD_PARTY_NOTICES.md"
+} > "${INSTALLER_RES}/License.txt"
+
+DISTRIBUTION="${WORK}/distribution.xml"
+cat > "${DISTRIBUTION}" <<XML
+<?xml version="1.0" encoding="utf-8"?>
+<installer-gui-script minSpecVersion="2">
+    <title>Roomcut ${VERSION}</title>
+    <readme file="ReadMe.txt"/>
+    <license file="License.txt"/>
+    <options customize="never" require-scripts="false" hostArchitectures="arm64"/>
+    <domains enable_anywhere="false" enable_currentUserHome="false" enable_localSystem="true"/>
+    <volume-check>
+        <allowed-os-versions>
+            <os-version min="26.0"/>
+        </allowed-os-versions>
+    </volume-check>
+    <choices-outline>
+        <line choice="roomcut"/>
+    </choices-outline>
+    <choice id="roomcut" visible="false" title="Roomcut">
+        <pkg-ref id="${PKG_ID}"/>
+    </choice>
+    <pkg-ref id="${PKG_ID}" version="${VERSION}" onConclusion="none">Roomcut.pkg</pkg-ref>
+</installer-gui-script>
+XML
+
+PKG_OUT="${DIST}/Roomcut-${VERSION}.pkg"
+echo "==> Building ${PKG_OUT}"
+productbuild \
+  --distribution "${DISTRIBUTION}" \
+  --resources "${INSTALLER_RES}" \
+  --package-path "${COMPONENT_DIR}" \
   "${PKG_OUT}"
 
 # --- disk image ---------------------------------------------------------------
@@ -156,6 +202,8 @@ DMG_STAGE="${WORK}/Roomcut-${VERSION}"
 mkdir -p "${DMG_STAGE}"
 cp "${PKG_OUT}" "${DMG_STAGE}/Roomcut-${VERSION}.pkg"
 sed "s/<version>/${VERSION}/g" "${RELEASE_DIR}/README.txt" > "${DMG_STAGE}/Read Me.txt"
+cp "${REPO_ROOT}/LICENSE"                "${DMG_STAGE}/LICENSE.txt"
+cp "${REPO_ROOT}/THIRD_PARTY_NOTICES.md" "${DMG_STAGE}/THIRD_PARTY_NOTICES.md"
 
 DMG_OUT="${DIST}/Roomcut-${VERSION}.dmg"
 rm -f "${DMG_OUT}"

@@ -19,5 +19,7 @@ SIGNING
   sudo installer -pkg Roomcut-<version>.pkg -target /
 
 LICENSE
-  Roomcut is licensed under the Apache License 2.0. The installed copy includes
-  LICENSE and THIRD_PARTY_NOTICES.md in /Library/Application Support/Roomcut/.
+  Roomcut is licensed under the Apache License 2.0. The license and the
+  third-party notices are in this disk image (LICENSE.txt, THIRD_PARTY_NOTICES.md),
+  in the installer, in Roomcut.app/Contents/Resources, and in
+  /Library/Application Support/Roomcut/ after installation.

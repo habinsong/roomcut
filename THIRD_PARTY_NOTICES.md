@@ -65,9 +65,15 @@ Lyrics belong to their respective owners.
   `core/dsp/Biquad.hpp` is Roomcut's own.
 - **RACE (Recursive Ambiophonic Crosstalk Elimination)** — Ralph Glasgal and
   Robin Miller released the technique free to the public. The crosstalk
-  cancellation in `core/dsp/Spatial.hpp` is Roomcut's own implementation of that
-  published approach. Roomcut is not affiliated with, and not endorsed by, the
-  Ambiophonics Institute.
+  cancellation in `core/dsp/Spatial.hpp` and `core/dsp/SideCanceller.hpp` is
+  Roomcut's own implementation of that published approach. Roomcut is not
+  affiliated with, and not endorsed by, the Ambiophonics Institute.
+- **Virtual room** — early reflections follow the image-source method (Allen and
+  Berkley, 1979) and the late reverberation is a feedback delay network
+  (Stautner and Puckette, 1982; Jot and Chaigne, 1991). `core/dsp/RoomSim.hpp` is Roomcut's own implementation of these
+  published methods.
+- **Level matching** — the K-weighting filter follows ITU-R BS.1770. The
+  implementation in `core/dsp/KWeightedLevel.hpp` is Roomcut's own.
 
 ## Apple
 
@@ -75,7 +81,10 @@ Roomcut builds against Apple's public Core Audio, AudioUnit, AudioToolbox,
 AVFoundation, CoreMotion, AppKit, and SwiftUI APIs and uses SF Symbols under
 Apple's terms. The headphone 5.1/7.1 bed is rendered at runtime by macOS's own
 `AUSpatialMixer` audio unit; Roomcut neither contains nor redistributes its
-HRTF data. Roomcut's Now Playing helper
+HRTF data. When the output is AirPods, macOS applies the listener's personalized
+spatial audio profile inside that unit; Roomcut does not read, copy, or store
+the profile. Head tracking reads headphone motion through Core Motion and keeps
+it on the Mac. Roomcut's Now Playing helper
 additionally resolves the private MediaRemote framework at runtime; because that
 API is private, this feature may break on any macOS update and rules out Mac App
 Store distribution. Roomcut is not affiliated with, authorized by, or endorsed by

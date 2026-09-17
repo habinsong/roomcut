@@ -38,14 +38,14 @@ Roomcut is a native macOS application that controls and enhances all Mac audio s
 
 ## Installation
 
-Download the latest `Roomcut-1.1.0.pkg` or `Roomcut-1.1.0.dmg` from [Releases](https://github.com/habinsong/roomcut/releases).
+Download the latest `Roomcut-1.1.1.pkg` or `Roomcut-1.1.1.dmg` from [Releases](https://github.com/habinsong/roomcut/releases).
 
 > **Ad-hoc Signing Notice**<br>
 > If macOS blocks the first run, go to **System Settings → Privacy & Security → Open Anyway**.
 
 Install via Terminal:
 ```sh
-sudo installer -pkg Roomcut-1.1.0.pkg -target /
+sudo installer -pkg Roomcut-1.1.1.pkg -target /
 ```
 
 ### Build from Source

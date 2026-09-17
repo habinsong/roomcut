@@ -38,14 +38,14 @@ Roomcut は、独自開発の仮想オーディオドライバを通じて Mac �
 
 ## インストール
 
-[Releases](https://github.com/habinsong/roomcut/releases) から最新の `Roomcut-1.1.0.pkg` または `Roomcut-1.1.0.dmg` をダウンロードしてください。
+[Releases](https://github.com/habinsong/roomcut/releases) から最新の `Roomcut-1.1.1.pkg` または `Roomcut-1.1.1.dmg` をダウンロードしてください。
 
 > **初回起動時の注意 (ad-hoc 署名)**<br>
 > 初回起動がブロックされた場合は、**システム設定 → プライバシーとセキュリティ → このまま開く** をクリックしてください。
 
 ターミナルからのインストール:
 ```sh
-sudo installer -pkg Roomcut-1.1.0.pkg -target /
+sudo installer -pkg Roomcut-1.1.1.pkg -target /
 ```
 
 ### ソースからビルド

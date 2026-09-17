@@ -46,11 +46,11 @@ iOS-inspirierte, moderne Ästhetik trifft auf professionelle Audioverarbeitung: 
 
 ## Installation
 
-Laden Sie `Roomcut-1.1.0.pkg` oder `Roomcut-1.1.0.dmg` aus den [Releases](https://github.com/habinsong/roomcut/releases/latest) herunter.
+Laden Sie `Roomcut-1.1.1.pkg` oder `Roomcut-1.1.1.dmg` aus den [Releases](https://github.com/habinsong/roomcut/releases/latest) herunter.
 
 ```sh
 # Manuelle Installation über das Terminal (umgeht Gatekeeper)
-sudo installer -pkg Roomcut-1.1.0.pkg -target /
+sudo installer -pkg Roomcut-1.1.1.pkg -target /
 ```
 
 Nach der Installation erscheint Roomcut in der Menüleiste. Wählen Sie **Roomcut Output** als Standard-Ausgabegerät in den macOS-Systemeinstellungen aus (oder lassen Sie Roomcut dies automatisch einrichten).

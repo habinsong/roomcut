@@ -38,14 +38,14 @@ Roomcut은 자체 가상 오디오 드라이버를 통해 Mac에서 나오는 �
 
 ## 설치
 
-[Releases](https://github.com/habinsong/roomcut/releases)에서 최신 `Roomcut-1.1.0.pkg` 또는 `Roomcut-1.1.0.dmg`를 다운로드하세요.
+[Releases](https://github.com/habinsong/roomcut/releases)에서 최신 `Roomcut-1.1.1.pkg` 또는 `Roomcut-1.1.1.dmg`를 다운로드하세요.
 
 > **ad-hoc 서명 실행 안내**<br>
 > 설치 후 첫 실행이 차단되면 **시스템 설정 → 개인정보 보호 및 보안 → 그래도 열기**를 클릭하세요.
 
 터미널을 통한 설치:
 ```sh
-sudo installer -pkg Roomcut-1.1.0.pkg -target /
+sudo installer -pkg Roomcut-1.1.1.pkg -target /
 ```
 
 ### 소스에서 빌드
