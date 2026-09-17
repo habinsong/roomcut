@@ -1,10 +1,18 @@
 //
 // SpaceTab.swift — Phase 7 spatial controls.
 //
-// Liquid-Glass layout: the 3D field card on top, then ONE settings card that fits
-// the window without scrolling. Output and head tracking stay visible; Surround,
-// Room and Stage collapse to a single summary row each and open one at a time
-// (progressive disclosure), so the tab reads as a short list, not a control wall.
+// Liquid-Glass layout: the 3D field card on top, then ONE settings card that
+// reaches down to the tab bar, leaving above the bar the same gap the bar keeps
+// below itself. The card reads top to bottom in the order a listener decides:
+//
+//   output (Speaker / Headphone) → a whole-scene preset → the three choices the
+//   preset is made of (Surround, Room, Stage), each visible at once as its own
+//   row → head tracking → the fine sliders, folded away → Balance at the foot.
+//
+// It used to hide Surround, Room and Stage behind three disclosure rows, only
+// one open at a time, so the current setting was a summary word and every change
+// took two taps. Sliders follow Home's Limiter layout: name and value on one
+// line, a full-width slider under them, so the track is centred in the card.
 // Glass stays on the controls themselves (segmented capsules, native slider and
 // switch knobs); the card is a material, never glass on glass.
 //
@@ -16,122 +24,200 @@ struct SpaceTab: View {
     @ObservedObject var model: RoomcutViewModel
     @Environment(\.colorScheme) private var scheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.roomcutTabBarClearance) private var tabBarClearance
     @Namespace private var segNS          // shared by the sliding selection pills
-    // The open group survives tab switches; "" = everything collapsed.
-    @AppStorage("roomcut.space.openSection") private var openSection = ""
+    // Whether the fine sliders are showing; survives tab switches.
+    @AppStorage("roomcut.space.fineTuneOpen") private var fineTuneOpen = false
     private var accentColor: Color { RoomcutTokens.blue(scheme) }
     private var motion: Animation? { reduceMotion ? nil : .smooth(duration: 0.3) }
+
+    private static let topPadding: CGFloat = 6
+    private static let labelWidth: CGFloat = 70
 
     enum SpatialMode: String, CaseIterable, Identifiable {
         case off = "Off", focus = "Focus", widen = "Widen", custom = "Custom"
         var id: String { rawValue }
     }
 
-    private enum Section: String { case surround, room, stage }
-
     var body: some View {
-        // Settings' tighter bottom inset: the tallest open group (Stage with
-        // Crossfeed) then still ends above the tab bar with nothing to scroll.
-        RoomcutTabScreen(bottomPadding: 80) {
-            RoomcutSection("") {
-                // Every control on this tab feeds the picture, so it always
-                // shows the setting rather than a generic stage.
-                SpatialFieldView(width: model.spatialWidth,
-                                 center: model.centerFocus,
-                                 crossfeed: model.crossfeed,
-                                 room: model.roomReduce,
-                                 headphone: model.spatialOutputIsHeadphone,
-                                 surroundType: model.surroundType,
-                                 ambience: model.spatialSurroundOn,
-                                 roomType: model.roomType,
-                                 centerWidth: model.centerWidth,
-                                 surroundDepth: model.surroundDepth,
-                                 roomAmount: model.roomAmount,
-                                 balance: model.balance,
-                                 headYaw: model.headYawDegrees,
-                                 tracking: model.headTrackingOn,
-                                 accent: accentColor)
-                    .padding(.horizontal, 10).padding(.vertical, 10)
-                    .opacity(model.spatialAvailable ? 1 : 0.4)
-                    .overlay(alignment: .topTrailing) { resetButton.padding(12) }
+        GeometryReader { geo in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    RoomcutSection("") { fieldPicture }
+                    RoomcutSection("") { settings }
+                        .frame(maxHeight: .infinity, alignment: .top)
+                }
+                // At least the visible height, so the settings card stretches to
+                // the tab bar; taller content (fine sliders open) scrolls.
+                .frame(minHeight: max(0, geo.size.height - Self.topPadding - tabBarClearance), alignment: .top)
+                .padding(.horizontal, 16).padding(.top, Self.topPadding).padding(.bottom, tabBarClearance)
             }
+            .scrollIndicators(.never)
+            .scrollBounceBehavior(.basedOnSize)
+        }
+        .onDisappear { model.endParameterEdit() }
+    }
 
-            RoomcutSection("") {
-                outputPicker
-                Divider().opacity(0.4)
-                spatialRows
-                RoomcutDivider()
-                // Balance is the device's L/R output position, not a spatial DSP
-                // param, so it stays usable even without Spatial.
-                balanceRow
-            }
-            .animation(motion, value: model.spatialOutputIsHeadphone)
-            .animation(motion, value: model.headTrackingAvailable)
-            .animation(motion, value: model.virtualRoomAvailable)
+    // Every control on this tab feeds the picture, so it always shows the
+    // setting rather than a generic stage.
+    private var fieldPicture: some View {
+        SpatialFieldView(width: model.spatialWidth,
+                         center: model.centerFocus,
+                         crossfeed: model.crossfeed,
+                         room: model.roomReduce,
+                         headphone: model.spatialOutputIsHeadphone,
+                         surroundType: model.surroundType,
+                         ambience: model.spatialSurroundOn,
+                         roomType: model.roomType,
+                         centerWidth: model.centerWidth,
+                         surroundDepth: model.surroundDepth,
+                         roomAmount: model.roomAmount,
+                         balance: model.balance,
+                         headYaw: model.headYawDegrees,
+                         tracking: model.headTrackingActive,
+                         accent: accentColor)
+            .padding(10)
+            .opacity(model.spatialAvailable ? 1 : 0.4)
+    }
 
+    private var settings: some View {
+        VStack(spacing: 0) {
             if model.status.reachable && !model.spatialAvailable {
                 Text(L("현재 실행 중인 엔진이 Spatial을 지원하지 않습니다.",
                        "The running engine does not support Spatial.",
                        "実行中のエンジンは Spatial に対応していません。",
                        "Le moteur en cours d'exécution ne prend pas en charge Spatial.",
                        "Die laufende Engine unterstützt Spatial nicht."))
-                    .font(.system(size: 12)).foregroundStyle(.secondary).padding(.leading, 6)
+                    .font(.system(size: 12)).foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 16).padding(.top, 12)
             }
+
+            stretched {
+                VStack(spacing: 8) {
+                    outputPicker
+                    SpacePresetPicker(model: model)
+                }
+                .padding(.horizontal, 12).padding(.vertical, 10)
+                .disabled(!model.spatialAvailable)
+                .opacity(model.spatialAvailable ? 1 : 0.4)
+            }
+
+            RoomcutDivider()
+            choices
+            RoomcutDivider()
+            stretched { fineTune }
+
+            // Balance is the device's L/R output position, not a spatial DSP
+            // param, so it stays usable even without Spatial.
+            RoomcutDivider()
+            stretched { balanceSlider.padding(.vertical, 4) }
         }
-        // Everything fits the window; only bounce if a long locale overflows it.
-        .scrollBounceBehavior(.basedOnSize)
-        .onDisappear { model.endParameterEdit() }
+        .frame(maxHeight: .infinity, alignment: .top)
+        .animation(motion, value: model.spatialOutputIsHeadphone)
+        .animation(motion, value: model.headTrackingAvailable)
+        .animation(motion, value: model.virtualRoomAvailable)
+        .animation(motion, value: fineTuneOpen)
     }
 
-    // MARK: Always-visible controls
+    // MARK: Output and the three scene choices
 
     private var outputPicker: some View {
         glassSegmented([L("Speaker", "Speaker", "スピーカー", "Haut-parleur", "Lautsprecher"),
                         L("Headphone", "Headphone", "ヘッドフォン", "Casque", "Kopfhörer")],
                        selected: model.spatialOutputIsHeadphone ? 1 : 0,
                        group: "output") { idx in
-            // Re-apply the active preset under the NEW output so its
-            // crossfeed follows the mode (speaker XTC ↔ headphone crossfeed)
-            // instead of leaving a value that's wrong for the other system.
+            let headphone = idx == 1
+            guard headphone != model.spatialOutputIsHeadphone else { return }
+            // Each output comes back to the preset it was left on. Without one,
+            // re-apply the stage mode under the NEW output so its crossfeed
+            // follows (speaker XTC ↔ headphone crossfeed) instead of leaving a
+            // value that is wrong for the other system.
             let active = inferredMode
-            model.setSpatialOutput(headphone: idx == 1)
-            if active != .custom, let v = presetValues(active) {
+            if !model.switchSpatialOutput(headphone: headphone),
+               active != .custom, let v = presetValues(active) {
                 model.setSpatialValues(width: v.width, centerFocus: v.center,
                                        crossfeed: v.crossfeed, roomReduce: v.room)
             }
         }
-        .padding(.horizontal, 12).padding(.vertical, 10)
-        .disabled(!model.spatialAvailable)
-        .opacity(model.spatialAvailable ? 1 : 0.4)
     }
 
-    private var spatialRows: some View {
-        Group {
-            disclosure(.surround, L("Surround", "Surround", "サラウンド", "Surround", "Surround"),
-                       summary: surroundLabel(model.surroundChoice)) { surroundControls }
+    // Each row takes an equal share of whatever height the card has left, so the
+    // list spreads evenly down to Balance instead of leaving a hole above it.
+    // With Fine Tune open there is no height left and the rows sit tight.
+    private func stretched<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+        VStack(spacing: 0) {
+            Spacer(minLength: 0)
+            // The row keeps its own height; only the spare height is shared.
+            // Without this the rows were squeezed and their labels shrank.
+            content().fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
+        }
+    }
 
-            // Head tracking — headphones with motion sensors only. The engine
-            // anchors the virtual speakers to the screen, so the stage stays put
-            // when the listener turns. Binary, so a switch, not a segment.
-            if model.headTrackingAvailable {
-                RoomcutDivider()
-                headTrackingRow
+    // A Group, not a stack: its rows are the card's own children, so each takes
+    // its share of the spare height like every other row.
+    private var choices: some View {
+        Group {
+            // What Surround can offer depends on the output: headphones render a
+            // real virtual layout, speakers get the same decomposition thrown wide.
+            stretched {
+                choiceRow(L("Surround", "Surround", "サラウンド", "Surround", "Surround"),
+                          model.surroundChoices.map(surroundLabel),
+                          selected: model.surroundChoices.firstIndex(of: model.surroundChoice) ?? 0,
+                          group: "surround") { idx in
+                    let choices = model.surroundChoices
+                    guard idx < choices.count else { return }
+                    model.setSurroundChoice(choices[idx])
+                }
             }
 
             // Virtual room on either output. The engine builds a different room
             // for each, so the choice follows the Speaker/Headphone switch.
             if model.virtualRoomAvailable {
-                RoomcutDivider()
-                disclosure(.room, L("Room", "Room", "ルーム", "Salle", "Virtueller Raum"),
-                           summary: roomLabels[min(3, max(0, Int(model.roomType.rounded())))]) { roomControls }
+                stretched {
+                    choiceRow(L("Room", "Room", "ルーム", "Salle", "Raum"), roomLabels,
+                              selected: min(3, max(0, Int(model.roomType.rounded()))),
+                              group: "room") { model.setRoomType(Double($0)) }
+                }
             }
 
-            RoomcutDivider()
-            disclosure(.stage, L("Stage", "Stage", "ステージ", "Scène", "Bühne"),
-                       summary: modeLabel(inferredMode)) { stageControls }
+            // Mode presets for the sliders under Fine Tune: picking Focus moves
+            // them, moving one reveals Custom.
+            stretched {
+                choiceRow(L("Stage", "Stage", "ステージ", "Scène", "Bühne"),
+                          visibleModes.map { modeLabel($0) },
+                          selected: visibleModes.firstIndex(of: inferredMode) ?? 0,
+                          group: "mode") { idx in
+                    modeSelection.wrappedValue = visibleModes[idx]
+                }
+                .animation(motion, value: visibleModes)
+            }
+
+            // Head tracking — headphones with motion sensors only. The engine
+            // anchors the virtual speakers to the screen, so the stage stays put
+            // when the listener turns. Binary, so a switch, not a segment.
+            if model.headTrackingAvailable {
+                stretched { headTrackingRow }
+            }
         }
         .disabled(!model.spatialAvailable)
         .opacity(model.spatialAvailable ? 1 : 0.4)
+        .animation(motion, value: model.surroundChoices)
+    }
+
+    private func choiceRow(_ title: String, _ labels: [String], selected: Int, group: String,
+                           _ select: @escaping (Int) -> Void) -> some View {
+        HStack(spacing: 10) {
+            Text(title)
+                .font(.system(size: 13))
+                .foregroundStyle(RoomcutTokens.textPrimary(scheme))
+                .lineLimit(1).minimumScaleFactor(0.8)
+                .frame(width: Self.labelWidth, alignment: .leading)
+            glassSegmented(labels, selected: selected, group: group, select)
+                .accessibilityLabel(title)
+        }
+        .padding(.horizontal, 16).padding(.vertical, 5)
     }
 
     private var headTrackingRow: some View {
@@ -154,194 +240,134 @@ struct SpaceTab: View {
         .animation(motion, value: model.headTrackingOn)
     }
 
+    // MARK: Fine tune
+
+    private var fineTune: some View {
+        VStack(spacing: 0) {
+            Button {
+                withAnimation(motion) { fineTuneOpen.toggle() }
+            } label: {
+                HStack(spacing: 8) {
+                    Text(L("Fine Tune", "Fine Tune", "微調整", "Réglage fin", "Feinabstimmung"))
+                        .font(.system(size: 13))
+                        .foregroundStyle(RoomcutTokens.textPrimary(scheme))
+                    Spacer(minLength: 8)
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(RoomcutTokens.textTertiary(scheme))
+                        .rotationEffect(.degrees(fineTuneOpen ? 90 : 0))
+                }
+                .padding(.horizontal, 16).padding(.vertical, 10)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityHint(fineTuneOpen ? L("접기", "Collapse", "折りたたむ", "Réduire", "Einklappen")
+                                            : L("펼치기", "Expand", "展開", "Développer", "Aufklappen"))
+
+            if fineTuneOpen {
+                fineTuneSliders
+                    .padding(.bottom, 6)
+                    .transition(.opacity.combined(with: .offset(y: -6)))
+            }
+        }
+        .disabled(!model.spatialAvailable)
+        .opacity(model.spatialAvailable ? 1 : 0.4)
+    }
+
+    // Only what applies to the current choices: a room's level while a room is
+    // on, the upmix's steering while there is an upmix, crossfeed while the
+    // engine renders it.
+    // Damping / Space / Center keep the engine's 0…200 (Space ±200) reach, but the
+    // sliders read HALF of it — 0…100 and ±100 — and double on the way out.
+    private var fineTuneSliders: some View {
+        VStack(spacing: 0) {
+            if model.virtualRoomAvailable && model.roomType >= 1 {
+                slider(L("Room Amount", "Room Amount", "ルーム量", "Niveau de salle", "Raumanteil"),
+                       value: model.roomAmount, in: 0...100) { model.setRoomAmount($0) }
+            }
+            if model.upmixAvailable && model.surroundType >= 2 {
+                if model.centerWidthApplies {
+                    slider(L("Center Width", "Center Width", "センター幅", "Largeur centrale", "Center-Breite"),
+                           value: model.centerWidth, in: 0...100) { model.setCenterWidth($0) }
+                }
+                if model.surroundDepthApplies {
+                    slider(L("Surround Depth", "Surround Depth", "サラウンド深度", "Profondeur surround", "Surround-Tiefe"),
+                           value: model.surroundDepth, in: 0...100) { model.setSurroundDepth($0) }
+                }
+            }
+            slider(L("Space", "Space", "空間", "Espace", "Raum"),
+                   value: model.spatialWidth / 2, in: -100...100) { model.setSpatialWidth($0 * 2) }
+            slider(L("Center", "Center", "センター", "Centre", "Mitte"),
+                   value: model.centerFocus / 2, in: 0...100) { model.setCenterFocus($0 * 2) }
+            slider(L("Damping", "Damping", "ダンピング", "Amortissement", "Dämpfung"),
+                   value: model.roomReduce / 2, in: 0...100) { model.setRoomReduce($0 * 2) }
+            // While head tracking or the upmix is placing speakers itself, the
+            // engine zeroes crossfeed — it is a third, fixed-head version of the
+            // same job. Hiding it beats showing a control that does nothing.
+            if model.crossfeedActive {
+                slider(model.spatialOutputIsHeadphone ? "Crossfeed" : "Crosstalk 3D",
+                       value: model.crossfeed, in: 0...100) { model.setCrossfeed($0) }
+            }
+            // Apple's renderer or the built-in one — where both can play, so A/B
+            // can put one on each side.
+            if model.bedRendererChoiceAvailable {
+                choiceRow(L("Renderer", "Renderer", "レンダラー", "Moteur", "Renderer"),
+                          RoomcutViewModel.BedRendererChoice.allCases.map(bedRendererLabel),
+                          selected: model.bedRendererChoice.rawValue,
+                          group: "bed-renderer") { idx in
+                    guard let choice = RoomcutViewModel.BedRendererChoice(rawValue: idx) else { return }
+                    model.setBedRendererChoice(choice)
+                }
+                .padding(.top, 4)
+            }
+        }
+        .animation(motion, value: model.crossfeedActive)
+        .animation(motion, value: model.surroundType)
+        .animation(motion, value: model.roomType >= 1)
+        .animation(motion, value: model.bedRendererChoiceAvailable)
+    }
+
+    // MARK: Balance
+
     // Balance / pan: centre-anchored L↔R, backed by the device's per-channel volume.
     // Begin/endEdit gate the poll so an external (Audio MIDI Setup) change is mirrored
     // when idle but doesn't snap the thumb back mid-drag — same contract as volume.
-    private var balanceRow: some View {
+    private var balanceSlider: some View {
         let v = Int((model.balance * 100).rounded())
-        return sliderRow(L("Balance", "Balance", "バランス", "Balance", "Balance"),
-                         value: model.balance, in: -1...1,
-                         display: v == 0 ? "C" : (v < 0 ? "L\(-v)" : "R\(v)"),
-                         primary: true,
-                         editing: { $0 ? model.beginBalanceEdit() : model.endBalanceEdit() }) {
+        return slider(L("Balance", "Balance", "バランス", "Balance", "Balance"),
+                      value: model.balance, in: -1...1,
+                      display: v == 0 ? "C" : (v < 0 ? "L\(-v)" : "R\(v)"),
+                      editing: { $0 ? model.beginBalanceEdit() : model.endBalanceEdit() }) {
             model.setBalance($0)
         }
         .disabled(!model.hasBalanceControl)
         .opacity(model.hasBalanceControl ? 1 : 0.4)
     }
 
-    // MARK: Disclosed groups
-
-    // Surround is one control. What it can offer depends on the output:
-    // headphones can render a real virtual layout, while speakers get the same
-    // decomposition folded back and thrown wide (no back channel exists).
-    private var surroundControls: some View {
-        VStack(spacing: 0) {
-            glassSegmented(model.surroundChoices.map(surroundLabel),
-                           selected: model.surroundChoices.firstIndex(of: model.surroundChoice) ?? 0,
-                           group: "surround") { idx in
-                let choices = model.surroundChoices
-                guard idx < choices.count else { return }
-                model.setSurroundChoice(choices[idx])
-            }
-            .padding(.horizontal, 12).padding(.bottom, 4)
-
-            // Only an actual 5.1/7.1 layout has a centre and surrounds to steer.
-            if model.upmixAvailable && model.surroundType >= 2 {
-                if model.centerWidthApplies {
-                    sliderRow(L("Center Width", "Center Width", "センター幅", "Largeur centrale", "Center-Breite"),
-                              value: model.centerWidth, in: 0...100) { model.setCenterWidth($0) }
-                }
-                sliderRow(L("Surround Depth", "Surround Depth", "サラウンド深度", "Profondeur surround", "Surround-Tiefe"),
-                          value: model.surroundDepth, in: 0...100) { model.setSurroundDepth($0) }
-            }
-            // Apple's renderer or the built-in one — where both can play, so A/B
-            // can put one on each side.
-            if model.bedRendererChoiceAvailable {
-                glassSegmented(RoomcutViewModel.BedRendererChoice.allCases.map(bedRendererLabel),
-                               selected: model.bedRendererChoice.rawValue,
-                               group: "bed-renderer") { idx in
-                    guard let choice = RoomcutViewModel.BedRendererChoice(rawValue: idx) else { return }
-                    model.setBedRendererChoice(choice)
-                }
-                .padding(.horizontal, 12).padding(.vertical, 4)
-            }
-        }
-        .animation(motion, value: model.surroundType)
-        .animation(motion, value: model.bedRendererChoiceAvailable)
-        .animation(motion, value: model.surroundChoices)
-    }
-
-    private var roomControls: some View {
-        VStack(spacing: 0) {
-            glassSegmented(roomLabels,
-                           selected: Int(model.roomType.rounded()),
-                           group: "room") { idx in
-                model.setRoomType(Double(idx))
-            }
-            .padding(.horizontal, 12).padding(.bottom, 4)
-
-            // The room's own level, shown only while a room is actually on.
-            if model.roomType >= 1 {
-                sliderRow(L("Amount", "Amount", "ルーム量", "Niveau", "Anteil"),
-                          value: model.roomAmount, in: 0...100) { model.setRoomAmount($0) }
-            }
-        }
-        .animation(motion, value: model.roomType >= 1)
-    }
-
-    // Mode presets sit directly above the sliders they drive: picking Focus moves
-    // them, moving one reveals Custom.
-    // Damping / Space / Center keep the engine's 0…200 (Space ±200) reach, but the
-    // rows read HALF of it — 0…100 and ±100 — and double on the way out.
-    private var stageControls: some View {
-        VStack(spacing: 0) {
-            glassSegmented(visibleModes.map { modeLabel($0) },
-                           selected: visibleModes.firstIndex(of: inferredMode) ?? 0,
-                           group: "mode") { idx in
-                modeSelection.wrappedValue = visibleModes[idx]
-            }
-            .animation(motion, value: visibleModes)
-            .padding(.horizontal, 12).padding(.bottom, 4)
-
-            sliderRow(L("Space", "Space", "空間", "Espace", "Raum"),
-                      value: model.spatialWidth / 2, in: -100...100) { model.setSpatialWidth($0 * 2) }
-            sliderRow(L("Center", "Center", "センター", "Centre", "Mitte"),
-                      value: model.centerFocus / 2, in: 0...100) { model.setCenterFocus($0 * 2) }
-            sliderRow(L("Damping", "Damping", "ダンピング", "Amortissement", "Dämpfung"),
-                      value: model.roomReduce / 2, in: 0...100) { model.setRoomReduce($0 * 2) }
-            // While head tracking or the upmix is placing speakers itself, the
-            // engine zeroes crossfeed — it is a third, fixed-head version of the
-            // same job. Hiding it beats showing a control that does nothing.
-            if model.crossfeedActive {
-                sliderRow(model.spatialOutputIsHeadphone ? "Crossfeed" : "Crosstalk 3D",
-                          value: model.crossfeed, in: 0...100) { model.setCrossfeed($0) }
-            }
-        }
-        .animation(motion, value: model.crossfeedActive)
-    }
-
     // MARK: Building blocks
 
-    // A summary row that opens its group underneath. One group at a time keeps
-    // the card inside the window; the summary fades while its own control shows it.
-    private func disclosure<Content: View>(_ section: Section, _ title: String, summary: String,
-                                           @ViewBuilder content: () -> Content) -> some View {
-        let open = openSection == section.rawValue
-        return VStack(spacing: 0) {
-            Button {
-                withAnimation(motion) { openSection = open ? "" : section.rawValue }
-            } label: {
-                HStack(spacing: 8) {
-                    Text(title)
-                        .font(.system(size: 13))
-                        .foregroundStyle(RoomcutTokens.textPrimary(scheme))
-                    Spacer(minLength: 8)
-                    Text(summary)
-                        .font(.system(size: 13))
-                        .foregroundStyle(RoomcutTokens.textSecondary(scheme))
-                        .opacity(open ? 0 : 1)
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(RoomcutTokens.textTertiary(scheme))
-                        .rotationEffect(.degrees(open ? 90 : 0))
-                }
-                .padding(.horizontal, 16).padding(.vertical, 9)
-                .contentShape(Rectangle())
+    // Home's Limiter layout: the name left and the value right on one line, the
+    // slider full width beneath, so all three share the same edges.
+    private func slider(_ title: String, value: Double, in range: ClosedRange<Double>,
+                        display: String? = nil,
+                        editing: ((Bool) -> Void)? = nil,
+                        _ set: @escaping (Double) -> Void) -> some View {
+        let shown = display ?? "\(Int(value.rounded()))"
+        return VStack(alignment: .leading, spacing: 2) {
+            HStack {
+                Text(title).foregroundStyle(RoomcutTokens.textSecondary(scheme))
+                Spacer()
+                Text(shown).monospacedDigit()
+                    .foregroundStyle(RoomcutTokens.textPrimary(scheme))
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel(title)
-            .accessibilityValue(summary)
-            .accessibilityHint(open ? L("접기", "Collapse", "折りたたむ", "Réduire", "Einklappen")
-                                    : L("펼치기", "Expand", "展開", "Développer", "Aufklappen"))
-
-            if open {
-                content()
-                    .padding(.bottom, 8)
-                    .transition(.opacity.combined(with: .offset(y: -6)))
-            }
-        }
-    }
-
-    // One-line slider row: label, native (glass-knob) slider, value.
-    private func sliderRow(_ title: String, value: Double, in range: ClosedRange<Double>,
-                           display: String? = nil, primary: Bool = false,
-                           editing: ((Bool) -> Void)? = nil,
-                           _ set: @escaping (Double) -> Void) -> some View {
-        HStack(spacing: 10) {
-            Text(title)
-                .font(.system(size: primary ? 13 : 12))
-                .foregroundStyle(primary ? RoomcutTokens.textPrimary(scheme) : RoomcutTokens.textSecondary(scheme))
-                .lineLimit(1).minimumScaleFactor(0.8)
-                .frame(width: 100, alignment: .leading)
+            .font(.callout)
             Slider(value: Binding(get: { value }, set: set), in: range,
                    onEditingChanged: editing ?? { $0 ? model.beginParameterEdit() : model.endParameterEdit() })
-                .controlSize(.small)
                 .tint(accentColor)
                 .accessibilityLabel(title)
-            Text(display ?? "\(Int(value.rounded()))")
-                .font(.system(size: 12, weight: .medium).monospacedDigit())
-                .foregroundStyle(RoomcutTokens.textSecondary(scheme))
-                .frame(width: 32, alignment: .trailing)
+                .accessibilityValue(shown)
         }
-        .padding(.horizontal, 16).padding(.vertical, primary ? 9 : 4)
-    }
-
-    // Small circular glass reset, tucked into the field's top-right corner.
-    private var resetButton: some View {
-        Button { model.setSpatialValues(width: 0, centerFocus: 0, crossfeed: 0, roomReduce: 0) } label: {
-            Image(systemName: "arrow.counterclockwise")
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(accentColor)
-                .frame(width: 30, height: 30)
-                .glassEffect(.regular, in: Circle())
-                .clipShape(Circle())          // trim the glass drop shadow
-                .contentShape(Circle())
-        }
-        .buttonStyle(.plain)
-        .disabled(!model.spatialAvailable)
-        .help(L("Spatial 초기화", "Reset Spatial", "Spatial をリセット", "Réinitialiser Spatial", "Spatial zurücksetzen"))
-        .accessibilityLabel(L("Spatial 초기화", "Reset Spatial", "Spatial をリセット", "Réinitialiser Spatial", "Spatial zurücksetzen"))
+        .padding(.horizontal, 16).padding(.vertical, 5)
     }
 
     // "Straight ahead is where I am looking now." A gyro drifts, so this is the
@@ -416,7 +442,7 @@ struct SpaceTab: View {
                             .font(.system(size: 12, weight: isSel ? .semibold : .regular))
                             .foregroundStyle(isSel ? RoomcutTokens.textPrimary(scheme)
                                              : RoomcutTokens.textSecondary(scheme))
-                            .lineLimit(1).minimumScaleFactor(0.8)
+                            .lineLimit(1).minimumScaleFactor(0.75)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 7)
                             .background {
@@ -429,6 +455,7 @@ struct SpaceTab: View {
                             .contentShape(Capsule())
                     }
                     .buttonStyle(.plain)
+                    .accessibilityAddTraits(isSel ? [.isButton, .isSelected] : .isButton)
                 }
             }
             .padding(4)
@@ -444,22 +471,19 @@ struct SpaceTab: View {
         inferredMode == .custom ? SpatialMode.allCases : [.off, .focus, .widen]
     }
 
-    // Preset targets, re-tuned for the doubled-strength / 3-band-shuffler DSP and made
-    // OUTPUT-AWARE: crossfeed means opposite things on the two systems, so each preset
-    // sets it per mode (speaker XTC widens; headphone crossfeed narrows/naturalises).
-    //   • Widen  → speakers add XTC for an out-of-speaker stage; headphones keep full
-    //              separation (crossfeed 0), widening via the M/S side only.
-    //   • Focus  → tight, centred, dry image; speakers keep XTC off (it would widen),
-    //              headphones add crossfeed to naturalise the hard separation.
+    // The Stage row's named settings live with the presets (SpaceStage), so a
+    // preset and the row always agree on what Focus and Widen are.
     private func presetValues(_ mode: SpatialMode)
         -> (width: Double, center: Double, crossfeed: Double, room: Double)? {
-        let headphone = model.spatialOutputIsHeadphone
+        let stage: SpaceStage
         switch mode {
-        case .off:    return (0, 0, 0, 0)
-        case .focus:  return (-40, 40, headphone ? 25 : 0, 50)
-        case .widen:  return (50, 0, headphone ? 0 : 35, 0)
+        case .off:    stage = .off
+        case .focus:  stage = .focus
+        case .widen:  stage = .widen
         case .custom: return nil
         }
+        let v = stage.values(headphone: model.spatialOutputIsHeadphone)
+        return (v.width, v.centerFocus, v.crossfeed, v.roomReduce)
     }
 
     private var modeSelection: Binding<SpatialMode> {

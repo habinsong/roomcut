@@ -633,6 +633,32 @@ final class RoomcutViewModelTests: XCTestCase {
         XCTAssertTrue(model.upmixAvailable)
     }
 
+    // What each Surround button actually sends: the reported "every choice
+    // sounds the same" had to be ruled out on the app side too, so the pushed
+    // parameters are checked, not just the model's own state.
+    func testEverySurroundChoiceReachesTheEngine() async throws {
+        let caps = EngineStatus.spatialParamsCapability | EngineStatus.upmixCapability
+        let client = FakeEngineClient()
+        client.stateReadHandler = { .running(presetId: "custom", revision: 1, capabilities: caps) }
+        let model = RoomcutViewModel(client: client, debounceNanoseconds: 1_000_000)
+        await model.refreshNow()
+        let cases: [(headphone: Bool, choice: RoomcutViewModel.SurroundChoice, mode: Double, layout: Double)] = [
+            (true, .off, 1, 0), (true, .ambience, 2, 0), (true, .virtual51, 1, 2), (true, .virtual71, 1, 3),
+            (false, .off, 0, 0), (false, .ambience, 3, 0), (false, .virtual51, 0, 2),
+        ]
+        for c in cases {
+            model.setSpatialOutput(headphone: c.headphone)
+            model.setSurroundChoice(c.choice)
+            for _ in 0..<80 {
+                if let last = client.setParamsValues.last, last.spatialMode == c.mode, last.surroundType == c.layout { break }
+                try await Task.sleep(nanoseconds: 25_000_000)
+            }
+            let last = try XCTUnwrap(client.setParamsValues.last)
+            XCTAssertEqual(last.spatialMode, c.mode, "\(c.headphone ? "headphone" : "speaker") \(c.choice) sends spatialMode \(c.mode)")
+            XCTAssertEqual(last.surroundType, c.layout, "\(c.headphone ? "headphone" : "speaker") \(c.choice) sends surroundType \(c.layout)")
+        }
+    }
+
     func testCrossfeedStepsAsideWhenSomethingElsePlacesTheSpeakers() async throws {
         let caps = EngineStatus.spatialParamsCapability | EngineStatus.upmixCapability
         let client = FakeEngineClient()
@@ -677,10 +703,14 @@ final class RoomcutViewModelTests: XCTestCase {
 
         model.setSpatialOutput(headphone: true)
         XCTAssertTrue(model.centerWidthApplies)
+        XCTAssertTrue(model.surroundDepthApplies)
         // Two speakers have no discrete centre channel, so the control folds
-        // back to where it started and measurably changes nothing.
+        // back to where it started and measurably changes nothing. Speakers
+        // widen the pair itself rather than an upmix, so depth does nothing
+        // there either (measured identical at 20, 50 and 85).
         model.setSpatialOutput(headphone: false)
         XCTAssertFalse(model.centerWidthApplies)
+        XCTAssertFalse(model.surroundDepthApplies)
     }
 
     func testUpmixNeedsAnEngineThatRendersIt() async throws {

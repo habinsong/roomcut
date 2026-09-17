@@ -28,13 +28,14 @@ public enum UIFixtureKind: String, CaseIterable, Sendable {
     case uiMetadata = "ui-metadata"
     case uiAnalyzer = "ui-analyzer"
     case uiRoomTune = "ui-roomtune"
+    case uiSpace = "ui-space"
 
     // Sample Now Playing metadata, shown ONLY in the main-shell QA fixtures
     // (ui-*). The engine-state fixtures and production both use the signal
     // fallback so nothing fake leaks into the real app.
     var nowPlayingFixture: NowPlayingDisplayState? {
         switch self {
-        case .uiHome, .uiBasic, .uiAdvanced, .uiSidebar, .uiInspector, .uiMetadata, .uiAnalyzer, .uiRoomTune:
+        case .uiHome, .uiBasic, .uiAdvanced, .uiSidebar, .uiInspector, .uiMetadata, .uiAnalyzer, .uiRoomTune, .uiSpace:
             return .fixture(title: "Midnight Drive",
                             artist: "M83",
                             source: "Apple Music",
@@ -126,7 +127,7 @@ public final class FixtureEngineClient: @preconcurrency EngineClientProtocol {
             s.state = EngineStatus.running
             s.presetId = "custom"
             s.peak = 0.55
-        case .uiHome, .uiSidebar, .uiInspector, .uiMetadata:
+        case .uiHome, .uiSidebar, .uiInspector, .uiMetadata, .uiSpace:
             s.state = EngineStatus.running
             s.presetId = "soft"
             s.peak = 0.42
@@ -151,12 +152,24 @@ public final class FixtureEngineClient: @preconcurrency EngineClientProtocol {
             | EngineStatus.analyzerCapability
             | EngineStatus.dynamicsCapability
             | EngineStatus.levelMatchCapability
+        // The Space tab's full set of rows: room, upmix and head tracking.
+        if kind == .uiSpace {
+            s.capabilities |= EngineStatus.virtualRoomCapability | EngineStatus.upmixCapability
+                | EngineStatus.headTrackingCapability
+        }
         if let editedPresetID { s.presetId = editedPresetID }
         return s
     }
 
     public func getParams() async throws -> EngineParameters {
         if let editedParameters { return editedParameters }
+        if kind == .uiSpace {
+            // Headphones on a 7.1 layout: the Space tab with every row it can show.
+            var parameters = EngineParameters.flat
+            parameters.spatialMode = 1
+            parameters.surroundType = 3
+            return parameters
+        }
         if kind == .custom || kind == .uiAdvanced || kind == .uiAnalyzer {
             return EngineParameters(
                 preampDb: -3,

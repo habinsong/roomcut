@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <limits>
 #include <new>
+#include <vector>
 
 using namespace roomcut;
 static int failures = 0;
@@ -50,6 +51,34 @@ static void weightingMatchesSpecifiedResponse() {
                   "K-weighted measured power matches the specified filter response");
         }
     }
+}
+
+static void aLongerWindowIsReadyAfterFourBlocksAndAveragesWhatItHolds() {
+    const double fs = 48000;
+    KWeightedLevel fourBlocks, thirtyBlocks;
+    fourBlocks.prepare(fs, 2);
+    thirtyBlocks.prepare(fs, 2, 30);
+    uint64_t n = 0;
+    auto feed = [&](float amplitude, double seconds) {
+        for (const uint64_t end = n + static_cast<uint64_t>(fs * seconds); n < end; ++n) {
+            const float x = tone(n, fs, amplitude);
+            float frame[2] = {x, x};
+            fourBlocks.processFrame(frame);
+            thirtyBlocks.processFrame(frame);
+        }
+    };
+    feed(0.2f, 0.3);
+    CHECK(!thirtyBlocks.ready(), "a long window is not ready before four blocks");
+    feed(0.2f, 0.1);
+    CHECK(thirtyBlocks.ready() && thirtyBlocks.power() == fourBlocks.power(),
+          "after four blocks it reads what the four-block window reads");
+    const double loud = fourBlocks.power();
+    feed(0.05f, 2.6);
+    const double quiet = fourBlocks.power();
+    const double expected = (4 * loud + 26 * quiet) / 30;
+    CHECK(std::abs(10 * std::log10(thirtyBlocks.power() / expected)) < 0.05,
+          "a full 3 s window averages every block it holds");
+    CHECK(std::abs(10 * std::log10(quiet * 16 / loud)) < 0.05, "the four-block window follows the new level");
 }
 
 static void disabledModeIsTransparent() {
@@ -166,6 +195,113 @@ static void differentProcessingChainsMatchWeightedPower() {
           "both spectral variants reach a valid comparison state");
 }
 
+// 0.65 s bass-heavy, 0.65 s treble-heavy (a period the 3 s window does not
+// divide): with a bass boost on B, B leads A by a different amount in each
+// half, as it does phrase to phrase in music.
+static float phrases(uint64_t n, double fs) {
+    const double t = n / fs;
+    const double body = std::fmod(t, 1.3) < 0.65 ? 0.2 * std::sin(2 * M_PI * 80 * t) : 0.1 * std::sin(2 * M_PI * 6000 * t);
+    return static_cast<float>(body + 0.02 * std::sin(2 * M_PI * 1000 * t));
+}
+
+static void matchedHoldsWhileTheProgrammeMoves() {
+    const double fs = 48000;
+    ComparisonSettings settings;
+    settings.enabled = true;
+    settings.reference.eqGainsDb[1] = 6;
+    settings.reference.eqGainsDb[2] = 6;
+    ComparisonProcessor comparison;
+    comparison.prepare(fs, 2, settings);
+    // The same two chains on their own give the loudness the match should reach.
+    DSPChain a, b;
+    a.prepare(fs, 2); a.setParams(settings.current); a.reset();
+    b.prepare(fs, 2); b.setParams(settings.reference); b.reset();
+    KWeightedLevel levelA, levelB;
+    levelA.prepare(fs, 2, ComparisonLevelMatch::kWindowBlocks);
+    levelB.prepare(fs, 2, ComparisonLevelMatch::kWindowBlocks);
+    bool matched = false;
+    int relapses = 0;
+    double lowest = 1e9, highest = -1e9;
+    const uint64_t poll = static_cast<uint64_t>(fs * 0.05);
+    for (uint64_t n = 0; n < static_cast<uint64_t>(fs * 12); ++n) {
+        const float x = phrases(n, fs);
+        float frame[2] = {x, x}, alone[2] = {x, x}, other[2] = {x, x};
+        comparison.processInterleaved(frame, 1);
+        a.processInterleaved(alone, 1);
+        b.processInterleaved(other, 1);
+        levelA.processFrame(alone);
+        levelB.processFrame(other);
+        if (n % poll) continue;
+        const auto metrics = comparison.metrics();
+        if (metrics.state == LevelMatchState::Matched) matched = true;
+        else if (matched && metrics.state == LevelMatchState::Measuring) ++relapses;
+        if (n >= fs * 5) {
+            const double gain = metrics.referenceReductionDb - metrics.currentReductionDb;
+            lowest = std::min(lowest, gain);
+            highest = std::max(highest, gain);
+        }
+    }
+    const double expected = 10 * std::log10(levelB.power() / levelA.power());
+    const auto metrics = comparison.metrics();
+    const double gain = metrics.referenceReductionDb - metrics.currentReductionDb;
+    std::printf("moving programme: %d relapse(s), gain %.2f..%.2f dB, %.2f dB against %.2f dB measured\n",
+                relapses, lowest, highest, gain, expected);
+    CHECK(matched && relapses == 0, "once matched, following the programme is not reported as measuring again");
+    CHECK(highest - lowest < 1.0, "the 3 s window keeps the gain steady through phrase-to-phrase changes (5.8 dB over 400 ms)");
+    CHECK(expected > 1 && std::abs(gain - expected) < 0.5, "and the gain still matches the last 3 s of both outputs");
+}
+
+static void measuringReturnsOnlyWithSomethingNewToMatch() {
+    const double fs = 48000;
+    ComparisonSettings settings;
+    settings.enabled = true;
+    settings.reference.preampDb = -6;
+    ComparisonProcessor comparison;
+    comparison.prepare(fs, 2, settings);
+    uint64_t n = 0;
+    // States polled every 10 ms with repeats dropped; when Matched first came,
+    // and the reference side's reduction at that moment (B is the louder one
+    // from the settings change on).
+    auto play = [&](double seconds, bool silent, double* matchedAfter = nullptr, double* reductionThen = nullptr) {
+        std::vector<LevelMatchState> states;
+        const uint64_t start = n;
+        double firstMatch = -1;
+        for (const uint64_t end = n + static_cast<uint64_t>(fs * seconds); n < end; ++n) {
+            float frame[2] = {silent ? 0.0f : tone(n, fs), silent ? 0.0f : tone(n, fs)};
+            comparison.processInterleaved(frame, 1);
+            if ((n - start) % 480) continue;
+            const auto state = comparison.metrics().state;
+            if (states.empty() || states.back() != state) states.push_back(state);
+            if (firstMatch < 0 && state == LevelMatchState::Matched) {
+                firstMatch = (n - start) / fs;
+                const auto metrics = comparison.metrics();
+                if (reductionThen) *reductionThen = metrics.referenceReductionDb;
+            }
+        }
+        if (matchedAfter) *matchedAfter = firstMatch;
+        return states;
+    };
+    const auto one = [](LevelMatchState a, LevelMatchState b) { return std::vector<LevelMatchState>{a, b}; };
+    const auto M = LevelMatchState::Measuring, K = LevelMatchState::Matched;
+
+    CHECK(play(2, false) == one(M, K), "a new comparison measures once, then stays matched");
+    settings.reference.preampDb = 6;
+    comparison.setComparison(settings);
+    double after = 0, reduction = 0;
+    CHECK(play(2, false, &after, &reduction) == one(M, K), "changed settings measure once more, then stay matched");
+    CHECK(after > 0 && after < 1.2, "and match again within 1.2 s");
+    // The window still holds the settings crossfade's first block, so the
+    // target creeps up to 6 dB as it fills (5.86 dB at the match, 5.97 at 2 s).
+    CHECK(std::abs(reduction - 6) < 0.25, "Matched is reported only once the new reduction is in place");
+    CHECK(std::abs(comparison.metrics().referenceReductionDb - 6) < 0.05, "the new louder side is the one reduced");
+    CHECK(play(4, true).back() == LevelMatchState::NoSignal, "silence is reported as no signal");
+    const auto back = play(2, false, &after, &reduction);
+    CHECK(back.size() == 3 && back[0] == LevelMatchState::NoSignal && back[1] == M && back[2] == K,
+          "when the signal returns it measures once, then stays matched");
+    CHECK(std::abs(reduction - 6) < 0.25 && std::abs(comparison.metrics().referenceReductionDb - 6) < 0.05,
+          "matched again at the same reduction");
+}
+
 static void bypassRemovesComparisonAttenuation() {
     ComparisonSettings settings;
     settings.enabled = true;
@@ -210,10 +346,13 @@ static void togglesRemainBoundedAndAllocateNothing() {
 
 int main() {
     weightingMatchesSpecifiedResponse();
+    aLongerWindowIsReadyAfterFourBlocksAndAveragesWhatItHolds();
     disabledModeIsTransparent();
     matchedSwitchPreservesLevel();
     missingSignalAndFaultsCannotBeReportedAsMatched();
     differentProcessingChainsMatchWeightedPower();
+    matchedHoldsWhileTheProgrammeMoves();
+    measuringReturnsOnlyWithSomethingNewToMatch();
     bypassRemovesComparisonAttenuation();
     togglesRemainBoundedAndAllocateNothing();
     if (!failures) std::puts("all comparison tests passed");

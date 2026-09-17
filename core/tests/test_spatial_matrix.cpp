@@ -93,6 +93,21 @@ struct Case {
 // features at all — they are all mono-safe by design).
 struct Probe { std::vector<float> data; bool centred; };
 
+// The same noise in both channels.
+Probe makeCentredNoise(std::size_t frames) {
+    Probe p;
+    p.centred = true;
+    p.data.resize(frames * 2);
+    unsigned state = 12345u;
+    for (std::size_t f = 0; f < frames; ++f) {
+        state = state * 1103515245u + 12345u;
+        const float noise = static_cast<float>(0.2 * ((double)((state >> 8) & 0xFFFFu) / 32768.0 - 1.0));
+        p.data[f * 2] = noise;
+        p.data[f * 2 + 1] = noise;
+    }
+    return p;
+}
+
 Probe makeProbe(bool centred, std::size_t frames) {
     Probe p;
     p.centred = centred;
@@ -142,6 +157,7 @@ int main() {
     const std::size_t settled = frames;      // second half of the interleaved buffer
     const Probe centred = makeProbe(true, frames);
     const Probe stereo = makeProbe(false, frames);
+    const Probe centredNoise = makeCentredNoise(frames);
 
     // The chain has 2 ms of limiter look-ahead, so its output is DELAYED against
     // its input. Comparing the two directly compares different moments — which
@@ -229,17 +245,38 @@ int main() {
             }
 
             // A centred source stays centred — unless the head is deliberately
-            // turned, or a room is adding its own reflections. An upmix on
-            // headphones always has a room (a virtual speaker without
-            // reflections stays inside the head), so it is in the second case
-            // even when the listener picked no room.
-            const bool roomRendering = c.roomType != 0.0
-                || (c.headphone && c.surroundType >= 2.0);
+            // turned, or a room is adding its own reflections. Every surround
+            // choice carries a room of its own while the Room control is Off
+            // (DSPChain::surroundRoom), so those are in the second case even
+            // when the listener picked no room. With a room the two outputs
+            // cannot be sample-identical (its tail is decorrelated on purpose),
+            // but the source must still not move to one side: the two carry the
+            // same energy.
+            const bool roomRendering = c.roomType != 0.0 || c.surroundType >= 2.0 || c.ambience;
             if (probe->centred && !c.bypass && c.yaw == 0.0 && !roomRendering) {
                 double worst = 0.0;
                 for (std::size_t i = settled; i + 1 < out.size(); i += 2)
                     worst = std::max(worst, std::fabs((double)out[i] - out[i + 1]));
                 CHECK(worst < 1e-5, tag + ": a centred source stays centred");
+            }
+            if (probe->centred && !c.bypass && c.yaw == 0.0 && roomRendering) {
+                // Broadband, not the tone: a single sustained tone through a
+                // decorrelated tail lands differently in each output depending
+                // on where the tail's modes fall (measured +-3 dB for a user-picked
+                // room on speakers too), which is not a source moving.
+                const std::vector<float> noise = render(c, centredNoise);
+                double left = 0.0, right = 0.0;
+                for (std::size_t i = settled; i + 1 < noise.size(); i += 2) {
+                    left += (double)noise[i] * noise[i];
+                    right += (double)noise[i + 1] * noise[i + 1];
+                }
+                const double balance = 10.0 * std::log10(std::max(left, 1e-30) / std::max(right, 1e-30));
+                char note[80];
+                std::snprintf(note, sizeof(note), ": a centred source stays centred with a room (%+.2f dB)", balance);
+                // 1 dB: about the smallest level difference between the ears
+                // that moves an image. AUSpatialMixer's measured HRTF is not
+                // exactly symmetric (-0.52 dB here with the controls engaged).
+                CHECK(std::fabs(balance) < 1.0, tag + note);
             }
 
             // No steps: every one of these changes is ramped or crossfaded.

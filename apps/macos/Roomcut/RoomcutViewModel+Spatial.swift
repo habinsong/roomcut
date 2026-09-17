@@ -136,7 +136,7 @@ extension RoomcutViewModel {
         guard ensureSpatialAvailable() else { return }
         let m = mode.rounded()
         spatialMode = m >= 3 ? 3.0 : (m >= 2 ? 2.0 : (m >= 1 ? 1.0 : 0.0))
-        stopHeadTrackingIfUnavailable()
+        syncHeadTrackingAvailability()
         schedulePushParams(preservingPresetSelection: true)
     }
 
@@ -212,7 +212,7 @@ extension RoomcutViewModel {
             $0.parameters.surroundType = layout
             $0.parameters.spatialMode = mode
         }
-        stopHeadTrackingIfUnavailable()
+        syncHeadTrackingAvailability()
         schedulePushParams(preservingPresetSelection: true)
     }
 
@@ -222,6 +222,12 @@ extension RoomcutViewModel {
     // straight back where it came from and measurably does nothing at all
     // (identical output at 0 and at 100). Do not show a dead control.
     public var centerWidthApplies: Bool { spatialOutputIsHeadphone }
+
+    // The same holds for Surround Depth since speakers stopped going through the
+    // upmix (they widen the stereo pair itself): rendered through the chain on
+    // six programmes, speaker Wide at depth 20, 50 and 85 measured identical in
+    // level, colour and reverb (2026-09-17). Not offered where it does nothing.
+    public var surroundDepthApplies: Bool { spatialOutputIsHeadphone }
 
     // Crossfeed builds a fixed virtual stage. While head tracking or the upmix
     // is rendering one with real angles, the engine zeroes it — so the slider
@@ -299,13 +305,18 @@ extension RoomcutViewModel {
             && headTracking.isSupported
     }
 
+    // The switch: what the listener chose. It stays on across a trip to
+    // speakers, where the sensor pauses (see syncHeadTrackingAvailability).
     public var headTrackingOn: Bool { headTracking.isTracking }
+
+    // Whether the stage is actually following the head right now.
+    public var headTrackingActive: Bool { headTracking.isTracking && headTrackingAvailable }
 
     // The live head angle, for the stage picture. Quantised to 2 degrees: the
     // sensor delivers 50 a second and the drawing has no use for that rate, but
     // a view that redrew on every one of them would.
     public var headYawDegrees: Double {
-        guard headTracking.isTracking else { return 0 }
+        guard headTracking.isDelivering else { return 0 }
         return (headTracking.yawDegrees / 2).rounded() * 2
     }
 
@@ -323,6 +334,7 @@ extension RoomcutViewModel {
         // crossfeed model that does the same job for a fixed head would stack
         // on top of it.
         if crossfeed != 0 { setCrossfeed(0) }
+        syncHeadTrackingAvailability()
         headTracking.start()
     }
 
@@ -331,10 +343,12 @@ extension RoomcutViewModel {
         headTracking.recentre()
     }
 
-    // The output switched away from headphones (or spatial went away): the
-    // renderer has nothing to do, so stop feeding it.
-    private func stopHeadTrackingIfUnavailable() {
-        if headTracking.isTracking && !headTrackingAvailable { headTracking.stop() }
+    // The output switched away from headphones (or back): the renderer has
+    // nothing to do on speakers, so the sensor pauses — but the listener's
+    // choice stays. This used to switch tracking off for good, and a trip to
+    // Speaker and back left it off with nothing to say why.
+    private func syncHeadTrackingAvailability() {
+        headTracking.setAllowed(headTrackingAvailable)
     }
 
     // MARK: Parametric EQ (N user-configurable biquad bands)

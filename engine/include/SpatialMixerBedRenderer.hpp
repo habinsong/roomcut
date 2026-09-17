@@ -50,6 +50,13 @@ public:
     // The highest rate the units render correctly, and the highest this takes.
     static constexpr double kMaxUnitRate = 96000.0;
     static constexpr double kMaxSampleRate = 768000.0;
+    // 7.1's back pair is carved out of the same ambience as the side pair, so
+    // placed at +-135 on time it fused with the sides and 7.1 measured like
+    // 5.1. It arrives later instead, and at a different time in each ear, as a
+    // layer of its own behind the listener.
+    static constexpr double kBackDelayLeftSeconds = 0.015;
+    static constexpr double kBackDelayRightSeconds = 0.021;
+    static constexpr std::size_t kBackLine = static_cast<std::size_t>(kBackDelayRightSeconds * kMaxUnitRate) + 2;
 
     SpatialMixerBedRenderer() = default;
     SpatialMixerBedRenderer(const SpatialMixerBedRenderer&) = delete;
@@ -114,6 +121,9 @@ private:
     float* unitInWrite_[7] = {};
     const float* unitInRead_[7] = {};
     std::array<float, kBlockFrames> unitLeft_{}, unitRight_{};
+    std::array<float, kBackLine> backLineL_{}, backLineR_{};
+    std::array<float, kBlockFrames> backOutL_{}, backOutR_{};
+    std::size_t backWrite_ = 0, backDelayL_ = 720, backDelayR_ = 1008;
 
     std::array<ParametricBand, ParametricEQ::kNumBands> diffuseBands_{};
     std::array<Biquad, ParametricEQ::kNumBands> diffuseFilters_{};

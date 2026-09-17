@@ -124,6 +124,8 @@ final class AppPreferences: ObservableObject {
         static let appearance = "com.roomcut.appearance"
         static let themeSync = "com.roomcut.themeSync"
         static let language = "com.roomcut.language"
+        static let speakerSpacePreset = "com.roomcut.space.preset.speaker"
+        static let headphoneSpacePreset = "com.roomcut.space.preset.headphone"
     }
 
     init(defaults: UserDefaults) {
@@ -140,6 +142,13 @@ final class AppPreferences: ObservableObject {
     func setLayout(_ value: RoomcutNowPlayingLayout) { layout = value; defaults.set(value.rawValue, forKey: Key.layout) }
     func setAppearance(_ value: RoomcutAppearance) { appearance = value; defaults.set(value.rawValue, forKey: Key.appearance) }
     func setThemeSync(_ value: Bool) { themeSync = value; defaults.set(value, forKey: Key.themeSync) }
+    // The Space preset each output was last left on; nil once it was adjusted.
+    func spacePresetID(headphone: Bool) -> String? {
+        defaults.string(forKey: headphone ? Key.headphoneSpacePreset : Key.speakerSpacePreset)
+    }
+    func setSpacePresetID(_ id: String?, headphone: Bool) {
+        defaults.set(id, forKey: headphone ? Key.headphoneSpacePreset : Key.speakerSpacePreset)
+    }
     func setLanguage(_ value: AppLanguage) {
         language = value
         AppLanguage.preference = value

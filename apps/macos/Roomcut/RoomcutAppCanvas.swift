@@ -46,7 +46,7 @@ struct RoomcutAppCanvas: View {
     @Binding var compactMode: Bool
     @Binding var keepsWindowOnTop: Bool
 
-    @State private var tab: RoomcutTab = .home
+    @State private var tab: RoomcutTab = AppLaunch.fixtureKind == .uiSpace ? .space : .home
     @State private var compactClosing = false
     @Environment(\.colorScheme) private var scheme
 
@@ -83,8 +83,12 @@ struct RoomcutAppCanvas: View {
     // the tab bar (below) while HomeTab draws the panel it controls.
     @StateObject private var sheetModel = SoundSheetModel(
         level: (AppLaunch.fixtureKind == .uiAdvanced || AppLaunch.fixtureKind == .uiAnalyzer)
-            ? .expanded : .minimized)
+            ? .expanded : (AppLaunch.fixtureKind == .uiBasic ? .controls : .minimized))
     @State private var sheetKeyMonitor: Any?
+    // The tab bar floats this far above the window bottom; a screen that fills
+    // down to it leaves the same gap above it (roomcutTabBarClearance).
+    private let tabBarBottomInset: CGFloat = 14
+    @State private var tabBarHeight: CGFloat = 58
 
     var body: some View {
         ZStack {
@@ -176,6 +180,7 @@ struct RoomcutAppCanvas: View {
 
                 content
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .environment(\.roomcutTabBarClearance, tabBarHeight + 2 * tabBarBottomInset)
             }
 
             VStack(spacing: 0) {
@@ -209,8 +214,9 @@ struct RoomcutAppCanvas: View {
                                 }
                             }
                     )
+                    .onGeometryChange(for: CGFloat.self, of: { $0.size.height }) { tabBarHeight = $0 }
                     .padding(.horizontal, 16)
-                    .padding(.bottom, 14)
+                    .padding(.bottom, tabBarBottomInset)
             }
         }
     }

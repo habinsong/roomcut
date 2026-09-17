@@ -47,6 +47,8 @@ OSStatus      setDefaultOutputDevice(AudioDeviceID dev);
 std::string   deviceUID(AudioDeviceID dev);
 std::string   deviceName(AudioDeviceID dev);
 double        deviceNominalSampleRate(AudioDeviceID dev); // 0.0 on failure
+// Bluetooth or Bluetooth LE transport (AirPods, Beats, other wireless headphones).
+bool          isBluetoothOutput(AudioDeviceID dev);
 
 // All alive devices with at least one output stream, in HAL order.
 std::vector<OutputDeviceInfo> listOutputDevices();

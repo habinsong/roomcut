@@ -84,6 +84,16 @@ OSStatus setDefaultOutputDevice(AudioDeviceID dev) {
                                       sizeof(dev), &dev);
 }
 
+bool isBluetoothOutput(AudioDeviceID dev) {
+    AudioObjectPropertyAddress addr = globalAddr(kAudioDevicePropertyTransportType);
+    UInt32 transport = 0;
+    UInt32 size = sizeof(transport);
+    if (AudioObjectGetPropertyData(dev, &addr, 0, nullptr, &size, &transport) != noErr) {
+        return false;
+    }
+    return transport == kAudioDeviceTransportTypeBluetooth || transport == kAudioDeviceTransportTypeBluetoothLE;
+}
+
 std::string deviceUID(AudioDeviceID dev) {
     return stringProperty(dev, kAudioDevicePropertyDeviceUID);
 }

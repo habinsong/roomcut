@@ -122,6 +122,17 @@ struct RoomcutRow<Trailing: View>: View {
     }
 }
 
+// How far a tab screen must keep its last card above the window's bottom edge:
+// the floating tab bar's measured height plus its bottom inset, plus the same
+// gap again above the bar. Set by RoomcutAppCanvas.
+private struct RoomcutTabBarClearanceKey: EnvironmentKey { static let defaultValue: CGFloat = 86 }
+extension EnvironmentValues {
+    var roomcutTabBarClearance: CGFloat {
+        get { self[RoomcutTabBarClearanceKey.self] }
+        set { self[RoomcutTabBarClearanceKey.self] = newValue }
+    }
+}
+
 struct RoomcutDivider: View {
     var body: some View { Divider().opacity(0.4).padding(.leading, 16) }
 }

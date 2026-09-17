@@ -196,8 +196,8 @@ void test_seven_one_splits_the_surround() {
     // Both pairs carry the same ambience at a fixed split, so the energy ratio
     // is the square of the share — they differ by where they get rendered.
     const double ratio = back / side;
-    const double expected = (0.4 * 0.4) / (0.6 * 0.6);
-    CHECK(std::fabs(ratio - expected) < 0.01, "the side/back split matches the declared share");
+    const double expected = (0.7 * 0.7) / (0.3 * 0.3);
+    CHECK(std::fabs(ratio / expected - 1.0) < 0.01, "the side/back split matches the declared share");
 }
 
 void test_every_sample_rate() {

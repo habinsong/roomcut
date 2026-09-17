@@ -48,6 +48,7 @@
 
 #include "ChannelProbe.hpp"
 #include "ExternalBed.hpp"
+#include "SideCanceller.hpp"
 #include "SpeakerColour.hpp"
 #include "Upmixer.hpp"
 #include "VirtualSpeaker.hpp"
@@ -156,6 +157,11 @@ public:
     // touch the spatial arrangement at all, only how loud it is. Slow enough not
     // to pump on programme, fast enough to follow a cut.
     static constexpr double kSurroundMatchSeconds = 0.25;
+    // Speakers: how much the level match weighs the mono sum (a single built-in
+    // speaker) against the energy of the pair.
+    static constexpr double kSpeakerMonoWeight = 0.5;
+    // Speakers, Wide: feedback of the difference-signal canceller.
+    static constexpr double kSpeakerWideCancel = 0.45;
 
     void prepare(double fs) {
         fs_ = fs > 0.0 ? fs : 48000.0;
@@ -177,6 +183,8 @@ public:
         matchA_ = 1.0 - std::exp(-1.0 / (fs_ * kSurroundMatchSeconds));
         matchStep_ = 1.0 - std::exp(-1.0 / (fs_ * 0.05));
         external_.prepare(fs_);
+        canceller_.prepare(fs_);
+        canceller_.setGain(kSpeakerWideCancel);
         computeNormalisation();
         applyYaw();
         reset();
@@ -220,6 +228,17 @@ public:
         external_.setSurroundLevels(centreWidth, surroundDepth);
     }
 
+    // Ambience (spatialMode 2 on headphones, 3 on speakers). Its space is the
+    // late, decorrelated room the chain adds after this stage (DSPChain::
+    // surroundRoom); the stage leaves the mix itself where it was — through the
+    // virtual speakers only while the head is tracked — and holds the level.
+    void setAmbience(bool on) { ambience_ = on; }
+    bool ambience() const { return ambience_; }
+
+    // Headphones only: the front pair through virtual speakers (head tracking)
+    // rather than straight through. The upmix layouts always use them.
+    void setVirtualFront(bool on) { virtualFront_ = on; }
+
     // Head yaw in degrees, positive when the listener turns to the right.
     void setYawDegrees(double yaw) {
         yaw_ = std::isfinite(yaw) ? wrap180(yaw) : 0.0;
@@ -237,6 +256,10 @@ public:
     // the delay stays, so the two can be switched mid-programme.
     void setPreferExternalBed(bool prefer) { preferExternal_ = prefer; }
     std::size_t latencyFrames() const { return external_.latencyFrames(); }
+    // The input of the last frame, at the same time as the output (after the
+    // external bed's delay), for a level comparison further down the chain.
+    double alignedDryLeft() const { return alignedDryL_; }
+    double alignedDryRight() const { return alignedDryR_; }
     double externalBedGain() const { return external_.externalGain(); }
 
     // A pink-noise burst on one upmix channel instead of the programme's bed,
@@ -267,6 +290,7 @@ public:
         dryEnergy_ = wetEnergy_ = 0.0;
         matchGain_ = 1.0;
         upmix_.reset();
+        canceller_.reset();
         probe_.stop();
         mix_ = enabled_ ? 1.0 : 0.0;
         external_.reset(layout_, externalWanted());
@@ -293,24 +317,44 @@ public:
 
         const double dryL = frame[0];
         const double dryR = frame[1];
+        alignedDryL_ = dryL;
+        alignedDryR_ = dryR;
 
         if (!headphone_) {
-            // Speaker fold. At a widen of 1 this is the identity — centre plus
-            // front plus surround is exactly the channel they were carved from —
-            // so the only thing the listener hears is the widening itself.
-            UpmixFrame up;
-            upmix_.process(dryL, dryR, up);
-            double wideL = 0.0, wideR = 0.0;
-            envelop(up.sideL, up.sideR, up.backL, up.backR, wideL, wideR);
-            double outL = up.centre + up.frontL + wideL;
-            double outR = up.centre + up.frontR + wideR;
-            matchLevel(dryL, dryR, outL, outR);
+            // Speakers. Ambience and Wide both get their space from the room
+            // after this stage (a larger one for Wide); Wide also cancels the
+            // leak to the far ear on the difference signal (SideCanceller).
+            // Nothing here is built from a delayed copy of the programme: added
+            // back to itself that combed sustained notes by 4-6 dB, and a
+            // pushed-apart copy went out of phase on wide music and cancelled in
+            // a single speaker (-5 dB, measured).
+            double outL = dryL, outR = dryR;
+            if (layout_ >= Upmixer::k51) canceller_.process(outL, outR);
+            matchLevel(dryL, dryR, outL, outR, kSpeakerMonoWeight);
             frame[0] = static_cast<float>(dryL + (outL - dryL) * mix_);
             frame[1] = static_cast<float>(dryR + (outR - dryR) * mix_);
             return;
         }
 
         const bool upmixing = layout_ >= Upmixer::k51;
+        if (!upmixing && ambience_) {
+            // The mix stays where it is (through virtual speakers only while the
+            // head is tracked); the room after the stage is the ambience.
+            double wetL = dryL, wetR = dryR;
+            if (virtualFront_) {
+                UpmixFrame pair;
+                pair.frontL = wetL;
+                pair.frontR = wetR;
+                wetL = wetR = 0.0;
+                renderBed(pair, wetL, wetR);
+                wetL *= kBusGain;
+                wetR *= kBusGain;
+            }
+            matchLevel(dryL, dryR, wetL, wetR);
+            frame[0] = static_cast<float>(dryL + (wetL - dryL) * mix_);
+            frame[1] = static_cast<float>(dryR + (wetR - dryR) * mix_);
+            return;
+        }
         UpmixFrame up;
         if (upmixing) {
             upmix_.process(dryL, dryR, up);   // keeps steering on the programme through a probe
@@ -424,9 +468,14 @@ private:
     // One scalar on both ears, tracking the level that came in. A scalar cannot
     // change how alike the two ears are, so every bit of the widening survives
     // and only the loudness moves.
-    inline void matchLevel(double dryL, double dryR, double& wetL, double& wetR) {
-        dryEnergy_ += matchA_ * (dryL * dryL + dryR * dryR - dryEnergy_);
-        wetEnergy_ += matchA_ * (wetL * wetL + wetR * wetR - wetEnergy_);
+    inline void matchLevel(double dryL, double dryR, double& wetL, double& wetR, double monoWeight = 0.0) {
+        // monoWeight blends the energy of the two outputs with the energy of
+        // their sum (x2, the same scale for a centred signal): 0 matches what
+        // two speakers or headphones deliver, 1 what a single speaker does.
+        const double dry = (dryL * dryL + dryR * dryR) * (1.0 - monoWeight) + 0.5 * (dryL + dryR) * (dryL + dryR) * monoWeight;
+        const double wet = (wetL * wetL + wetR * wetR) * (1.0 - monoWeight) + 0.5 * (wetL + wetR) * (wetL + wetR) * monoWeight;
+        dryEnergy_ += matchA_ * (dry - dryEnergy_);
+        wetEnergy_ += matchA_ * (wet - wetEnergy_);
         if (wetEnergy_ <= 1.0e-12) return;
         double gain = std::sqrt(dryEnergy_ / wetEnergy_);
         if (gain > 2.0) gain = 2.0;          // never turn a quiet passage up
@@ -468,6 +517,9 @@ private:
     bool enabled_ = false;
     bool headphone_ = true;
     bool preferExternal_ = true;
+    bool ambience_ = false;
+    bool virtualFront_ = false;
+    double alignedDryL_ = 0.0, alignedDryR_ = 0.0;
     int layout_ = Upmixer::kOff;
     SpeakerColour colour_[kMaxSpeakers]{};
     // Long enough for the latest arrival (back pair plus its skew, 32 ms) at the
@@ -494,6 +546,7 @@ private:
     ChannelProbe probe_{};
     VirtualSpeaker speaker_[kMaxSpeakers]{};
     ExternalBed external_{};
+    SideCanceller canceller_{};
 };
 
 } // namespace roomcut

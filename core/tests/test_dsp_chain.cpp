@@ -553,12 +553,42 @@ static void test_speaker_upmix_folds_and_stays_mono_safe() {
           "a speaker layout actually changes the output");
     const std::vector<float> folded = chainToneWithHead(wide, 0.0, false);
 
-    // A centred (mono) programme must survive the fold: the centre channel goes
-    // back to the phantom the pair already makes, so nothing cancels.
-    double worst = 0.0;
-    for (std::size_t f = kFs / 4; f * 2 + 1 < folded.size(); ++f)
-        worst = std::max(worst, std::fabs((double)folded[f * 2] - folded[f * 2 + 1]));
-    CHECK(worst < 1e-6, "a centred source stays centred through the speaker fold");
+    // A centred (mono) programme must survive: nothing may cancel in the sum
+    // and the source may not lean to a side. Wide carries a room, whose tail is
+    // decorrelated between the outputs on purpose, so this is judged by energy
+    // on broadband noise (a single tone lands in each output wherever the tail's
+    // modes put it) rather than sample by sample.
+    (void)folded;
+    auto centredNoise = [](const ChainParams& params) {
+        DSPChain chain;
+        chain.prepare(kFs, 2);
+        chain.setParams(params);
+        const std::size_t frames = static_cast<std::size_t>(kFs * 2);
+        std::vector<float> buf(frames * 2, 0.0f);
+        unsigned state = 12345u;
+        for (std::size_t f = 0; f < frames; ++f) {
+            state = state * 1103515245u + 12345u;
+            const float s = static_cast<float>(0.2 * ((double)((state >> 8) & 0xFFFFu) / 32768.0 - 1.0));
+            buf[f * 2] = s;
+            buf[f * 2 + 1] = s;
+        }
+        chain.processInterleaved(buf.data(), frames);
+        return buf;
+    };
+    const std::vector<float> wideNoise = centredNoise(wide), dryNoise = centredNoise(speaker);
+    double left = 0.0, right = 0.0, sum = 0.0, drySum = 0.0;
+    for (std::size_t f = kFs / 2; f * 2 + 1 < wideNoise.size(); ++f) {
+        left += (double)wideNoise[f * 2] * wideNoise[f * 2];
+        right += (double)wideNoise[f * 2 + 1] * wideNoise[f * 2 + 1];
+        const double mono = 0.5 * ((double)wideNoise[f * 2] + wideNoise[f * 2 + 1]);
+        const double monoDry = 0.5 * ((double)dryNoise[f * 2] + dryNoise[f * 2 + 1]);
+        sum += mono * mono;
+        drySum += monoDry * monoDry;
+    }
+    std::printf("speaker Wide on centred noise: balance %+.2f dB, mono sum %+.2f dB against plain speakers\n",
+                10.0 * std::log10(left / right), 10.0 * std::log10(sum / drySum));
+    CHECK(std::fabs(10.0 * std::log10(left / right)) < 0.5, "a centred source stays centred through the speaker layout");
+    CHECK(std::fabs(10.0 * std::log10(sum / drySum)) < 1.0, "and its mono sum stays within 1 dB of the plain speaker output");
 
     // Head tracking is meaningless on speakers — they do not move with the head.
     CHECK(chainStereo(wide, 45.0, true) == chainStereo(wide, 0.0, false),

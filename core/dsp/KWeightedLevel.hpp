@@ -9,12 +9,18 @@
 
 namespace roomcut {
 
-// Stereo K-weighted power over the most recent four 100ms blocks. This is a
+// Stereo K-weighted power over the most recent `windowBlocks` 100ms blocks
+// (four by default, up to kMaxBlocks). It is ready once four blocks are in and
+// averages whatever part of the window is filled until then. This is a
 // comparison measurement, not an integrated programme-loudness meter.
 class KWeightedLevel {
 public:
-    void prepare(double sampleRate, std::size_t channels) {
+    static constexpr std::size_t kReadyBlocks = 4;
+    static constexpr std::size_t kMaxBlocks = 30;
+
+    void prepare(double sampleRate, std::size_t channels, std::size_t windowBlocks = kReadyBlocks) {
         channels_ = channels;
+        window_ = std::clamp<std::size_t>(windowBlocks, 1, kMaxBlocks);
         blockFrames_ = std::max<uint32_t>(1, std::lround(sampleRate * 0.1));
         // ITU-R BS.1770-5, Tables 1 and 2 (48kHz). Inverse/forward bilinear
         // transforms preserve the weighting response at other sample rates.
@@ -39,16 +45,16 @@ public:
         }
         if (++frames_ < blockFrames_) return false;
         blocks_[index_] = sum_;
-        index_ = (index_ + 1) % blocks_.size();
-        filled_ = std::min<std::size_t>(blocks_.size(), filled_ + 1);
+        index_ = (index_ + 1) % window_;
+        filled_ = std::min(window_, filled_ + 1);
         power_ = 0;
-        for (double value : blocks_) power_ += value;
+        for (std::size_t b = 0; b < window_; ++b) power_ += blocks_[b];
         power_ /= blockFrames_ * filled_;
         frames_ = 0; sum_ = 0;
         return true;
     }
 
-    bool ready() const { return filled_ == blocks_.size(); }
+    bool ready() const { return filled_ >= std::min(kReadyBlocks, window_); }
     double power() const { return power_; }
 
 private:
@@ -64,7 +70,8 @@ private:
     }
 
     Biquad shelf_, highpass_;
-    std::array<double, 4> blocks_{};
+    std::array<double, kMaxBlocks> blocks_{};
+    std::size_t window_ = kReadyBlocks;
     double sum_ = 0, power_ = 0;
     uint32_t frames_ = 0, blockFrames_ = 4800;
     std::size_t channels_ = 2, index_ = 0, filled_ = 0;

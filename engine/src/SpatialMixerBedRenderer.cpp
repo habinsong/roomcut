@@ -73,6 +73,11 @@ bool SpatialMixerBedRenderer::prepare(double sampleRate, std::string& error) {
         }
         diffuseCorrection_ = true;
     }
+    backDelayL_ = std::min(kBackLine - 1, static_cast<std::size_t>(std::lround(unitRate_ * kBackDelayLeftSeconds)));
+    backDelayR_ = std::min(kBackLine - 1, static_cast<std::size_t>(std::lround(unitRate_ * kBackDelayRightSeconds)));
+    backLineL_.fill(0.0f);
+    backLineR_.fill(0.0f);
+    backWrite_ = 0;
     down_.prepare(sampleRate, factor_, 7);
     up_.prepare(sampleRate, factor_, 2);
     for (std::size_t c = 0; c < unitIn_.size(); ++c) unitInRead_[c] = unitInWrite_[c] = unitIn_[c].data();
@@ -227,8 +232,19 @@ void SpatialMixerBedRenderer::render(int layout, const float* const* channels, d
     up_.process(unitOut, streamOut, kBlockFrames);
 }
 
-void SpatialMixerBedRenderer::renderAtUnitRate(int layout, const float* const* channels, double headYawDegrees,
+void SpatialMixerBedRenderer::renderAtUnitRate(int layout, const float* const* incoming, double headYawDegrees,
                                                float* left, float* right) {
+    // The back pair arrives later than the rest (see kBackDelayLeftSeconds).
+    // Every block goes through the lines, whatever the layout, so a switch to
+    // 7.1 starts from the programme rather than from a stale tail.
+    for (std::size_t i = 0; i < kBlockFrames; ++i) {
+        backLineL_[backWrite_] = incoming[5][i];
+        backLineR_[backWrite_] = incoming[6][i];
+        backOutL_[i] = backLineL_[backWrite_ >= backDelayL_ ? backWrite_ - backDelayL_ : backWrite_ + kBackLine - backDelayL_];
+        backOutR_[i] = backLineR_[backWrite_ >= backDelayR_ ? backWrite_ - backDelayR_ : backWrite_ + kBackLine - backDelayR_];
+        backWrite_ = backWrite_ + 1 < kBackLine ? backWrite_ + 1 : 0;
+    }
+    const float* channels[7] = {incoming[0], incoming[1], incoming[2], incoming[3], incoming[4], backOutL_.data(), backOutR_.data()};
     Unit* unit = canRender(layout) ? unitFor(layout) : nullptr;
     if (!unit) {
         std::fill(left, left + kBlockFrames, 0.0f);

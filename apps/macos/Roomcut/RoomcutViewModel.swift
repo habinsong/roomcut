@@ -170,8 +170,14 @@ public final class RoomcutViewModel: ObservableObject {
         self.init(client: LiveEngineClient())
     }
 
-    public init(client: EngineClientProtocol, debounceNanoseconds: UInt64 = 150_000_000,
-                defaults: UserDefaults = .standard) {
+    public convenience init(client: EngineClientProtocol, debounceNanoseconds: UInt64 = 150_000_000,
+                            defaults: UserDefaults = .standard) {
+        self.init(client: client, debounceNanoseconds: debounceNanoseconds, defaults: defaults,
+                  headMotion: CoreMotionHeadSource())
+    }
+
+    init(client: EngineClientProtocol, debounceNanoseconds: UInt64 = 150_000_000,
+         defaults: UserDefaults = .standard, headMotion: HeadMotionSource) {
         self.client = client
         self.presets = client.presets
         self.presetStore = PresetStore(defaults: defaults)
@@ -180,9 +186,9 @@ public final class RoomcutViewModel: ObservableObject {
         self.deviceWriter = DeviceCommandWriter(client: client)
         self.bypassWriter = BypassWriter(client: client)
         self.deviceReader = DeviceReadCoordinator(client: client)
-        self.headTracking = HeadTrackingService { [client] yaw, active in
+        self.headTracking = HeadTrackingService(send: { [client] yaw, active in
             client.sendHeadPose(yawDegrees: yaw, active: active)
-        }
+        }, source: headMotion)
         editor.relabel(saved: presetStore.activeSavedName.flatMap { presetStore.contains($0) ? $0 : nil },
                        builtin: presetStore.activeBuiltinID.flatMap { id in
                            client.presets.contains { $0.id == id } || PresetLibrary.preset(for: id) != nil

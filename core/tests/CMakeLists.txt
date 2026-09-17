@@ -193,6 +193,18 @@ target_compile_options(test_surround_stage PRIVATE -Wall -Wextra)
 
 add_test(NAME surround_stage COMMAND test_surround_stage)
 
+# DSP: every Space > Surround choice is audible, level-matched and not dull, on genre programmes.
+add_executable(test_surround_modes ${CMAKE_SOURCE_DIR}/core/tests/test_surround_modes.cpp)
+target_include_directories(test_surround_modes PRIVATE ${CMAKE_SOURCE_DIR}/core/dsp ${CMAKE_SOURCE_DIR}/core/tests)
+target_compile_options(test_surround_modes PRIVATE -Wall -Wextra)
+add_test(NAME surround_modes COMMAND test_surround_modes)
+
+# DSP: crosstalk cancellation on the difference signal.
+add_executable(test_side_canceller ${CMAKE_SOURCE_DIR}/core/tests/test_side_canceller.cpp)
+target_include_directories(test_side_canceller PRIVATE ${CMAKE_SOURCE_DIR}/core/dsp)
+target_compile_options(test_side_canceller PRIVATE -Wall -Wextra)
+add_test(NAME side_canceller COMMAND test_side_canceller)
+
 # DSP: every combination of surround, head tracking, room and bypass.
 add_executable(test_spatial_matrix ${CMAKE_SOURCE_DIR}/core/tests/test_spatial_matrix.cpp)
 target_include_directories(test_spatial_matrix PRIVATE ${CMAKE_SOURCE_DIR}/core/dsp)

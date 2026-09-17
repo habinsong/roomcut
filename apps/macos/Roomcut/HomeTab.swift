@@ -29,6 +29,9 @@ final class SoundSheetModel: ObservableObject {
 
     let tabClear: CGFloat = 80           // keep content above the floating tab bar
     let minimizedSheetHeight: CGFloat = 57
+    // Half of the 26 pt between the knobs' dB readouts and EQ Preset, taken out
+    // of the half-open sheet (HomeTab).
+    let halfOpenGapSaving: CGFloat = 13
     private let sheetLift: CGFloat = 28
     // A VERY slight spring (high damping → barely any bounce) so the snap settles
     // with a soft pull. The old "shake" was the scroll view bouncing mid-drag, which
@@ -42,7 +45,7 @@ final class SoundSheetModel: ObservableObject {
     func restingHeight(_ l: SoundControlsLevel, total: CGFloat) -> CGFloat {
         switch l {
         case .minimized: return minimizedSheetHeight
-        case .controls:  return min(total * 0.90, 184 + tabClear + sheetLift)
+        case .controls:  return min(total * 0.90, 184 - halfOpenGapSaving + tabClear + sheetLift)
         case .expanded:  return min(total * 0.90, total * 0.80 + sheetLift)
         }
     }
@@ -193,24 +196,30 @@ struct HomeTab: View {
                 ScrollView {
                     VStack(spacing: 16) {
                         SoundHistoryControls(model: model)
-                        if segment == .basic || !sheet.isExpanded {
-                            RoomcutMacroControls(
-                                model: model,
-                                showSummary: sheet.isExpanded,
-                                onShowAdvanced: {
-                                    withAnimation(sheet.snap) {
-                                        segment = .advanced
-                                        sheet.level = .expanded
-                                    }
-                                })
-                        } else {
-                            AdvancedControls(model: model, meters: model.meters)
-                        }
+                        // Half-open, the knobs' dB readouts sit half as far above
+                        // EQ Preset (3 + the knobs' own 10 = 13 pt, was 26); the
+                        // sheet is that much shorter (`halfOpenGapSaving`), which
+                        // gives the transport above it room to breathe.
+                        VStack(spacing: sheet.isExpanded ? 16 : 16 - sheet.halfOpenGapSaving) {
+                            if segment == .basic || !sheet.isExpanded {
+                                RoomcutMacroControls(
+                                    model: model,
+                                    showSummary: sheet.isExpanded,
+                                    onShowAdvanced: {
+                                        withAnimation(sheet.snap) {
+                                            segment = .advanced
+                                            sheet.level = .expanded
+                                        }
+                                    })
+                            } else {
+                                AdvancedControls(model: model, meters: model.meters)
+                            }
 
-                        if sheet.isExpanded {
-                            volumeBar
+                            if sheet.isExpanded {
+                                volumeBar
+                            }
+                            EqPresetPicker(model: model)
                         }
-                        EqPresetPicker(model: model)
                     }
                     .padding(.horizontal, 18)
                     .padding(.top, 4)

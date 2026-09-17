@@ -310,7 +310,30 @@ OSStatus openOutputOn(EngineContext& ctx, OutputDevice& output,
     ctx.bedExternalGainBits.store(0, std::memory_order_relaxed);
     if (ctx.useSystemBedRenderer) {
         std::string bedError;
-        if (ctx.bedCurrent.prepare(output.sampleRate(), bedError) && ctx.bedReference.prepare(output.sampleRate(), bedError)) {
+        // AUSpatialMixer decides on the listener's personalized HRTF once, when
+        // a unit initialises, and only if the system default output is the
+        // listener's own headphones at that moment. Measured 2026-09-17 with
+        // AirPods Pro: default = AirPods -> property 3116 reads 1 and the render
+        // differs from the generic HRTF (residual -0.3 dB); default = Roomcut
+        // Output, the Mac speaker or only the alert device on the AirPods -> 0
+        // and bit-identical to generic; switching the default after init does
+        // not change a unit either way, in both directions. The engine keeps
+        // Roomcut as the default, so its units never personalised. For the two
+        // prepares only, the default is lent to the Bluetooth output the bed
+        // renders for and handed straight back (IO is stopped here anyway).
+        const AudioDeviceID previousDefault = defaultOutputDevice();
+        const bool lend = device != previousDefault && isBluetoothOutput(device)
+                       && isRoomcutDeviceUID(deviceUID(previousDefault));
+        const auto lentAt = std::chrono::steady_clock::now();
+        if (lend && setDefaultOutputDevice(device) != noErr) std::fprintf(stderr, "[engine] bed renderer: could not lend the default output\n");
+        const bool prepared = ctx.bedCurrent.prepare(output.sampleRate(), bedError) && ctx.bedReference.prepare(output.sampleRate(), bedError);
+        if (lend) {
+            const OSStatus back = setDefaultOutputDevice(previousDefault);
+            std::fprintf(stderr, "[engine] bed renderer: default output lent to '%s' for %.0f ms (returned: %d)\n",
+                         deviceName(device).c_str(),
+                         std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - lentAt).count(), (int)back);
+        }
+        if (prepared) {
             bedCurrent = &ctx.bedCurrent;
             bedReference = &ctx.bedReference;
             ctx.bedAttached = true;

@@ -42,6 +42,8 @@ public:
         applyHeadPose();
         crossfadeSamples_ = std::max<std::size_t>(1, std::lround(crossfadeMs * 0.001 * fs));
         mixStep_ = 1.0 / static_cast<double>(crossfadeSamples_);
+        levelEnergyA_ = 1.0 - std::exp(-1.0 / (fs * kLevelMatchSeconds));
+        levelGainA_ = 1.0 - std::exp(-1.0 / (fs * kLevelGainSeconds));
         reset();
     }
 
@@ -120,6 +122,9 @@ public:
         safeBypass_ = false;
         mix_ = bypass_ ? 0.0 : 1.0;
         mixTarget_ = mix_;
+        levelIn_ = levelOut_ = 0.0;
+        levelGain_ = levelTarget_ = 1.0;
+        levelTick_ = 0;
     }
 
     double limiterGainReductionDb() const { return limiter_.gainReductionDb(); }
@@ -166,6 +171,7 @@ public:
                 // meets the brickwall.
                 head_.processFrame(frame, channels_);
                 room_.processFrame(frame, channels_);
+                matchSurroundLevel(frame);
                 for (std::size_t c = 0; c < channels_; ++c) {
                     if (!std::isfinite(frame[c])) safeBypass_ = true;
                 }
@@ -206,20 +212,33 @@ private:
         // the Room control chooses WHICH one rather than whether there is one.
         // Without this, picking 5.1 changed the sound so little that it read as
         // nothing happening at all.
-        const int surround = static_cast<int>(std::lround(params_.surroundType));
-        const bool upmixing = headphone && !bypass_ && surround >= Upmixer::k51;
-        if (upmixing && type == 0) type = 1;            // the smallest room there is
         // Speakers are already in a room. Adding a second one at the same level
         // as the headphone profile stacks reverb on reverb, so the slider keeps
         // its full 0-100 travel and the amount it asks for is halved on the way
         // in — same control, half the reverb, which is what a real room leaves
         // space for.
         double amount = headphone ? params_.roomAmount : params_.roomAmount * 0.5;
-        // At the room's own reference level, exactly as if the listener had
-        // picked Studio: measured -17.3 dB of reflected energy against the
-        // direct sound, which is a room you can hear rather than a hint of one.
-        if (upmixing && static_cast<int>(std::lround(params_.roomType)) == 0) amount = 50.0;
-        room_.setParams(type, amount, headphone);
+        // Every surround choice carries its own room while the Room control is
+        // Off, so choosing one changes the space as well as the layout (see
+        // surroundRoom); a room the listener picked always wins.
+        bool roomProfileHeadphone = headphone;
+        if (!bypass_ && type == 0) {
+            const SurroundRoom room = surroundRoom(mode, static_cast<int>(std::lround(params_.surroundType)));
+            type = room.type;
+            amount = room.amount;
+            roomProfileHeadphone = room.withReflections;
+        }
+        room_.setParams(type, amount, roomProfileHeadphone);
+    }
+
+    struct SurroundRoom { int type; double amount; bool withReflections; };
+    static SurroundRoom surroundRoom(int mode, int surround) {
+        const bool headphone = (mode == 1 || mode == 2);
+        if (surround >= Upmixer::k71) return headphone ? SurroundRoom{RoomSim::kHall, 45.0, true} : SurroundRoom{RoomSim::kHall, 60.0, false};
+        if (surround >= Upmixer::k51) return headphone ? SurroundRoom{RoomSim::kLiving, 50.0, true} : SurroundRoom{RoomSim::kHall, 60.0, false};
+        if (mode == 2) return {RoomSim::kLiving, 70.0, false};
+        if (mode == 3) return {RoomSim::kLiving, 70.0, false};
+        return {RoomSim::kOff, 0.0, false};
     }
 
     // Which of the spatial features is actually rendering, and how.
@@ -246,11 +265,16 @@ private:
         const int surround = static_cast<int>(std::lround(params_.surroundType));
         const bool upmixing = !bypass_ && surround >= Upmixer::k51;
         const bool tracking = headActive_ && headphone && !bypass_;
+        const bool ambience = !bypass_ && !upmixing && (mode == 2 || mode == 3);
         head_.setHeadphone(headphone);
         head_.setLayout(upmixing ? surround : Upmixer::kOff);
         head_.setSurroundLevels(params_.centerWidth, params_.surroundDepth);
+        head_.setAmbience(ambience);
+        head_.setVirtualFront(tracking);
         head_.setPreferExternalBed(std::lround(params_.bedRenderer) != 1);
-        head_.setEnabled(tracking || upmixing);
+        head_.setEnabled(tracking || upmixing || ambience);
+        levelMatching_ = upmixing || ambience;
+        levelSpeaker_ = !headphone;
         head_.setYawDegrees(tracking ? headYawDeg_ : 0.0);
     }
 
@@ -262,8 +286,9 @@ private:
         const bool headphone = (mode == 1 || mode == 2);
         const int surround = static_cast<int>(std::lround(p.surroundType));
         const bool upmixing = surround >= Upmixer::k51;
-        if (upmixing) {
-            // The ambience surround and the upmix spread the same content.
+        if (upmixing || mode == 2 || mode == 3) {
+            // The surround stage renders both the upmix and the Ambience
+            // surround; the tonal path's own older ambience field stays out.
             p.spatialMode = headphone ? 1.0 : 0.0;
         }
         if (headphone && (upmixing || headActive_)) {
@@ -281,6 +306,37 @@ private:
         transitionParams_ = params_;
         transitionFrame_ = 0;
         transitioning_ = true;
+    }
+
+    // A surround choice adds a room on top of the stage, and a room adds
+    // energy the stage cannot see: measured +0.3 to +1.2 dB on the same
+    // programme against Off, more on transients than on steady material. So
+    // while one is active, what leaves the room is held to what entered the
+    // stage — the same slow follow the stage itself uses, one scalar on both
+    // outputs, weighted like the stage on speakers (a single built-in speaker
+    // hears the sum).
+    static constexpr double kLevelMatchSeconds = 0.25;
+    static constexpr double kLevelGainSeconds = 0.05;
+    inline double spatialEnergy(double l, double r) const {
+        return levelSpeaker_ ? 0.5 * (l * l + r * r) + 0.25 * (l + r) * (l + r) : l * l + r * r;
+    }
+    inline void matchSurroundLevel(float* frame) {
+        if (!levelMatching_ && levelGain_ == 1.0) return;
+        if (channels_ < 2) return;
+        // The stage's input at the time of this output frame: an external bed
+        // delays everything by a block, and a comparison across that block would
+        // follow the programme a block late.
+        levelIn_ += levelEnergyA_ * (spatialEnergy(head_.alignedDryLeft(), head_.alignedDryRight()) - levelIn_);
+        levelOut_ += levelEnergyA_ * (spatialEnergy(frame[0], frame[1]) - levelOut_);
+        // The target moves on a 0.25 s follow; a square root every 16 frames
+        // (0.33 ms at 48 kHz) is as good as one per frame at a fraction of the cost.
+        if ((levelTick_++ & 15u) == 0u) {
+            levelTarget_ = 1.0;
+            if (levelMatching_ && levelOut_ > 1.0e-12) levelTarget_ = std::clamp(std::sqrt(levelIn_ / levelOut_), 0.25, 2.0);
+        }
+        levelGain_ += levelGainA_ * (levelTarget_ - levelGain_);
+        if (!levelMatching_ && std::fabs(levelGain_ - 1.0) < 1.0e-6) levelGain_ = 1.0;
+        for (std::size_t c = 0; c < channels_; ++c) frame[c] = static_cast<float>(frame[c] * levelGain_);
     }
 
     static constexpr double kClipCeilingDb = 0.0;
@@ -306,6 +362,10 @@ private:
     double mix_ = 1.0;
     double mixTarget_ = 1.0;
     double mixStep_ = 1.0;
+    bool levelMatching_ = false, levelSpeaker_ = false;
+    double levelIn_ = 0.0, levelOut_ = 0.0, levelGain_ = 1.0, levelTarget_ = 1.0;
+    unsigned levelTick_ = 0;
+    double levelEnergyA_ = 0.0001, levelGainA_ = 0.0004;
     std::size_t crossfadeSamples_ = 1;
 };
 
