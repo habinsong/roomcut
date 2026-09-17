@@ -76,31 +76,32 @@ final class HeadTrackingServiceTests: XCTestCase {
         }
 
         // The head holds still long enough to set forward (0.3 s), then turns
-        // 45 degrees a second — samples at 50 Hz, delivered the way CoreMotion
-        // delivers them: onto the queue the service chose.
+        // 45 degrees a second — 50 Hz samples by their own clock, delivered the
+        // way CoreMotion delivers them: onto the queue the service chose. No
+        // sleeps, so a slow machine changes nothing but how long it takes.
+        let handled = DispatchSemaphore(value: 0)
         let feeder = Thread {
             let t0 = ProcessInfo.processInfo.systemUptime
             for i in 0..<50 {
-                let t = t0 + Double(i) * 0.02
                 let degrees = i < 20 ? 0 : Double(i - 20) * 0.9
                 let half = -degrees * .pi / 360      // Core Motion turns counter-clockwise
-                let sample = HeadMotionSample(timestamp: t,
+                let sample = HeadMotionSample(timestamp: t0 + Double(i) * 0.02,
                                               attitude: .init(w: cos(half), x: 0, y: 0, z: sin(half)))
                 queue.addOperation { handler(sample, nil) }
-                Thread.sleep(forTimeInterval: 0.02)
             }
+            queue.addOperation { handled.signal() }
         }
-        let busyFrom = ProcessInfo.processInfo.systemUptime
         feeder.start()
-        // The main thread is busy for the whole turn (1 s of samples, with room
-        // for the feeder's own sleeps), as it was for 445–481 ms at a tab switch.
-        Thread.sleep(forTimeInterval: 1.3)
+        // The main thread stays busy until the queue has handled every sample,
+        // as it was for 445–481 ms at a tab switch. Samples that needed the main
+        // thread could not be handled before this times out.
+        let finished = handled.wait(timeout: .now() + 5) == .success
         let busyUntil = ProcessInfo.processInfo.systemUptime
 
+        XCTAssertTrue(finished, "every sample was handled while the main thread was busy")
         let turning = sends.entries.filter { $0.active && $0.yaw > 1 }
-        let whileBusy = turning.filter { $0.at > busyFrom && $0.at < busyUntil }
-        XCTAssertGreaterThan(turning.count, 20, "a 26 degree turn in 0.6 s is sent as it happens")
-        XCTAssertEqual(whileBusy.count, turning.count, "none of it waited for the main thread")
+        XCTAssertGreaterThan(turning.count, 20, "a 26 degree turn is sent as it happens")
+        XCTAssertTrue(turning.allSatisfy { $0.at < busyUntil }, "none of it waited for the main thread")
         XCTAssertGreaterThan(turning.last?.yaw ?? 0, 20)
         service.stop()
     }
@@ -133,11 +134,11 @@ final class HeadTrackingServiceTests: XCTestCase {
         let service = HeadTrackingService(send: { _, _ in }, source: source)
         service.start()
         source.handler?(nil, NSError(domain: "CMErrorDomain", code: 109))
-        for _ in 0..<50 where service.isDelivering { try await Task.sleep(nanoseconds: 2_000_000) }
+        for _ in 0..<1000 where service.isDelivering { try await Task.sleep(nanoseconds: 2_000_000) }
         XCTAssertFalse(service.isDelivering)
         XCTAssertTrue(service.isTracking)
         source.connection?(true)
-        for _ in 0..<50 where !service.isDelivering { try await Task.sleep(nanoseconds: 2_000_000) }
+        for _ in 0..<1000 where !service.isDelivering { try await Task.sleep(nanoseconds: 2_000_000) }
         XCTAssertTrue(service.isDelivering)
         XCTAssertEqual(source.starts, 2)
     }

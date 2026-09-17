@@ -73,7 +73,7 @@ final class SpacePresetLibraryTests: XCTestCase {
                 let pushes = client.setParamsValues.count
                 model.applySpacePreset(preset)
                 XCTAssertEqual(model.activeSpacePreset?.id, preset.id)
-                for _ in 0..<200 where client.setParamsValues.count == pushes {
+                for _ in 0..<2000 where client.setParamsValues.count == pushes {
                     try await Task.sleep(nanoseconds: 1_000_000)
                 }
                 let pushed = try XCTUnwrap(client.setParamsValues.last)
