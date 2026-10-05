@@ -3,6 +3,16 @@ import XCTest
 @testable import RoomcutCore
 
 final class NowPlayingPayloadTests: XCTestCase {
+    // The playing app's window was closed or it quit: the helper says so in a line
+    // of its own, which must not be read as a paused track (the card stayed up and
+    // its clock kept counting, 2026-10-06).
+    func testANowPlayingAppGoingAwayIsRecognised() {
+        XCTAssertTrue(NowPlayingPayloadDecoder.isCleared(Data(#"{"cleared":true,"playing":false}"#.utf8)))
+        let paused = #"{"title":"Song","artist":"Artist","duration":200,"elapsedTime":12,"playing":false,"playbackRate":0}"#
+        XCTAssertFalse(NowPlayingPayloadDecoder.isCleared(Data(paused.utf8)), "a paused track is still there")
+        XCTAssertFalse(NowPlayingPayloadDecoder.isCleared(Data("not json".utf8)))
+    }
+
     func testMetadataDecodeDoesNotRequireArtworkData() throws {
         let data = Data(#"""
         {

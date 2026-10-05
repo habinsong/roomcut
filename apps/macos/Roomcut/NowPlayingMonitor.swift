@@ -211,6 +211,10 @@ final class NowPlayingMonitor: ObservableObject {
     }
 
     func decodeLine(_ data: Data) {
+        if NowPlayingPayloadDecoder.isCleared(data) {
+            clearNowPlaying()
+            return
+        }
         guard let payload = NowPlayingPayloadDecoder.metadata(from: data) else { return }
         let inlineArtworkData = NowPlayingPayloadDecoder.artwork(from: data)?.data
         let hasInlineArtwork = inlineArtworkData != nil
@@ -297,6 +301,33 @@ final class NowPlayingMonitor: ObservableObject {
             return
         }
         scheduleLyricsFetch(for: snap)
+    }
+
+    // Nothing is Now Playing any more: back to how the app starts with nothing
+    // playing, so the card goes and no clock keeps counting a closed track.
+    func clearNowPlaying() {
+        guard snapshot != nil || artwork != nil else { return }
+        snapshot = nil
+        elapsedNow = 0
+        artwork = nil
+        artworkColor = nil
+        artworkPalette = nil
+        artworkTopColor = nil
+        artworkBottomColor = nil
+        if let p = artworkProcess, p.isRunning { p.terminate() }
+        if let p = queueProcess, p.isRunning { p.terminate() }
+        artworkProcess = nil
+        artworkTrackKey = nil
+        displayedArtworkTrackKey = nil
+        lastArtworkSignature = nil
+        artworkAttemptCount = 0
+        queueProcess = nil
+        queueTrackKey = nil
+        queueAttemptCount = 0
+        pendingNavigation = nil
+        lyrics.stop()
+        currentLyric = nil
+        nextLyric = nil
     }
 
     func fetchQueue(for trackKey: String) {

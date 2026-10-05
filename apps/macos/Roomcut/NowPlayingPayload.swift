@@ -200,6 +200,12 @@ public enum ArtworkCanvas {
 }
 
 public enum NowPlayingPayloadDecoder {
+    // The helper's line for "nothing is Now Playing any more" (the playing app's
+    // window or tab closed, or the app quit).
+    public static func isCleared(_ data: Data) -> Bool {
+        dictionary(from: data)?["cleared"] as? Bool == true
+    }
+
     public static func metadata(
         from data: Data,
         fallbackTimestamp: Date = Date()

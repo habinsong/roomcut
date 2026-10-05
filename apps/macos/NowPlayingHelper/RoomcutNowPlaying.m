@@ -294,7 +294,15 @@ static NSDictionary *fetchOnce(NSTimeInterval timeout, PayloadKind kind) {
     long timedOut = dispatch_group_wait(
         group, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(timeout * NSEC_PER_SEC)));
     if (timedOut != 0) return nil;
-    if (!info) return nil;
+    if (info.count == 0) {
+        // No app is Now Playing any more: its window or tab was closed, or it
+        // quit. MediaRemote announces that (InfoDidChange, IsPlayingDidChange)
+        // with no info and pid 0 (measured 2026-10-06). Staying silent left the
+        // app showing the last track as playing, its clock still counting.
+        if (kind != PayloadKindMetadata && kind != PayloadKindStream) return nil;
+        gStreamLastArtworkKey = nil;   // a track that comes back brings its cover again
+        return @{ @"cleared": @YES, @"playing": @NO };
+    }
     if (kind == PayloadKindArtwork) return buildArtworkPayload(info);
     NSDictionary *metadata = buildMetadataPayload(info, hasPlaying, isPlaying, pid);
     if (kind == PayloadKindMetadata) return metadata;
