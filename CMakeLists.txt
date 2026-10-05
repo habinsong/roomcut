@@ -11,7 +11,7 @@ if(NOT CMAKE_OSX_DEPLOYMENT_TARGET)
 endif()
 
 project(Roomcut
-  VERSION 1.1.1
+  VERSION 1.1.2
   DESCRIPTION "System-wide audio controller for macOS"
   LANGUAGES C CXX)
 
