@@ -169,9 +169,10 @@ public:
                 // then the room those speakers stand in. Both run on the blended
                 // result and before the limiter, so their extra energy still
                 // meets the brickwall.
+                const float preL = frame[0], preR = channels_ > 1 ? frame[1] : frame[0];
                 head_.processFrame(frame, channels_);
                 room_.processFrame(frame, channels_);
-                matchSurroundLevel(frame);
+                matchSurroundLevel(frame, preL, preR);
                 for (std::size_t c = 0; c < channels_; ++c) {
                     if (!std::isfinite(frame[c])) safeBypass_ = true;
                 }
@@ -229,6 +230,7 @@ private:
             roomProfileHeadphone = room.withReflections;
         }
         room_.setParams(type, amount, roomProfileHeadphone);
+        roomOn_ = type != 0;
     }
 
     struct SurroundRoom { int type; double amount; bool withReflections; };
@@ -273,7 +275,7 @@ private:
         head_.setVirtualFront(tracking);
         head_.setPreferExternalBed(std::lround(params_.bedRenderer) != 1);
         head_.setEnabled(tracking || upmixing || ambience);
-        levelMatching_ = upmixing || ambience;
+        levelMatching_ = upmixing || ambience || roomOn_;
         levelSpeaker_ = !headphone;
         head_.setYawDegrees(tracking ? headYawDeg_ : 0.0);
     }
@@ -314,19 +316,26 @@ private:
     // while one is active, what leaves the room is held to what entered the
     // stage — the same slow follow the stage itself uses, one scalar on both
     // outputs, weighted like the stage on speakers (a single built-in speaker
-    // hears the sum).
+    // hears the sum). A room picked on its own is held the same way: on real
+    // recordings the rooms of the Space presets measured up to +2.5 dB louder
+    // than Reference and pushed the peaks of a -1 dBFS master up to 3.8 dB into
+    // the limiter (2026-09-18). With the stage idle, the reference is the frame
+    // as it reached the room.
     static constexpr double kLevelMatchSeconds = 0.25;
     static constexpr double kLevelGainSeconds = 0.05;
     inline double spatialEnergy(double l, double r) const {
         return levelSpeaker_ ? 0.5 * (l * l + r * r) + 0.25 * (l + r) * (l + r) : l * l + r * r;
     }
-    inline void matchSurroundLevel(float* frame) {
+    inline void matchSurroundLevel(float* frame, double preL, double preR) {
         if (!levelMatching_ && levelGain_ == 1.0) return;
         if (channels_ < 2) return;
         // The stage's input at the time of this output frame: an external bed
         // delays everything by a block, and a comparison across that block would
         // follow the programme a block late.
-        levelIn_ += levelEnergyA_ * (spatialEnergy(head_.alignedDryLeft(), head_.alignedDryRight()) - levelIn_);
+        const bool staged = head_.active();
+        const double inL = staged ? head_.alignedDryLeft() : preL;
+        const double inR = staged ? head_.alignedDryRight() : preR;
+        levelIn_ += levelEnergyA_ * (spatialEnergy(inL, inR) - levelIn_);
         levelOut_ += levelEnergyA_ * (spatialEnergy(frame[0], frame[1]) - levelOut_);
         // The target moves on a 0.25 s follow; a square root every 16 frames
         // (0.33 ms at 48 kHz) is as good as one per frame at a fraction of the cost.
@@ -362,7 +371,7 @@ private:
     double mix_ = 1.0;
     double mixTarget_ = 1.0;
     double mixStep_ = 1.0;
-    bool levelMatching_ = false, levelSpeaker_ = false;
+    bool levelMatching_ = false, levelSpeaker_ = false, roomOn_ = false;
     double levelIn_ = 0.0, levelOut_ = 0.0, levelGain_ = 1.0, levelTarget_ = 1.0;
     unsigned levelTick_ = 0;
     double levelEnergyA_ = 0.0001, levelGainA_ = 0.0004;

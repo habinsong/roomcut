@@ -44,7 +44,7 @@ struct SpacePresetPicker: View {
             .frame(maxWidth: .infinity)
 
             Button { model.applySpacePreset(SpacePresetLibrary.reference(headphone: model.spatialOutputIsHeadphone)) } label: {
-                Image(systemName: "arrow.uturn.left")
+                Image(systemName: "arrow.counterclockwise")
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(RoomcutTokens.textSecondary(scheme))
                     .frame(width: 24, height: 24)
@@ -169,12 +169,9 @@ private struct SpacePresetList: View {
         let rooms = ["", "studio", "live", "hall"]
         let room = Int(preset.roomType.rounded())
         if room >= 1, room < rooms.count { parts.append(rooms[room]) }
-        switch preset.stage {
-        case .off: break
-        case .focus: parts.append(L("Focus", "Focus", "フォーカス", "Focus", "Fokus"))
-        case .widen: parts.append(L("Widen", "Widen", "ワイド", "Élargir", "Verbreitern"))
-        }
-        return parts.isEmpty ? L("All off", "All off", "すべてオフ", "Tout désactivé", "Alles aus")
-                             : parts.joined(separator: " · ")
+        if !parts.isEmpty { return parts.joined(separator: " · ") }
+        let untouched = preset.width == 0 && preset.centerFocus == 0 && preset.roomReduce == 0 && preset.crossfeed == 0
+        return untouched ? L("All off", "All off", "すべてオフ", "Tout désactivé", "Alles aus")
+                         : L("Stereo", "Stereo", "ステレオ", "Stéréo", "Stereo")
     }
 }

@@ -66,7 +66,7 @@ struct EqPresetPicker: View {
             }
 
             Button(action: resetToFlat) {
-                Image(systemName: "arrow.uturn.left")
+                Image(systemName: "arrow.counterclockwise")
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(RoomcutTokens.textSecondary(scheme))
                     .frame(width: 24, height: 24)

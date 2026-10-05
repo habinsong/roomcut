@@ -1,13 +1,14 @@
 //
 // SpaceTab.swift — Phase 7 spatial controls.
 //
-// Liquid-Glass layout: the 3D field card on top, then ONE settings card that
-// reaches down to the tab bar, leaving above the bar the same gap the bar keeps
-// below itself. The card reads top to bottom in the order a listener decides:
+// Liquid-Glass layout: the 3D field card on top, then ONE compact settings
+// card; the picture grows so the pair reaches down to the tab bar, leaving above
+// the bar the same gap the bar keeps below itself. The card reads top to bottom
+// in the order a listener decides:
 //
 //   output (Speaker / Headphone) → a whole-scene preset → the three choices the
-//   preset is made of (Surround, Room, Stage), each visible at once as its own
-//   row → head tracking → the fine sliders, folded away → Balance at the foot.
+//   preset is made of (Surround, Room, Stage), each a full-width capsule of its
+//   own → head tracking → the fine sliders, folded away → Balance at the foot.
 //
 // It used to hide Surround, Room and Stage behind three disclosure rows, only
 // one open at a time, so the current setting was a summary word and every change
@@ -43,9 +44,14 @@ struct SpaceTab: View {
         GeometryReader { geo in
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
+                    // The picture takes the height the settings do not need, so
+                    // the settings stay compact and the tab still reaches down
+                    // to the tab bar.
                     RoomcutSection("") { fieldPicture }
+                        .frame(maxHeight: .infinity)
+                    // Never squeezed: squeezed rows shrank their labels.
                     RoomcutSection("") { settings }
-                        .frame(maxHeight: .infinity, alignment: .top)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 // At least the visible height, so the settings card stretches to
                 // the tab bar; taller content (fine sliders open) scrolls.
@@ -93,27 +99,24 @@ struct SpaceTab: View {
                     .padding(.horizontal, 16).padding(.top, 12)
             }
 
-            stretched {
-                VStack(spacing: 8) {
-                    outputPicker
-                    SpacePresetPicker(model: model)
-                }
-                .padding(.horizontal, 12).padding(.vertical, 10)
-                .disabled(!model.spatialAvailable)
-                .opacity(model.spatialAvailable ? 1 : 0.4)
+            VStack(spacing: 8) {
+                outputPicker
+                SpacePresetPicker(model: model)
             }
+            .padding(.horizontal, 12).padding(.vertical, 10)
+            .disabled(!model.spatialAvailable)
+            .opacity(model.spatialAvailable ? 1 : 0.4)
 
             RoomcutDivider()
             choices
             RoomcutDivider()
-            stretched { fineTune }
+            fineTune
 
             // Balance is the device's L/R output position, not a spatial DSP
             // param, so it stays usable even without Spatial.
             RoomcutDivider()
-            stretched { balanceSlider.padding(.vertical, 4) }
+            balanceSlider.padding(.vertical, 4)
         }
-        .frame(maxHeight: .infinity, alignment: .top)
         .animation(motion, value: model.spatialOutputIsHeadphone)
         .animation(motion, value: model.headTrackingAvailable)
         .animation(motion, value: model.virtualRoomAvailable)
@@ -142,68 +145,63 @@ struct SpaceTab: View {
         }
     }
 
-    // Each row takes an equal share of whatever height the card has left, so the
-    // list spreads evenly down to Balance instead of leaving a hole above it.
-    // With Fine Tune open there is no height left and the rows sit tight.
-    private func stretched<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
-        VStack(spacing: 0) {
-            Spacer(minLength: 0)
-            // The row keeps its own height; only the spare height is shared.
-            // Without this the rows were squeezed and their labels shrank.
-            content().fixedSize(horizontal: false, vertical: true)
-            Spacer(minLength: 0)
-        }
-    }
-
     // A Group, not a stack: its rows are the card's own children, so each takes
     // its share of the spare height like every other row.
     private var choices: some View {
         Group {
-            // What Surround can offer depends on the output: headphones render a
-            // real virtual layout, speakers get the same decomposition thrown wide.
-            stretched {
-                choiceRow(L("Surround", "Surround", "サラウンド", "Surround", "Surround"),
-                          model.surroundChoices.map(surroundLabel),
-                          selected: model.surroundChoices.firstIndex(of: model.surroundChoice) ?? 0,
-                          group: "surround") { idx in
+            // The three capsules sit together, 6 pt apart.
+            VStack(spacing: 6) {
+                // What Surround can offer depends on the output: headphones
+                // render a real virtual layout, speakers get the same
+                // decomposition thrown wide.
+                capsuleRow(L("Surround", "Surround", "サラウンド", "Surround", "Surround"),
+                           model.surroundChoices.map(surroundLabel),
+                           selected: model.surroundChoices.firstIndex(of: model.surroundChoice) ?? 0,
+                           group: "surround") { idx in
                     let choices = model.surroundChoices
                     guard idx < choices.count else { return }
                     model.setSurroundChoice(choices[idx])
                 }
-            }
 
-            // Virtual room on either output. The engine builds a different room
-            // for each, so the choice follows the Speaker/Headphone switch.
-            if model.virtualRoomAvailable {
-                stretched {
-                    choiceRow(L("Room", "Room", "ルーム", "Salle", "Raum"), roomLabels,
-                              selected: min(3, max(0, Int(model.roomType.rounded()))),
-                              group: "room") { model.setRoomType(Double($0)) }
+                // Virtual room on either output. The engine builds a different
+                // room for each, so the choice follows the Speaker/Headphone switch.
+                if model.virtualRoomAvailable {
+                    capsuleRow(L("Room", "Room", "ルーム", "Salle", "Raum"), roomLabels,
+                               selected: min(3, max(0, Int(model.roomType.rounded()))),
+                               group: "room") { model.setRoomType(Double($0)) }
                 }
-            }
 
-            // Mode presets for the sliders under Fine Tune: picking Focus moves
-            // them, moving one reveals Custom.
-            stretched {
-                choiceRow(L("Stage", "Stage", "ステージ", "Scène", "Bühne"),
-                          visibleModes.map { modeLabel($0) },
-                          selected: visibleModes.firstIndex(of: inferredMode) ?? 0,
-                          group: "mode") { idx in
+                // Mode presets for the sliders under Fine Tune: picking Focus
+                // moves them, moving one reveals Custom.
+                capsuleRow(L("Stage", "Stage", "ステージ", "Scène", "Bühne"),
+                           visibleModes.map { modeLabel($0) },
+                           selected: visibleModes.firstIndex(of: inferredMode) ?? 0,
+                           group: "mode") { idx in
                     modeSelection.wrappedValue = visibleModes[idx]
                 }
                 .animation(motion, value: visibleModes)
             }
+            .padding(.vertical, 10)
 
             // Head tracking — headphones with motion sensors only. The engine
             // anchors the virtual speakers to the screen, so the stage stays put
             // when the listener turns. Binary, so a switch, not a segment.
             if model.headTrackingAvailable {
-                stretched { headTrackingRow }
+                headTrackingRow
             }
         }
         .disabled(!model.spatialAvailable)
         .opacity(model.spatialAvailable ? 1 : 0.4)
         .animation(motion, value: model.surroundChoices)
+    }
+
+    // Surround, Room and Stage: the capsule alone, edge to edge like the
+    // Speaker/Headphone picker above it. The name stays for VoiceOver.
+    private func capsuleRow(_ title: String, _ labels: [String], selected: Int, group: String,
+                            _ select: @escaping (Int) -> Void) -> some View {
+        glassSegmented(labels, selected: selected, group: group, select)
+            .accessibilityLabel(title)
+            .padding(.horizontal, 12)
     }
 
     private func choiceRow(_ title: String, _ labels: [String], selected: Int, group: String,

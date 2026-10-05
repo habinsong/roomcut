@@ -11,6 +11,7 @@
 #include "DSPChain.hpp"
 
 #include <cmath>
+#include <random>
 #include <cstdio>
 #include <vector>
 
@@ -438,6 +439,50 @@ static void test_virtual_room_respects_bypass() {
     CHECK(diff < 1e-6, "bypass silences the virtual room");
 }
 
+// A room adds its reverb without making the programme louder: the chain holds
+// what leaves the room to what entered it, as it does for the surround choices.
+// Unmatched, these hits came out 0.04-0.38 dB louder (the larger the room,
+// the more), and room presets measured up to +1.5 dB on recordings.
+static void test_virtual_room_keeps_the_level() {
+    std::mt19937 rng(11);
+    std::normal_distribution<double> n(0.0, 0.08);
+    const std::size_t frames = static_cast<std::size_t>(kFs * 4.0);
+    std::vector<float> programme(frames * 2);
+    // 100 ms hits every half second, like a drum track: the gaps are where a
+    // room's tail adds the most, as it did on the recordings.
+    for (std::size_t f = 0; f < frames; ++f) {
+        const bool hit = std::fmod(static_cast<double>(f) / kFs, 0.5) < 0.1;
+        const double common = n(rng);
+        programme[f * 2] = hit ? static_cast<float>(common + 0.5 * n(rng)) : 0.0f;
+        programme[f * 2 + 1] = hit ? static_cast<float>(common + 0.5 * n(rng)) : 0.0f;
+    }
+    auto render = [&](const ChainParams& p) {
+        DSPChain chain;
+        chain.prepare(kFs, 2);
+        chain.setParams(p);
+        chain.setBypass(false);
+        chain.reset();
+        std::vector<float> out = programme;
+        chain.processInterleaved(out.data(), frames);
+        return out;
+    };
+    const std::size_t settle = static_cast<std::size_t>(kFs * 1.5);
+    for (double mode : {0.0, 1.0}) {
+        ChainParams plain = ChainParams::flat();
+        plain.spatialMode = mode;
+        const double ref = rms(render(plain), settle, 2);
+        for (double type : {1.0, 2.0, 3.0}) {
+            ChainParams room = plain;
+            room.roomType = type;
+            room.roomAmount = 100.0;
+            const double db = 20.0 * std::log10(rms(render(room), settle, 2) / ref);
+            std::printf("%s room %.0f at 100: %+.2f dB against no room\n", mode == 0.0 ? "speaker" : "headphone", type, db);
+            CHECK(std::fabs(db) < 0.15, mode == 0.0 ? "a speaker room keeps the programme level"
+                                                     : "a headphone room keeps the programme level");
+        }
+    }
+}
+
 static void test_virtual_room_stays_inside_the_ceiling() {
     // A hot signal plus the largest room must still leave the limiter's
     // brickwall intact — the room can never be the thing that clips.
@@ -608,6 +653,7 @@ int main() {
     test_virtual_room_follows_the_output();
     test_head_tracking_only_runs_when_it_should();
     test_virtual_room_respects_bypass();
+    test_virtual_room_keeps_the_level();
     test_virtual_room_stays_inside_the_ceiling();
     test_upmix_runs_without_a_tracker();
     test_only_one_virtual_stage_renders();

@@ -24,11 +24,10 @@ extension RoomcutViewModel {
             $0.parameters.surroundType = surround == .virtual71 ? 3 : (surround == .virtual51 ? 2 : 0)
             $0.parameters.roomType = preset.roomType
             $0.parameters.roomAmount = preset.roomAmount
-            let stage = preset.stage.values(headphone: preset.headphone)
-            $0.parameters.spatialWidth = stage.width
-            $0.parameters.centerFocus = stage.centerFocus
-            $0.parameters.crossfeed = stage.crossfeed
-            $0.parameters.roomReduce = stage.roomReduce
+            $0.parameters.spatialWidth = preset.width
+            $0.parameters.centerFocus = preset.centerFocus
+            $0.parameters.crossfeed = preset.crossfeed
+            $0.parameters.roomReduce = preset.roomReduce
             $0.parameters.centerWidth = preset.centerWidth
             $0.parameters.surroundDepth = preset.surroundDepth
         }

@@ -56,7 +56,7 @@ struct SpatialFieldView: View {
             // Room, balance and head angle already read from the scene itself
             // (and from the controls below), so the picture carries no captions.
             SpatialSceneView(settings: settings)
-                .frame(height: 196)
+                .frame(minHeight: 196, maxHeight: .infinity)
                 .allowsHitTesting(false)
                 .accessibilityHidden(true)
         }

@@ -1,7 +1,8 @@
 import XCTest
 @testable import RoomcutCore
 
-// Space presets set Surround, Room and Stage in one go, one list per output.
+// Space presets set Surround, Room, Stage and the Fine Tune values in one go,
+// one list per output.
 // The sound of each was measured in the DSP chain before it went in (see
 // SpacePresetLibrary); these check what the app promises about them.
 @MainActor
@@ -25,13 +26,19 @@ final class SpacePresetLibraryTests: XCTestCase {
     func testEachOutputHasItsOwnListStartingFromReference() {
         for headphone in [false, true] {
             let list = SpacePresetLibrary.presets(headphone: headphone)
-            XCTAssertEqual(list.count, 15)
+            XCTAssertEqual(list.count, 23)
             XCTAssertTrue(list.allSatisfy { $0.headphone == headphone })
             XCTAssertEqual(Set(list.map(\.id)).count, list.count, "ids are unique")
             let reference = SpacePresetLibrary.reference(headphone: headphone)
             XCTAssertEqual(reference.surround, .off)
             XCTAssertEqual(reference.roomType, 0)
-            XCTAssertEqual(reference.stage, .off)
+            XCTAssertEqual([reference.width, reference.centerFocus, reference.roomReduce, reference.crossfeed], [0, 0, 0, 0])
+            let genres = ["pop", "ballad", "rock", "hiphop", "electronic", "jazz", "classical", "acoustic"]
+            let prefix = headphone ? "hp-" : "sp-"
+            for genre in genres {
+                let preset = list.first { $0.id == prefix + genre }
+                XCTAssertEqual(preset?.group, .music, "a \(genre) preset in Music")
+            }
             for group in SpacePreset.Group.allCases {
                 XCTAssertFalse(list.filter { $0.group == group }.isEmpty, "every group has presets")
             }
@@ -46,6 +53,10 @@ final class SpacePresetLibraryTests: XCTestCase {
             XCTAssertTrue((0...100).contains(preset.roomAmount), preset.id)
             XCTAssertTrue((0...100).contains(preset.centerWidth), preset.id)
             XCTAssertTrue((0...100).contains(preset.surroundDepth), preset.id)
+            XCTAssertTrue((-200...200).contains(preset.width), preset.id)
+            XCTAssertTrue((0...200).contains(preset.centerFocus), preset.id)
+            XCTAssertTrue((0...200).contains(preset.roomReduce), preset.id)
+            XCTAssertTrue((0...100).contains(preset.crossfeed), preset.id)
             if !preset.headphone { XCTAssertNotEqual(preset.surround, .virtual71, "speakers have no 7.1: \(preset.id)") }
         }
     }
@@ -55,8 +66,10 @@ final class SpacePresetLibraryTests: XCTestCase {
             let list = SpacePresetLibrary.presets(headphone: headphone)
             for (i, a) in list.enumerated() {
                 for b in list[(i + 1)...] {
-                    let same = a.surround == b.surround && a.roomType == b.roomType && a.stage == b.stage
+                    let same = a.surround == b.surround && a.roomType == b.roomType
                         && (a.roomType == 0 || a.roomAmount == b.roomAmount)
+                        && a.width == b.width && a.centerFocus == b.centerFocus && a.roomReduce == b.roomReduce
+                        && (a.crossfeed == b.crossfeed || (headphone && a.surround.rawValue >= 2))
                         && (a.surround.rawValue < 2 || !headphone
                             || (a.surroundDepth == b.surroundDepth && a.centerWidth == b.centerWidth))
                     XCTAssertFalse(same, "\(a.id) and \(b.id) set the same parameters")

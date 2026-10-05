@@ -113,6 +113,31 @@ static void test_speaker_xtc_drives_opposite_antiphase() {
     CHECK(lr < 0.0, "speaker XTC drives opposite channel anti-phase");
 }
 
+// Crosstalk 3D widens the side and nothing else: a single speaker, or anything
+// that folds to mono, hears L+R, which has to come out exactly as it went in.
+// The cross-coupled RACE it replaced ran the mid through a comb and cost the
+// mono sum up to 2.8 dB on music (measured 2026-09-18).
+static void test_speaker_xtc_leaves_the_mono_sum_alone() {
+    Spatial spatial;
+    spatial.prepare(48000.0);
+    spatial.setParams(0.0, 0.0, 100.0, 0.0, 0.0);   // speaker, full Crosstalk 3D
+    std::mt19937 rng(7);
+    std::normal_distribution<double> n(0.0, 0.1);
+    double worst = 0.0, sideIn = 0.0, sideOut = 0.0;
+    for (int i = 0; i < 48000; ++i) {
+        const double common = n(rng), l = common + n(rng), r = common + n(rng);
+        float frame[2] = {static_cast<float>(l), static_cast<float>(r)};
+        const double monoIn = static_cast<double>(frame[0]) + frame[1];
+        const double sIn = 0.5 * (static_cast<double>(frame[0]) - frame[1]);
+        spatial.processFrame(frame, 2);
+        worst = std::max(worst, std::fabs(static_cast<double>(frame[0]) + frame[1] - monoIn));
+        const double sOut = 0.5 * (static_cast<double>(frame[0]) - frame[1]);
+        if (i >= 4800) { sideIn += sIn * sIn; sideOut += sOut * sOut; }
+    }
+    CHECK(worst < 1e-5, "Crosstalk 3D leaves L+R untouched");
+    CHECK(sideOut > sideIn * 1.2, "Crosstalk 3D still widens the side");
+}
+
 // Block-level side RMS over a sustained anti-phase 440 Hz tone (L=+s, R=-s):
 // the input is pure side, so the output side RMS is exactly the width/room
 // sideGain. Mirrors the e2e harness (sim --stereo + analyze-dump.py --stereo).
@@ -456,6 +481,7 @@ int main() {
     test_headphone_crossfeed_feeds_into_right();
     test_headphone_crossfeed_preserves_centre();
     test_speaker_xtc_drives_opposite_antiphase();
+    test_speaker_xtc_leaves_the_mono_sum_alone();
     test_width_is_frequency_dependent();
     test_width_range_extends_past_100();
     test_center_and_damping_reach_200();

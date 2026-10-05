@@ -76,17 +76,13 @@ public:
         // retains the outgoing path during its fade, so clear only this target.
         if ((!hadCrossfeed && crossfeed_ > 0.0) || wasHeadphone != headphone_ || wasSurround != surround_)
             resetDelays();
-        // Speaker XTC strength comes from the crossfeed/"Crosstalk 3D" amount.
-        // No broadband makeup: RACE only cancels the 250 Hz–6 kHz band, so a
-        // broadband boost would inflate the (uncancelled) bass — the opposite of
-        // what we want. A mild center dip in-band is the inherent XTC tradeoff.
-        // Speaker XTC strength: doubled initial slope, but eased ASYMPTOTICALLY toward a
-        // sub-1 ceiling instead of clamped. raceGain_ >= 1 would self-oscillate (the
-        // RACE recursion is cross-coupled), so a hard cap would leave the top of the
-        // slider dead; the exponential approach keeps it rising smoothly the whole way.
+        // Speaker XTC strength comes from the crossfeed/"Crosstalk 3D" amount,
+        // eased ASYMPTOTICALLY toward a sub-1 ceiling instead of clamped:
+        // raceGain_ >= 1 would self-oscillate (the recursion feeds back), so a hard
+        // cap would leave the top of the slider dead; the exponential approach
+        // keeps it rising smoothly the whole way.
         const double cf01 = crossfeed_ * 0.01;
         raceGain_ = kRaceGainCeil * (1.0 - std::exp(-kRaceDrive * cf01));
-        raceMakeup_ = 1.0;
 
         // --- Precompute the per-band side gains here (not per sample) -------------
         // All the transcendental work (exp) and the widen/narrow branch happen once
@@ -149,10 +145,10 @@ public:
 private:
     void resetDelays() {
         for (std::size_t i = 0; i < kMaxDelay; ++i) {
-            raceL_[i] = raceR_[i] = cfL_[i] = cfR_[i] = pinnaL_[i] = pinnaR_[i] = 0.0;
+            raceSide_[i] = cfL_[i] = cfR_[i] = pinnaL_[i] = pinnaR_[i] = 0.0;
         }
         raceWrite_ = cfWrite_ = pinnaWrite_ = 0;
-        hpXL_ = hpYL_ = hpXR_ = hpYR_ = lpL_ = lpR_ = 0.0;
+        raceHpX_ = raceHpY_ = raceLp_ = 0.0;
         cfShadowL_ = cfShadowR_ = 0.0;
         surrLpL_ = surrLpR_ = 0.0;
         for (std::size_t i = 0; i < kSurrLen; ++i) surrLine_[i] = 0.0;
@@ -403,18 +399,24 @@ private:
     static constexpr double kWidenMidMakeup = 0.25; // mid lift at +100 widen (~+1.9 dB) → vocal stays present
 
     // --- RACE crosstalk canceller (speaker mode) ----------------------------
-    // Cross-coupled recursive delay+attenuation: each output subtracts a delayed,
-    // band-limited copy of the OPPOSITE output. The recursion (delay lines hold
-    // past outputs) builds the higher-order cancellation. Band-limited to roughly
-    // 250 Hz–6 kHz so the bass and the very top stay clean (RACE keeps a tight,
-    // phase-stable low end — little crosstalk exists below ~400 Hz anyway).
-    // Time-domain, per-sample, no look-ahead.
+    // A delayed, band-limited copy of the output fed back into it (recursive
+    // higher-order cancellation), on the SIDE component only. Split into mid and
+    // side, the classic cross-coupled RACE does two things: it widens the side
+    // (positive feedback) and runs the mid through a comb (negative feedback).
+    // The mid comb moves nothing — a centred source stays centred — but a single
+    // speaker, or anything that folds to mono, hears nothing else, so it only
+    // cost level and tone there. Measured on eight recordings at +-15 deg
+    // speakers (2026-09-18): for the same ear width (IACCa 0.70) the cross-coupled
+    // form cost the mono sum 1.8 dB with 2.7 dB of ear colour; side-only leaves
+    // the mono sum bit-for-bit and colours 2.2 dB. Side-only widens half as much
+    // for the same gain, so the drive is doubled: the slider reads as before
+    // (the old 20 and the new 20 measured the same ear width, 0.753 / 0.752).
+    // Band-limited to roughly 250 Hz–4.5 kHz so the bass and the very top stay
+    // clean. Time-domain, per-sample, no look-ahead.
     static constexpr std::size_t kMaxDelay = 256;  // 768k * ~250us, with margin
-    static constexpr double kMaxRaceGain = 0.50;   // < 1 keeps the recursion stable;
-                                                   // gentler = less center dip / comb
     static constexpr double kRaceGainCeil = 0.90;  // stability asymptote: the XTC drive
                                                    // approaches but never reaches 1
-    static constexpr double kRaceDrive = 1.0 / kRaceGainCeil;  // → 2x initial slope (≈1.0)
+    static constexpr double kRaceDrive = 2.0 / kRaceGainCeil;
 
     // --- "2x strength" mapping curves (multiplicative, monotonic, no dead zone) ------
     // Side attenuation (Room/Center) decays exponentially: e^(-k) at the slider top.
@@ -423,16 +425,13 @@ private:
     // Narrow width decays exponentially toward mono (strictly positive, never inverts).
     static constexpr double kNarrowHigh = 4.6051702;   // ln(100): −100 → treble side ×0.01
     static constexpr double kNarrowLow = 0.63;         // −100 → bass side ×0.53
-    double raceL_[kMaxDelay] = {0.0};
-    double raceR_[kMaxDelay] = {0.0};
+    double raceSide_[kMaxDelay] = {0.0};
     std::size_t raceWrite_ = 0;
     std::size_t raceDelay_ = 8;
     double raceGain_ = 0.0;     // set from crossfeed amount (speaker mode)
-    double raceMakeup_ = 1.0;
     double raceHpA_ = 0.95;     // 1st-order high-pass coeff (~250 Hz)
-    double raceLpA_ = 0.5;      // 1st-order low-pass coeff (~6 kHz)
-    double hpXL_ = 0.0, hpYL_ = 0.0, hpXR_ = 0.0, hpYR_ = 0.0;  // HP states
-    double lpL_ = 0.0, lpR_ = 0.0;                              // LP states
+    double raceLpA_ = 0.5;      // 1st-order low-pass coeff (~4.5 kHz)
+    double raceHpX_ = 0.0, raceHpY_ = 0.0, raceLp_ = 0.0;   // band-limit states
 
     // --- Headphone parametric binaural (virtual speakers at ±30°) -----------
     // Each input reaches the OPPOSITE ear delayed (ITD, spherical head ~260 us),
@@ -474,26 +473,24 @@ private:
     double surrLpA_ = 0.3;             // ~4 kHz roll-off (distance/behind cue)
 
     // Band-limit the cancellation feed: 1st-order high-pass (keep bass out of the
-    // canceller) then 1st-order low-pass (tame the top). `hpX/hpY/lp` are per-side.
-    inline double raceBand(double x, double& hpX, double& hpY, double& lp) {
-        const double hp = raceHpA_ * (hpY + x - hpX);  // high-pass (~250 Hz)
-        hpX = x; hpY = hp;
-        lp += raceLpA_ * (hp - lp);                    // low-pass (~6 kHz)
-        return lp;
+    // canceller) then 1st-order low-pass (tame the top).
+    inline double raceBand(double x) {
+        const double hp = raceHpA_ * (raceHpY_ + x - raceHpX_);  // high-pass (~250 Hz)
+        raceHpX_ = x; raceHpY_ = hp;
+        raceLp_ += raceLpA_ * (hp - raceLp_);                    // low-pass (~4.5 kHz)
+        return raceLp_;
     }
 
-    // One RACE step on the stereo output (in/out by reference).
+    // One RACE step on the stereo output (in/out by reference): the side widens,
+    // the mid — and so the mono sum — passes untouched.
     inline void processRace(double& outL, double& outR) {
         const std::size_t rp = (raceWrite_ + kMaxDelay - raceDelay_) % kMaxDelay;
-        const double bL = raceBand(raceL_[rp], hpXL_, hpYL_, lpL_);  // delayed L, band-limited
-        const double bR = raceBand(raceR_[rp], hpXR_, hpYR_, lpR_);
-        const double yL = outL - raceGain_ * bR;   // subtract opposite (cross-coupled)
-        const double yR = outR - raceGain_ * bL;
-        raceL_[raceWrite_] = yL;                    // feed back (recursion via delay)
-        raceR_[raceWrite_] = yR;
+        const double mid = 0.5 * (outL + outR);
+        const double side = 0.5 * (outL - outR) + raceGain_ * raceBand(raceSide_[rp]);
+        raceSide_[raceWrite_] = side;               // feed back (recursion via delay)
         raceWrite_ = (raceWrite_ + 1) % kMaxDelay;
-        outL = yL * raceMakeup_;
-        outR = yR * raceMakeup_;
+        outL = mid + side;
+        outR = mid - side;
     }
 };
 
