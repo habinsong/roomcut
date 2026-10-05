@@ -85,6 +85,26 @@ public extension EngineClientProtocol {
     func roomcutIsDefaultOutput() -> Bool { false }
 }
 
+// The newest head pose not yet sent (see LiveEngineClient.sendHeadPose).
+final class HeadPoseMailbox: @unchecked Sendable {
+    private let lock = NSLock()
+    private var pending: (yaw: Double, active: Bool)?
+
+    // Stores the pose; true when nothing was waiting, so a send must be queued.
+    func put(yaw: Double, active: Bool) -> Bool {
+        lock.lock(); defer { lock.unlock() }
+        let empty = pending == nil
+        pending = (yaw, active)
+        return empty
+    }
+
+    func take() -> (yaw: Double, active: Bool)? {
+        lock.lock(); defer { lock.unlock() }
+        defer { pending = nil }
+        return pending
+    }
+}
+
 public final class LiveEngineClient: EngineClientProtocol {
     public static let phase7PresetIds: Set<String> = [
         "flat",
@@ -111,6 +131,7 @@ public final class LiveEngineClient: EngineClientProtocol {
     public let presets: [EnginePreset]
 
     private let queue = DispatchQueue(label: "com.roomcut.app.client")
+    private let headPose = HeadPoseMailbox()
     private let deviceQueue = DispatchQueue(label: "com.roomcut.app.device-reads", qos: .userInitiated)
     private let deviceWriteQueue = DispatchQueue(label: "com.roomcut.app.device-writes", qos: .userInitiated)
     private let changeDefaultOutput: (Bool) -> Int32
@@ -347,9 +368,13 @@ public final class LiveEngineClient: EngineClientProtocol {
 
     // Sent from the head-tracking callback, so it hops to the client queue and
     // returns immediately rather than blocking the sensor stream on Mach IPC.
+    // Only the newest pose waits: each send is a round trip of up to 500 ms on
+    // the queue every other call shares, so 50 a second queued one by one
+    // would pile up behind a slow engine and hold back polls and edits too.
     nonisolated public func sendHeadPose(yawDegrees: Double, active: Bool) {
-        queue.async {
-            _ = roomcutClientSetHeadPose(yawDegrees, active ? 1 : 0)
+        guard headPose.put(yaw: yawDegrees, active: active) else { return }
+        queue.async { [headPose] in
+            if let pose = headPose.take() { _ = roomcutClientSetHeadPose(pose.yaw, pose.active ? 1 : 0) }
         }
     }
 

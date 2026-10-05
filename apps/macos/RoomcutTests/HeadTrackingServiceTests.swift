@@ -189,7 +189,11 @@ final class HeadTrackingRecoveryTests: XCTestCase {
         service.checkStream(now: clock.now)
         XCTAssertTrue(service.isDelivering, "half a second of samples is a running stream")
 
-        clock.now = 1.1   // a second since the last sample: 50 missed
+        clock.now = 1.1   // late, as under load, but not yet gone
+        service.checkStream(now: clock.now)
+        XCTAssertTrue(service.isDelivering, "a stream that has delivered gets longer than a second")
+
+        clock.now = 3.1   // three seconds since the last sample: 150 missed
         service.checkStream(now: clock.now)
         XCTAssertFalse(service.isDelivering)
         source.queue?.waitUntilAllOperationsAreFinished()

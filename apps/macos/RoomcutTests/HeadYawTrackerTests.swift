@@ -76,20 +76,49 @@ final class HeadYawTrackerTests: XCTestCase {
                        "a 120 degree turn is reported as 120, not clipped to 60")
     }
 
-    func testAHeadRestingOffCentreDoesNotDragForward() {
-        // The measured failure: a listener who rests slightly right of where
-        // they started saw the stage creep 5 degrees to the right in 12 minutes,
-        // because any still pose near forward was slowly adopted as forward.
+    func testSensorDriftWhileFacingForwardIsTakenOut() {
+        // The measured failure (2026-10-06): facing the screen, the sensor's
+        // heading walked about -7 degrees a minute through small adjustments of
+        // the head, and the stage turned clockwise with it. Three minutes of
+        // that, the head never leaving the screen.
         var tracker = HeadYawTracker()
-        var profile = hold(0, seconds: 1) + ramp(0, 5, seconds: 0.5)
-        for _ in 0..<72 {                                   // 12 minutes
-            profile += hold(5, seconds: 9) + ramp(5, 12, seconds: 0.3) + ramp(12, 5, seconds: 0.7)
+        var profile = hold(0, seconds: 1)
+        var drift = 0.0
+        for second in 0..<180 {
+            let wobble = second % 4 == 0 ? 1.5 : 0      // a small adjustment now and then
+            profile += ramp(drift, drift + wobble, seconds: 0.2) + ramp(drift + wobble, drift, seconds: 0.2)
+            drift -= 7.0 / 60 * 0.4
+            profile += hold(drift, seconds: 0.6)
+            drift -= 7.0 / 60 * 0.6
         }
-        profile += hold(5, seconds: 1)
+        XCTAssertLessThan(drift, -20, "uncorrected, forward would now read this far off")
         let reported = play(&tracker, profile)
-        XCTAssertEqual(reported, 5, accuracy: 0.3, "a pose near forward stays that far from forward")
-        let back = play(&tracker, ramp(5, 0, seconds: 0.5) + hold(0, seconds: 1), from: Double(profile.count) / rate)
-        XCTAssertEqual(back, 0, accuracy: 0.3, "and looking where forward was still reads zero")
+        XCTAssertEqual(reported, 0, accuracy: 3.0, "facing forward still reads forward")
+    }
+
+    func testALookToTheSideIsNotTakenForDrift() {
+        // Past the cone, a held turn is a held turn however long it lasts, and
+        // coming back to the screen reads zero again.
+        var tracker = HeadYawTracker()
+        var profile = hold(0, seconds: 1) + ramp(0, 35, seconds: 1)
+        profile += hold(35, seconds: 60)
+        let held = play(&tracker, profile)
+        XCTAssertEqual(held, 35, accuracy: 0.5, "a minute looking 35 degrees away is still 35 degrees")
+        let back = play(&tracker, ramp(35, 0, seconds: 1) + hold(0, seconds: 1), from: Double(profile.count) / rate)
+        XCTAssertEqual(back, 0, accuracy: 0.5)
+    }
+
+    func testAGlanceNearForwardMovesItOnlyALittle() {
+        // The price of the correction: a look that stays inside the cone is
+        // partly taken as drift. Ten seconds at the app's window, 12 degrees
+        // right, then back to the screen.
+        var tracker = HeadYawTracker()
+        var profile = hold(0, seconds: 1) + ramp(0, 12, seconds: 0.4)
+        profile += hold(12, seconds: 10) + ramp(12, 0, seconds: 0.4) + hold(0, seconds: 0.5)
+        let back = play(&tracker, profile)
+        XCTAssertLessThan(abs(back), 3.0, "the screen reads within a few degrees of forward")
+        let later = play(&tracker, hold(0, seconds: 60), from: Double(profile.count) / rate)
+        XCTAssertEqual(later, 0, accuracy: 0.5, "and settles back on it")
     }
 
     func testForwardIsTakenOnceTheHeadHasSettled() {

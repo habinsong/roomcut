@@ -58,8 +58,16 @@ public final class HeadTrackingService: ObservableObject {
     // times a second; the engine gets every change (HeadPosePipeline).
     @Published public private(set) var yawDegrees: Double = 0
 
-    // No sample for this long while the stream runs is a stall (normal: 20 ms).
-    static let stallSeconds = 1.0
+    // No first sample this long after a start is a stall: the first stream a
+    // process opens was refused by relatived ("Authorized: NO") and only the
+    // restart delivered, in every launch logged 2026-10-06.
+    static let firstSampleSeconds = 1.0
+    // Once a stream has delivered, a gap must be this long to count. Under full
+    // CPU load (a build) relatived fell to 1-17 samples a second and arrivals
+    // were 1-2 s apart while the stream was still alive; restarting it then
+    // gained nothing, and a restart can be refused for good (a running app whose
+    // bundle was rebuilt underneath it, 2026-10-06 00:06).
+    static let stallSeconds = 3.0
     // Waits before each restart of a stream that stays quiet or keeps failing.
     static let retryDelays: [TimeInterval] = [0, 1, 2, 4, 8]
     static let watchInterval: TimeInterval = 0.5
@@ -207,8 +215,9 @@ public final class HeadTrackingService: ObservableObject {
     func checkStream(now: TimeInterval) {
         guard isTracking, allowed else { stopWatching(); return }
         if isDelivering {
+            let delivered = pipeline.lastSampleAt >= streamStartedAt
             let last = max(pipeline.lastSampleAt, streamStartedAt)
-            if now - last >= Self.stallSeconds {
+            if now - last >= (delivered ? Self.stallSeconds : Self.firstSampleSeconds) {
                 suspend(reason: String(format: "no sample for %.1f s", now - last))
                 scheduleRetry()
             } else if retries > 0, pipeline.lastSampleAt > streamStartedAt {
@@ -339,6 +348,12 @@ final class HeadPosePipeline: @unchecked Sendable {
     static let minimumChangeDegrees = 0.25
     static let heartbeatSeconds = 0.5
     static let pictureStepDegrees = 1.0
+    // A sample older than this when handled is history, not the head (normal:
+    // 15-150 ms). Under load relatived fell behind and samples arrived 1-11 s
+    // late (2026-10-06); the stage then replayed where the head had been. Late
+    // samples are not sent, and if they stay late the stage is let go.
+    static let lateSeconds = 0.3
+    static let lateHoldSeconds = 0.5
 
     private let send: HeadTrackingService.Sender
     private let log: HeadTrackingLog?
@@ -356,6 +371,8 @@ final class HeadPosePipeline: @unchecked Sendable {
     private var lastSentYaw = 0.0
     private var lastSentAt = -Double.infinity
     private var lastPictureYaw = 0.0
+    private var lateSince: TimeInterval?
+    private var heldBack = false
 
     init(send: @escaping HeadTrackingService.Sender, log: HeadTrackingLog?,
          clock: @escaping @Sendable () -> TimeInterval = { ProcessInfo.processInfo.systemUptime }) {
@@ -400,11 +417,23 @@ final class HeadPosePipeline: @unchecked Sendable {
         let now = clock()
         arrival.lock(); lastArrival = now; arrival.unlock()
         let yaw = tracker.update(attitude: sample.attitude, at: sample.timestamp)
-        if abs(yaw - lastSentYaw) >= Self.minimumChangeDegrees
-            || sample.timestamp - lastSentAt >= Self.heartbeatSeconds {
-            lastSentYaw = yaw
-            lastSentAt = sample.timestamp
-            send(yaw, true)
+        if now - sample.timestamp > Self.lateSeconds {
+            let since = lateSince ?? now
+            lateSince = since
+            if !heldBack, now - since >= Self.lateHoldSeconds {
+                heldBack = true
+                lastSentAt = -.infinity   // the first timely sample goes out at once
+                send(0, false)
+            }
+        } else {
+            lateSince = nil
+            heldBack = false
+            if abs(yaw - lastSentYaw) >= Self.minimumChangeDegrees
+                || sample.timestamp - lastSentAt >= Self.heartbeatSeconds {
+                lastSentYaw = yaw
+                lastSentAt = sample.timestamp
+                send(yaw, true)
+            }
         }
         if abs(yaw - lastPictureYaw) >= Self.pictureStepDegrees {
             lastPictureYaw = yaw
@@ -418,6 +447,8 @@ final class HeadPosePipeline: @unchecked Sendable {
         lastSentYaw = 0
         lastSentAt = -.infinity
         lastPictureYaw = 0
+        lateSince = nil
+        heldBack = false
     }
 }
 

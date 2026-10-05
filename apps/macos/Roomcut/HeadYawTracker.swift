@@ -17,14 +17,23 @@ import Foundation
 //     and -4.2 degrees with posture alone. The angle is now the twist about the
 //     vertical of the rotation from the reference attitude to the current one,
 //     which a nod or a tilt about any horizontal axis leaves at exactly zero.
-//   - Forward is where the listener looked once the head settled, and it stays
-//     there. A correction that slowly adopted any still pose near forward as
-//     the new forward (for a gyro drift that was assumed, not measured) moved
-//     forward 5.0 degrees to the right over 12 minutes, because that listener
-//     rested slightly right of where they started — the stage visibly crept
-//     round. The sensor itself drifted -0.13 degrees a minute while the head was
-//     still. Re-centring is the listener's call (the button) and happens on
-//     every restart of the stream.
+//   - Forward is where the listener looked once the head settled. Re-centring
+//     is the listener's call (the button) and happens on every restart of the
+//     stream.
+//   - The sensor's heading is not trustworthy over minutes: AirPods have no
+//     compass, and every small movement leaves a little error behind, almost
+//     always the same way. Measured 2026-10-06 (head-tracking-v3.csv, macOS 27):
+//     a listener facing the screen read -12.7 to -18.7 degrees within 50 s
+//     (about -7 a minute) while the head only made small adjustments; in every
+//     long stream that day the resting direction walked negative, the stage
+//     turning clockwise. Fully still, the drift was near zero. So while the head
+//     rests near forward, forward is drawn slowly back to it — never past
+//     forwardConeDegrees, faintly at its edge, and not at all while the head
+//     moves — which holds the measured drift to about 2 degrees. (An earlier
+//     version adopted any still pose at a fixed rate, with no cone, and was
+//     removed when a pose 5 degrees right crept in over 12 minutes; the
+//     measured drift is far larger than that creep, and the cone keeps a
+//     deliberate look to the side where it is.)
 //   - The first samples arrive while the earbuds are going in (64 degrees of
 //     roll in the log). Forward is taken only after the angle has held steady
 //     for a moment; until then the angle reads zero.
@@ -42,6 +51,14 @@ public struct HeadYawTracker {
     public static let settledDegreesPerSecond = 20.0
     // ...for this long.
     public static let settledSeconds = 0.3
+    // Drift: how fast forward is drawn back to a head resting near it...
+    public static let driftSeconds = 20.0
+    // ...only within this far of forward, more faintly towards the edge...
+    public static let forwardConeDegrees = 20.0
+    // ...and only while the head turns slower than this (averaged over
+    // speedSeconds), so a turn itself is never taken for drift.
+    public static let restingDegreesPerSecond = 8.0
+    public static let speedSeconds = 0.25
 
     public struct Quaternion: Equatable, Sendable {
         public var w, x, y, z: Double
@@ -60,6 +77,10 @@ public struct HeadYawTracker {
     private var smoothed: Double = 0
     private var lastTime: TimeInterval?
     private var candidate: (angle: Double, since: TimeInterval)?
+    // Degrees taken off the sensor's heading for its drift (see above).
+    private var correction: Double = 0
+    private var speed: Double = 0
+    private var lastTarget: Double?
 
     public init() {}
 
@@ -71,6 +92,9 @@ public struct HeadYawTracker {
         referenceAttitude = nil
         smoothed = 0
         candidate = nil
+        correction = 0
+        speed = 0
+        lastTarget = nil
     }
 
     public mutating func reset() {
@@ -137,10 +161,22 @@ public struct HeadYawTracker {
         // ordinary step rather than letting a huge dt jump the smoother.
         let dt = lastTime.map { max(0, min(0.25, time - $0)) } ?? 0
         lastTime = time
+        var target = Self.wrap(relative - correction)
+        if let previous = lastTarget, dt > 0 {
+            let instant = abs(Self.wrap(target - previous)) / dt
+            speed += (1 - exp(-dt / Self.speedSeconds)) * (instant - speed)
+        }
+        if dt > 0, speed < Self.restingDegreesPerSecond, abs(target) < Self.forwardConeDegrees {
+            let weight = 1 - abs(target) / Self.forwardConeDegrees
+            let pull = target * (1 - exp(-dt * weight / Self.driftSeconds))
+            correction = Self.wrap(correction + pull)
+            target -= pull
+        }
+        lastTarget = target
         // Always the short way round, so crossing the back of the head does not
         // drag the stage through the front.
         let step = dt > 0 ? 1 - exp(-dt / Self.smoothingSeconds) : 1
-        smoothed = Self.wrap(smoothed + step * Self.wrap(relative - smoothed))
+        smoothed = Self.wrap(smoothed + step * Self.wrap(target - smoothed))
         return smoothed
     }
 
