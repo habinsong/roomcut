@@ -172,7 +172,7 @@ struct AudioStatusView: View {
                 get: { model.selectedDeviceUID },
                 set: { model.selectDevice($0) }
             )) {
-                ForEach(model.outputDevices) { d in Text(d.name).tag(d.uid) }
+                ForEach(model.outputDevices) { d in Text(model.outputDeviceLabel(d)).tag(d.uid) }
                 if !model.outputDevices.contains(where: { $0.uid == model.selectedDeviceUID }) {
                     Text(model.selectedDeviceUID.isEmpty ? "—" : model.selectedDeviceUID)
                         .tag(model.selectedDeviceUID)

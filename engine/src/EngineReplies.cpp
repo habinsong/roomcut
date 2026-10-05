@@ -37,6 +37,11 @@ RoomcutStateReply makeStateReply(const EngineSoundState& sound, const EngineStat
     reply.bedPersonalizedHrtf = runtime.bedPersonalizedHrtf ? 1 : 0;
     reply.bedExternalGain = runtime.bedExternalGain;
     reply.bedUnitRate = runtime.bedUnitRate;
+    for (const auto& uid : runtime.unusableOutputUIDs) {
+        if (reply.unusableOutputCount == ROOMCUT_UNUSABLE_OUTPUTS_MAX) break;
+        std::snprintf(reply.unusableOutputUIDs[reply.unusableOutputCount++], ROOMCUT_DEVICE_UID_MAX, "%s", uid.c_str());
+    }
+    std::snprintf(reply.checkingOutputUID, sizeof(reply.checkingOutputUID), "%s", runtime.checkingOutputUID.c_str());
     return reply;
 }
 

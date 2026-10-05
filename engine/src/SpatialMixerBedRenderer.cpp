@@ -1,5 +1,4 @@
 #include "SpatialMixerBedRenderer.hpp"
-#include "SpatialMixerDiffuseField.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -56,23 +55,17 @@ bool SpatialMixerBedRenderer::prepare(double sampleRate, std::string& error) {
                                  kAudioUnitScope_Global, 0, &inUse, &size) == noErr && inUse != 0)
             personalizedHrtf_ = true;
     }
-    {
-        ParametricFitSettings fit;
-        fit.sampleRate = unitRate_;
-        fit.minHz = 50.0;
-        fit.maxHz = std::min(16000.0, 0.45 * unitRate_);
-        const std::vector<ResponsePoint> measured(std::begin(kSpatialMixerDiffuseField48k), std::end(kSpatialMixerDiffuseField48k));
-        const ParametricFitResult result = fitParametricCorrection(measured, fit);
-        diffuseBands_ = result.bands;
-        diffuseBandCount_ = result.bandsUsed;
-        for (std::size_t b = 0; b < diffuseFilters_.size(); ++b) {
-            const ParametricBand& band = diffuseBands_[b];
-            if (b < diffuseBandCount_) diffuseFilters_[b].set(static_cast<BiquadType>(band.type), unitRate_, band.freqHz, band.gainDb, band.q);
-            else diffuseFilters_[b].setIdentity();
-            diffuseFilters_[b].reset();
-        }
-        diffuseCorrection_ = true;
+    // No correction until the response is handed in (setDiffuseField).
+    diffuseBands_ = {};
+    diffuseBandCount_ = 0;
+    diffuseFilterCount_ = 0;
+    for (Biquad& filter : diffuseFilters_) {
+        filter.setIdentity();
+        filter.reset();
     }
+    DiffuseBands stale;
+    while (diffuseMailbox_.readLatest(stale)) {}
+    diffuseCorrection_ = true;
     backDelayL_ = std::min(kBackLine - 1, static_cast<std::size_t>(std::lround(unitRate_ * kBackDelayLeftSeconds)));
     backDelayR_ = std::min(kBackLine - 1, static_cast<std::size_t>(std::lround(unitRate_ * kBackDelayRightSeconds)));
     backLineL_.fill(0.0f);
@@ -207,9 +200,35 @@ void SpatialMixerBedRenderer::renderUnit(Unit& unit, const float* const* channel
     unit.sampleTime += kBlockFrames;
 }
 
+void SpatialMixerBedRenderer::setDiffuseField(const std::vector<ResponsePoint>& measured) {
+    DiffuseBands next;
+    next.unitRate = unitRate_;
+    if (!measured.empty() && unitRate_ > 0.0) {
+        ParametricFitSettings fit;
+        fit.sampleRate = unitRate_;
+        fit.minHz = 50.0;
+        fit.maxHz = std::min(16000.0, 0.45 * unitRate_);
+        const ParametricFitResult result = fitParametricCorrection(measured, fit);
+        next.bands = result.bands;
+        next.count = result.bandsUsed;
+    }
+    diffuseBands_ = next.bands;
+    diffuseBandCount_ = next.count;
+    diffuseMailbox_.publish(next);
+}
+
 void SpatialMixerBedRenderer::equalise(float* left, float* right) {
+    DiffuseBands next;
+    if (diffuseMailbox_.readLatest(next) && next.unitRate == unitRate_) {
+        for (std::size_t b = 0; b < diffuseFilters_.size(); ++b) {
+            const ParametricBand& band = next.bands[b];
+            if (b < next.count) diffuseFilters_[b].set(static_cast<BiquadType>(band.type), unitRate_, band.freqHz, band.gainDb, band.q);
+            else diffuseFilters_[b].setIdentity();
+        }
+        diffuseFilterCount_ = next.count;
+    }
     if (!diffuseCorrection_) return;
-    for (std::size_t b = 0; b < diffuseBandCount_; ++b) {
+    for (std::size_t b = 0; b < diffuseFilterCount_; ++b) {
         Biquad& filter = diffuseFilters_[b];
         for (std::size_t i = 0; i < kBlockFrames; ++i) {
             left[i] = filter.processSample(left[i], 0);

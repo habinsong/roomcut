@@ -17,8 +17,10 @@
  *     IntegerDecimator and an IntegerInterpolator, which keeps the bed flat to
  *     24 kHz and adds the filters' delay, reported as latencyFrames()
  *   - one render call costs about 2.5 us, which is why this renders blocks
- *   - its diffuse-field response is not flat (SpatialMixerDiffuseField.hpp), and
- *     it showed: the chain's tone moved 2.2 dB RMS from the dry programme. Both
+ *   - its diffuse-field response is not flat on every macOS, and it shows: on
+ *     macOS 26 the chain's tone moved 2.2 dB RMS from the dry programme. The
+ *     engine measures the response on the running system
+ *     (SpatialMixerDiffuseField.hpp) and hands it in with setDiffuseField(); both
  *     ears go through the same fitted parametric bands that undo it, so only
  *     the part every direction shares is removed and the direction cues stay
  *
@@ -40,6 +42,10 @@
 #include "dsp/Biquad.hpp"
 #include "dsp/IntegerResampler.hpp"
 #include "dsp/ParametricEQ.hpp"
+#include "dsp/ParametricFit.hpp"
+#include "RealtimeMailbox.hpp"
+
+#include <vector>
 
 namespace roomcut {
 
@@ -73,7 +79,11 @@ public:
     // either one renders with the listener's personalized HRTF. Asked for with
     // the Auto mode; the measured answer in a signed-less user process is no.
     bool personalizedHrtfInUse() const { return personalizedHrtf_; }
-    // The bands that undo the unit's diffuse-field response, fitted at unitRate().
+    // The unit's measured diffuse-field response, to divide out (empty: none).
+    // Control thread, any time after prepare(); a render in progress picks the
+    // new bands up at its next block, filter history kept.
+    void setDiffuseField(const std::vector<ResponsePoint>& measured);
+    // The bands that undo it, fitted at unitRate().
     const std::array<ParametricBand, ParametricEQ::kNumBands>& diffuseFieldBands() const { return diffuseBands_; }
     std::size_t diffuseFieldBandCount() const { return diffuseBandCount_; }
     // Off only to measure what the correction does; on after every prepare().
@@ -125,9 +135,16 @@ private:
     std::array<float, kBlockFrames> backOutL_{}, backOutR_{};
     std::size_t backWrite_ = 0, backDelayL_ = 720, backDelayR_ = 1008;
 
-    std::array<ParametricBand, ParametricEQ::kNumBands> diffuseBands_{};
-    std::array<Biquad, ParametricEQ::kNumBands> diffuseFilters_{};
+    struct DiffuseBands {
+        std::array<ParametricBand, ParametricEQ::kNumBands> bands{};
+        std::size_t count = 0;
+        double unitRate = 0.0;   // bands fitted for another rate are ignored
+    };
+    std::array<ParametricBand, ParametricEQ::kNumBands> diffuseBands_{};   // control thread's copy
     std::size_t diffuseBandCount_ = 0;
+    RealtimeMailbox<DiffuseBands> diffuseMailbox_;                         // control -> render
+    std::array<Biquad, ParametricEQ::kNumBands> diffuseFilters_{};         // render thread
+    std::size_t diffuseFilterCount_ = 0;
     bool diffuseCorrection_ = true;
 };
 

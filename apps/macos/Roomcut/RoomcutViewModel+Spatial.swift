@@ -347,7 +347,7 @@ extension RoomcutViewModel {
     // nothing to do on speakers, so the sensor pauses — but the listener's
     // choice stays. This used to switch tracking off for good, and a trip to
     // Speaker and back left it off with nothing to say why.
-    private func syncHeadTrackingAvailability() {
+    func syncHeadTrackingAvailability() {
         headTracking.setAllowed(headTrackingAvailable)
     }
 

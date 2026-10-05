@@ -108,7 +108,14 @@ private:
     // virtual device) wins; otherwise the automatic policy. Keeps the manual
     // override in one place for both the HELLO open and the recovery reopen.
     AudioDeviceID pickOutput() {
-        auto devs = listOutputDevices();
+        // Outputs that would not start are left out until re-picked or replugged.
+        std::vector<OutputDeviceInfo> devs;
+        std::vector<std::string> present;
+        for (auto& d : listOutputDevices()) {
+            present.push_back(d.uid);
+            if (!quarantine.benched(d.uid)) devs.push_back(std::move(d));
+        }
+        quarantine.retain(present);
         if (!preferredOutputUID.empty()) {
             for (const auto& d : devs) {
                 if (d.uid == preferredOutputUID && !isRoomcutDeviceUID(d.uid)) {
@@ -118,6 +125,25 @@ private:
             // Pinned device is gone — fall through to policy until it returns.
         }
         return pickRenderDevice(devs, defaultOutputDevice(), savedRealUID);
+    }
+
+    // An output that failed to open or start. Once it is clearly not coming up the
+    // policy moves past it; when the attempt itself hung the control thread, the
+    // pin goes too, or every engine launch would walk into the same stall.
+    void noteOutputFailure(AudioDeviceID device, std::chrono::steady_clock::duration spent) {
+        const std::string uid = deviceUID(device);
+        const auto verdict = quarantine.failed(uid, spent);
+        if (!verdict.benched) return;
+        std::fprintf(stderr,
+            "[engine] output '%s' (%s) failed to start (%lld ms); skipping it until it is picked again or reconnected\n",
+            deviceName(device).c_str(), uid.c_str(),
+            (long long)std::chrono::duration_cast<std::chrono::milliseconds>(spent).count());
+        if (verdict.hung && uid == preferredOutputUID) {
+            preferredOutputUID.clear();
+            stateStore.save(pstate);
+            std::fprintf(stderr, "[engine] output device pin cleared -> (auto)\n");
+        }
+        watcher.markChanged(); // route to the next candidate on the next pass
     }
 
     // Persist the real device write-through, so a crashed engine's successor
@@ -182,6 +208,23 @@ private:
     void betweenMessages() {
         // Device-world changes are handled here, between messages, so all
         // output/DSP mutation stays on this one control thread.
+        if (auto checked = probe.poll()) onOutputChecked(*checked);
+        // The units' diffuse field, measured in the background: in effect from
+        // the next rendered block, no reopen.
+        if (auto measured = ctx.bedCalibration.takeFinished()) {
+            if (measured->response.empty())
+                std::fprintf(stderr, "[engine] bed renderer: diffuse field could not be measured at %.0f Hz (%s HRTF); left uncorrected\n",
+                             measured->unitRate, measured->personalized ? "personalized" : "generic");
+            const bool personalizedHrtf = ctx.bedCurrent.personalizedHrtfInUse() || ctx.bedReference.personalizedHrtfInUse();
+            if (ctx.bedAttached && !measured->response.empty() && measured->unitRate == ctx.bedCurrent.unitRate()
+                && measured->personalized == personalizedHrtf) {
+                ctx.bedCurrent.setDiffuseField(measured->response);
+                ctx.bedReference.setDiffuseField(measured->response);
+                std::fprintf(stderr, "[engine] bed renderer: diffuse field measured at %.0f Hz (%s HRTF); correction applied (%zu bands)\n",
+                             measured->unitRate, measured->personalized ? "personalized" : "generic",
+                             ctx.bedCurrent.diffuseFieldBandCount());
+            }
+        }
         const bool devicesChanged = watcher.takeChanges();
         if (devicesChanged) trackRealDefault();
         if (devicesChanged || router.retryDue(std::chrono::steady_clock::now())) recoverOutput();
@@ -366,12 +409,15 @@ private:
             // device wins, else the policy target (real default → saved
             // real → builtin → any).
             AudioDeviceID pick = pickOutput();
+            const auto openedAt = std::chrono::steady_clock::now();
             OSStatus oerr = (pick == kAudioObjectUnknown)
                 ? (OSStatus)kAudioHardwareBadDeviceError
                 : openOutputOn(ctx, output, pick, sr, sound.settings());
             if (oerr != noErr) {
                 std::fprintf(stderr, "[engine] output.open failed: %d (transfer ok, no audible out)\n",
                              (int)oerr);
+                if (pick != kAudioObjectUnknown)
+                    noteOutputFailure(pick, std::chrono::steady_clock::now() - openedAt);
                 watcher.markChanged();
             } else {
                 if (dumpPath != nullptr && ctx.dumpCapFrames == 0) {
@@ -395,9 +441,11 @@ private:
         bool startedNow = false;
         const uint64_t framesBeforeStart = ctx.framesRendered.load(std::memory_order_relaxed);
         if (outputReady && !output.running()) {
+            const auto startedAt = std::chrono::steady_clock::now();
             OSStatus oerr = output.start();
             if (oerr != noErr) {
                 std::fprintf(stderr, "[engine] output.start failed: %d\n", (int)oerr);
+                noteOutputFailure(output.deviceID(), std::chrono::steady_clock::now() - startedAt);
                 watcher.markChanged();
             } else {
                 startedNow = true;
@@ -449,6 +497,7 @@ private:
         std::fprintf(stderr, "[engine] handed off region (sr=%u cap=%u)\n", sr, cap);
 
         if (startedNow) {
+            quarantine.succeeded(deviceUID(output.deviceID()));
             router.adopt(output.deviceID(), std::chrono::steady_clock::now());
             watcher.watchSR(output.deviceID());
             setSavedReal(deviceUID(output.deviceID()));
@@ -527,16 +576,61 @@ private:
         char uid[ROOMCUT_DEVICE_UID_MAX];
         std::memcpy(uid, dreq.deviceUID, sizeof(uid));
         uid[sizeof(uid) - 1] = '\0';
+        const std::string picked = uid;
+        // Route straight away only to a device known to run: automatic, the one
+        // playing now, or one that played this session. Anything else is checked
+        // off this thread first, while the current output keeps playing.
+        const bool playingNow = output.running() && deviceUID(output.deviceID()) == picked;
+        if (picked.empty() || playingNow || quarantine.verified(picked)) {
+            pinOutput(picked);
+        } else {
+            quarantine.release(picked); // picking it again earns a fresh check
+            wantedPick = picked;
+            if (!probe.busy()) checkOutput(picked);
+        }
+        const kern_return_t kr = controlReplyAck(dreq.header, ROOMCUT_MSG_SET_OUTPUT_DEV, 0);
+        if (kr != KERN_SUCCESS) {
+            std::fprintf(stderr, "[engine] set-device ack failed: %d\n", kr);
+        }
+    }
+
+    void pinOutput(const std::string& uid) {
+        wantedPick.clear();
         preferredOutputUID = uid; // "" = back to automatic policy
         stateStore.save(pstate);
         std::fprintf(stderr, "[engine] output device pinned -> '%s'\n",
                      preferredOutputUID.empty() ? "(auto)" : preferredOutputUID.c_str());
         // Reopen on the new target via the control loop's recoverOutput.
         watcher.markChanged();
-        const kern_return_t kr = controlReplyAck(dreq.header, ROOMCUT_MSG_SET_OUTPUT_DEV, 0);
-        if (kr != KERN_SUCCESS) {
-            std::fprintf(stderr, "[engine] set-device ack failed: %d\n", kr);
+    }
+
+    void checkOutput(const std::string& uid) {
+        AudioDeviceID device = kAudioObjectUnknown;
+        for (const auto& d : listOutputDevices())
+            if (d.uid == uid && !isRoomcutDeviceUID(d.uid)) { device = d.id; break; }
+        if (device == kAudioObjectUnknown || !probe.start(device, uid)) {
+            std::fprintf(stderr, "[engine] output '%s' is not available; keeping the current output\n", uid.c_str());
+            if (wantedPick == uid) wantedPick.clear();
+            return;
         }
+        std::fprintf(stderr, "[engine] checking output '%s' before routing to it\n", deviceName(device).c_str());
+    }
+
+    void onOutputChecked(const OutputProbe::Result& result) {
+        if (result.ran) {
+            quarantine.succeeded(result.uid);
+        } else {
+            quarantine.bench(result.uid);
+            std::fprintf(stderr,
+                "[engine] output '%s' did not run (%d after %lld ms); not routing to it\n",
+                result.uid.c_str(), result.error, (long long)result.spent.count());
+        }
+        if (result.uid == wantedPick) {
+            wantedPick.clear();
+            if (result.ran) pinOutput(result.uid);
+        }
+        // The listener moved on to another device while this one was checked.
+        if (!wantedPick.empty() && !probe.busy()) checkOutput(wantedPick);
     }
 
     void onSetBypass(RxBuffer& rx) {
@@ -633,6 +727,8 @@ private:
         snapshot.volumeBoost = ctx.volume.boost();
         snapshot.engineLatencyMs = output.running() ? ctx.engineLatencyMs : 0.0;
         snapshot.bedRendererAttached = output.running() && ctx.bedAttached;
+        snapshot.unusableOutputUIDs = quarantine.benchedUIDs();
+        snapshot.checkingOutputUID = wantedPick;
         if (snapshot.bedRendererAttached) {
             snapshot.bedPersonalizedHrtf = ctx.bedCurrent.personalizedHrtfInUse() || ctx.bedReference.personalizedHrtfInUse();
             snapshot.bedUnitRate = static_cast<float>(ctx.bedCurrent.unitRate());
@@ -682,6 +778,11 @@ private:
     bool restoreArmed = false;
     std::chrono::steady_clock::time_point restoreDeadline;
     OutputRouter router{std::chrono::steady_clock::now()};
+    OutputQuarantine quarantine;
+    OutputProbe probe;
+    std::string wantedPick;   // the listener's pick, routed to once its check passes
+    AudioDeviceID attemptDevice = kAudioObjectUnknown; // the reopen in flight
+    std::chrono::steady_clock::time_point attemptStarted;
 
     // The router owns the order and the retry policy; these are the HAL calls and
     // engine-state updates it drives, all on this control thread.
@@ -695,14 +796,18 @@ private:
         .unwatchRate = [this] { watcher.watchSR(kAudioObjectUnknown); },
         .close = [this] { output.close(); },
         .open = [this](uint32_t device, bool matchRingRate) {
+            attemptDevice = device;
+            attemptStarted = std::chrono::steady_clock::now();
             return (int)openOutputOn(ctx, output, device, ringSR, sound.settings(), matchRingRate);
         },
         .start = [this] { return (int)output.start(); },
         .failed = [this](int error) {
             std::fprintf(stderr, "[engine] output reopen failed: %d (retry scheduled)\n", error);
             output.close();
+            noteOutputFailure(attemptDevice, std::chrono::steady_clock::now() - attemptStarted);
         },
         .restored = [this](uint32_t device) {
+            quarantine.succeeded(deviceUID(device));
             watcher.watchSR(device);
             setSavedReal(deviceUID(device));
             ctx.volume.setTarget(device);

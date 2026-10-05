@@ -52,6 +52,17 @@ final class RefreshPlanTests: XCTestCase {
                        "publishing on every meter tick would re-render the window at the poll rate")
     }
 
+    func testAnOutputCheckIsPublished() {
+        var checking = status()
+        checking.checkingOutputUID = "dp:sink"
+        XCTAssertTrue(RefreshPlanner.plan(inputs(previous: status(), next: checking)).publishStatus,
+                      "the menu says the picked device is being checked")
+        var failed = status()
+        failed.unusableOutputUIDs = ["dp:sink"]
+        XCTAssertTrue(RefreshPlanner.plan(inputs(previous: checking, next: failed)).publishStatus,
+                      "and then that it cannot play")
+    }
+
     func testAChangedProcessingLatencyIsPublished() {
         let next = status(latencyMs: 2.6)
         XCTAssertTrue(RefreshPlanner.plan(inputs(previous: status(latencyMs: 0), next: next)).publishStatus,

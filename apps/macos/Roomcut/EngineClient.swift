@@ -166,6 +166,15 @@ public final class LiveEngineClient: EngineClientProtocol {
             s.bedPersonalizedHrtf = c.bedPersonalizedHrtf != 0
             s.bedExternalGain = c.bedExternalGain
             s.bedUnitRate = c.bedUnitRate
+            s.unusableOutputUIDs = withUnsafeBytes(of: c.unusableOutputUIDs) { raw in
+                let width = Int(ROOMCUT_CLIENT_DEVICE_UID_MAX)
+                return Set((0..<Int(c.unusableOutputCount)).map { i in
+                    String(cString: raw.baseAddress!.advanced(by: i * width).assumingMemoryBound(to: CChar.self))
+                })
+            }
+            s.checkingOutputUID = withUnsafeBytes(of: c.checkingOutputUID) { raw in
+                String(cString: raw.bindMemory(to: CChar.self).baseAddress!)
+            }
             return s
         }
     }

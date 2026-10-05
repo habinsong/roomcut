@@ -104,6 +104,8 @@ public enum RefreshPlanner {
             || previous.systemBedRenderer != next.systemBedRenderer
             || previous.bedPersonalizedHrtf != next.bedPersonalizedHrtf
             || previous.bedUnitRate != next.bedUnitRate
+            || previous.unusableOutputUIDs != next.unusableOutputUIDs
+            || previous.checkingOutputUID != next.checkingOutputUID
     }
 
     // A dropout worth surfacing: the lifetime counter climbed since the last poll

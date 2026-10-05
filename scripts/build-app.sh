@@ -75,8 +75,8 @@ PLIST
 NP_DIR="${REPO_ROOT}/apps/macos/NowPlayingHelper"
 RES="${APP}/Contents/Resources"
 mkdir -p "${RES}"
-clang -dynamiclib -fobjc-arc -O2 \
-  -framework Foundation -framework AppKit -framework CoreFoundation \
+clang -dynamiclib -fobjc-arc -O2 -mmacosx-version-min=26.0 \
+  -framework Foundation -framework AppKit -framework CoreFoundation -framework ImageIO \
   "${NP_DIR}/RoomcutNowPlaying.m" \
   -o "${RES}/RoomcutNowPlaying.dylib"
 cp "${NP_DIR}/roomcut-nowplaying.pl" "${RES}/roomcut-nowplaying.pl"

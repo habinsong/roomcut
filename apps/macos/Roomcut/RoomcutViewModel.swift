@@ -167,13 +167,17 @@ public final class RoomcutViewModel: ObservableObject {
     public static let maxVolume = 2.0
 
     public convenience init() {
-        self.init(client: LiveEngineClient())
+        self.init(client: LiveEngineClient(), headMotion: CoreMotionHeadSource())
     }
 
+    // With a client of its own (UI fixtures, tests) the model gets a sensor that
+    // never delivers. Headphone motion is one stream per headset shared by every
+    // process: a test run that started and stopped it silenced the running app's
+    // tracking (2026-10-05, see HeadTrackingService).
     public convenience init(client: EngineClientProtocol, debounceNanoseconds: UInt64 = 150_000_000,
                             defaults: UserDefaults = .standard) {
         self.init(client: client, debounceNanoseconds: debounceNanoseconds, defaults: defaults,
-                  headMotion: CoreMotionHeadSource())
+                  headMotion: SilentHeadMotionSource())
     }
 
     init(client: EngineClientProtocol, debounceNanoseconds: UInt64 = 150_000_000,
@@ -306,6 +310,10 @@ public final class RoomcutViewModel: ObservableObject {
 
         if plan.publishStatus { status = nextStatus }
         comparison.setSupported(nextStatus.supportsLevelMatch)
+        // Whether the output can use head tracking also moves without a tap on
+        // Speaker/Headphone: undo, an A/B switch, the engine coming back. Settle
+        // it on every poll; nothing happens when it has not changed.
+        syncHeadTrackingAvailability()
 
         if let token = plan.devicePresetToken { applyPickerSelection(token) }
 

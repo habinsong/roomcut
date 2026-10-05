@@ -172,6 +172,8 @@ static inline int roomcut_health_reply_valid(const RoomcutHealthReply* reply, ui
 
 #define ROOMCUT_PRESET_ID_MAX 32
 #define ROOMCUT_DEVICE_UID_MAX 128
+/* Outputs the state reply can name as unusable at once (see RoomcutStateReply). */
+#define ROOMCUT_UNUSABLE_OUTPUTS_MAX 4
 
 typedef struct {
     mach_msg_header_t header;
@@ -353,6 +355,15 @@ typedef struct {
     uint32_t          bedPersonalizedHrtf;  /* 1 = the unit reports a personalized HRTF in use */
     float             bedExternalGain;      /* 0..1 of the bed the attached renderer renders now */
     float             bedUnitRate;          /* Hz the units run at; 0 without one */
+    /* Output checks, appended. Before routing a listener's pick the engine runs
+     * the device briefly off its control thread; one that never starts IO (a
+     * display that lists audio it cannot play, a dock with nothing behind it)
+     * is named here and the app shows it as unavailable. An older engine leaves
+     * all of it zero. */
+    uint32_t          unusableOutputCount;
+    uint32_t          _pad2;
+    char              unusableOutputUIDs[ROOMCUT_UNUSABLE_OUTPUTS_MAX][ROOMCUT_DEVICE_UID_MAX];
+    char              checkingOutputUID[ROOMCUT_DEVICE_UID_MAX]; /* "" when no check runs */
 } RoomcutStateReply;
 
 typedef struct {

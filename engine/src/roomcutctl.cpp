@@ -132,6 +132,9 @@ int main(int argc, char** argv) {
         const double volumeBoost =
             (st.volumeBoost >= 1.0 && st.volumeBoost <= 2.0) ? st.volumeBoost : 1.0;
         if (json) {
+            std::string unusable;
+            for (uint32_t i = 0; i < st.unusableOutputCount && i < ROOMCUT_UNUSABLE_OUTPUTS_MAX; ++i)
+                unusable += std::string(i ? "," : "") + "\"" + st.unusableOutputUIDs[i] + "\"";
             std::printf(
                 "{\"engineReachable\":true,\"state\":\"%s\",\"preset\":\"%s\","
                 "\"paramsRevision\":%u,\"capabilities\":%u,\"volumeBoost\":%.4f,"
@@ -139,7 +142,7 @@ int main(int argc, char** argv) {
                 "\"peak\":%.6f,\"frames\":%llu,\"underruns\":%llu,"
                 "\"outputDevice\":\"%s\",\"keepDefault\":%s,\"engineLatencyMs\":%.4f,"
                 "\"bedRenderer\":\"%s\",\"bedUnitRate\":%.1f,\"bedExternalGain\":%.4f,"
-                "\"bedPersonalizedHrtf\":%s}\n",
+                "\"bedPersonalizedHrtf\":%s,\"checkingOutput\":\"%s\",\"unusableOutputs\":[%s]}\n",
                 stateName(st.state), st.presetId, st.paramsRevision, st.capabilities,
                 volumeBoost,
                 st.manualBypass ? "true" : "false",
@@ -151,7 +154,8 @@ int main(int argc, char** argv) {
                 st.keepDefault ? "true" : "false",
                 st.engineLatencyMs,
                 st.bedRenderer ? "system" : "builtin", (double)st.bedUnitRate,
-                (double)st.bedExternalGain, st.bedPersonalizedHrtf ? "true" : "false");
+                (double)st.bedExternalGain, st.bedPersonalizedHrtf ? "true" : "false",
+                st.checkingOutputUID, unusable.c_str());
         } else {
             std::printf("state:    %s\n", stateName(st.state));
             std::printf("preset:   %s\n", st.presetId);

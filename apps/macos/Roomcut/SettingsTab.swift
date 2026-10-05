@@ -120,7 +120,7 @@ struct SettingsTab: View {
                           disabled: !model.status.reachable) {
                     ForEach(model.outputDevices) { device in
                         Button { model.selectDevice(device.uid) } label: {
-                            checkmarkLabel(device.name, on: device.uid == model.selectedDeviceUID)
+                            checkmarkLabel(model.outputDeviceLabel(device), on: device.uid == model.selectedDeviceUID)
                         }
                     }
                 }

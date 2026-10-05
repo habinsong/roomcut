@@ -3,6 +3,13 @@
 # Package.swift (`swift build` / `scripts/build-app.sh`).
 cmake_minimum_required(VERSION 3.24)
 
+# One build for every supported release (macOS 26, 26.5 and 27). Left unset,
+# CMake targets the host OS, so a driver and engine built on macOS 27 would
+# refuse to load on 26. Must precede project(); an empty cached value counts as unset.
+if(NOT CMAKE_OSX_DEPLOYMENT_TARGET)
+  set(CMAKE_OSX_DEPLOYMENT_TARGET "26.0" CACHE STRING "Minimum macOS version" FORCE)
+endif()
+
 project(Roomcut
   VERSION 1.1.1
   DESCRIPTION "System-wide audio controller for macOS"

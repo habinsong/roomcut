@@ -15,6 +15,7 @@
 #include "dsp/ParametricFit.hpp"
 #include "presets/BuiltinPresets.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <cstring>
 #include <vector>
@@ -103,6 +104,17 @@ int roomcutClientGetState(RoomcutClientState* out) {
     out->bedPersonalizedHrtf = rep.bedPersonalizedHrtf;
     out->bedExternalGain = rep.bedExternalGain;
     out->bedUnitRate = rep.bedUnitRate;
+    static_assert(ROOMCUT_CLIENT_UNUSABLE_OUTPUTS_MAX == ROOMCUT_UNUSABLE_OUTPUTS_MAX
+                  && sizeof(out->unusableOutputUIDs[0]) <= sizeof(rep.unusableOutputUIDs[0])
+                  && sizeof(out->checkingOutputUID) <= sizeof(rep.checkingOutputUID),
+                  "output check capacity");
+    out->unusableOutputCount = std::min<uint32_t>(rep.unusableOutputCount, ROOMCUT_CLIENT_UNUSABLE_OUTPUTS_MAX);
+    for (uint32_t i = 0; i < out->unusableOutputCount; ++i) {
+        std::memcpy(out->unusableOutputUIDs[i], rep.unusableOutputUIDs[i], sizeof(out->unusableOutputUIDs[i]));
+        out->unusableOutputUIDs[i][sizeof(out->unusableOutputUIDs[i]) - 1] = '\0';
+    }
+    std::memcpy(out->checkingOutputUID, rep.checkingOutputUID, sizeof(out->checkingOutputUID));
+    out->checkingOutputUID[sizeof(out->checkingOutputUID) - 1] = '\0';
     return 0;
 }
 

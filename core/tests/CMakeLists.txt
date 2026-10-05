@@ -248,7 +248,8 @@ add_test(NAME parametric_fit COMMAND test_parametric_fit)
 find_library(TEST_AudioToolbox_FRAMEWORK AudioToolbox REQUIRED)
 add_executable(test_spatial_mixer_bed
   ${CMAKE_SOURCE_DIR}/engine/tests/test_spatial_mixer_bed.cpp
-  ${CMAKE_SOURCE_DIR}/engine/src/SpatialMixerBedRenderer.cpp)
+  ${CMAKE_SOURCE_DIR}/engine/src/SpatialMixerBedRenderer.cpp
+  ${CMAKE_SOURCE_DIR}/engine/src/SpatialMixerDiffuseField.cpp)
 target_include_directories(test_spatial_mixer_bed PRIVATE
   ${CMAKE_SOURCE_DIR}/engine/include ${CMAKE_SOURCE_DIR}/core ${CMAKE_SOURCE_DIR}/core/dsp ${CMAKE_SOURCE_DIR}/core/tests)
 target_link_libraries(test_spatial_mixer_bed PRIVATE ${TEST_AudioToolbox_FRAMEWORK} "-framework CoreFoundation")
@@ -463,6 +464,11 @@ add_executable(test_output_router ${CMAKE_SOURCE_DIR}/engine/tests/test_output_r
 target_include_directories(test_output_router PRIVATE ${CMAKE_SOURCE_DIR}/engine/include)
 target_compile_options(test_output_router PRIVATE -Wall -Wextra)
 add_test(NAME output_router COMMAND test_output_router)
+
+add_executable(test_output_quarantine ${CMAKE_SOURCE_DIR}/engine/tests/test_output_quarantine.cpp)
+target_include_directories(test_output_quarantine PRIVATE ${CMAKE_SOURCE_DIR}/engine/include)
+target_compile_options(test_output_quarantine PRIVATE -Wall -Wextra)
+add_test(NAME output_quarantine COMMAND test_output_quarantine)
 
 add_executable(test_output_recovery ${CMAKE_SOURCE_DIR}/engine/tests/test_output_recovery.cpp)
 target_include_directories(test_output_recovery PRIVATE ${CMAKE_SOURCE_DIR}/engine/include)

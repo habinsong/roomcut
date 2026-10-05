@@ -97,7 +97,8 @@ inline bool normalizeControlReply(RoomcutControlMsgBuffer& buffer, uint32_t expe
         valid = sizeMatches(size, sizeof(RoomcutStateReply), {
             offsetof(RoomcutStateReply, outputDeviceUID), offsetof(RoomcutStateReply, keepDefault),
             offsetof(RoomcutStateReply, capabilities), offsetof(RoomcutStateReply, volumeBoost),
-            offsetof(RoomcutStateReply, engineLatencyMs), offsetof(RoomcutStateReply, bedRenderer)});
+            offsetof(RoomcutStateReply, engineLatencyMs), offsetof(RoomcutStateReply, bedRenderer),
+            offsetof(RoomcutStateReply, unusableOutputCount)});
         break;
     case ROOMCUT_MSG_GET_PARAMS:
         valid = sizeMatches(size, sizeof(RoomcutGetParamsReply), {
@@ -123,7 +124,14 @@ inline bool normalizeControlReply(RoomcutControlMsgBuffer& buffer, uint32_t expe
     }
     if (!valid) return false;
     clearAbsentFields(buffer);
-    if (expected == ROOMCUT_MSG_STATE) return terminated(buffer.stateReply.presetId) && terminated(buffer.stateReply.outputDeviceUID);
+    if (expected == ROOMCUT_MSG_STATE) {
+        auto& state = buffer.stateReply;
+        if (!terminated(state.presetId) || !terminated(state.outputDeviceUID) || !terminated(state.checkingOutputUID)
+            || state.unusableOutputCount > ROOMCUT_UNUSABLE_OUTPUTS_MAX) return false;
+        for (uint32_t i = 0; i < state.unusableOutputCount; ++i)
+            if (!terminated(state.unusableOutputUIDs[i])) return false;
+        return true;
+    }
     if (expected == ROOMCUT_MSG_GET_PARAMS) return terminated(buffer.paramsReply.presetId);
     if (expected == ROOMCUT_MSG_GET_COMPARISON) return terminated(buffer.comparisonReply.presetId);
     return true;

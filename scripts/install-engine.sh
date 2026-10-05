@@ -202,9 +202,17 @@ verify_control_plane() {
     return 0
   fi
 
-  if ! status="$("${CTL}" status --json 2>&1)"; then
+  # A fresh engine answers nothing while its control thread sits in a HAL call:
+  # an output that will not start blocks AudioOutputUnitStart for ~10 s before
+  # the engine skips it (OutputQuarantine). Give it that long before rolling back.
+  local waited
+  for waited in $(seq 1 20); do
+    status="$("${CTL}" status --json 2>&1)" || true
+    [[ "${status}" == *'"engineReachable":true'* ]] && break
+    sleep 1
+  done
+  if [[ -z "${status}" ]]; then
     echo "error: ${LABEL} did not answer status after launch" >&2
-    echo "${status}" >&2
     return 1
   fi
   if [[ "${status}" != *'"engineReachable":true'* ]]; then

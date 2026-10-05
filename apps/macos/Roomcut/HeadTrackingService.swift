@@ -27,6 +27,15 @@ import os
 //     own when headphones are back. Losing the tracker is still graceful: the
 //     engine is told it is gone so the render fades back to ordinary playback
 //     instead of freezing at the last angle.
+//   - CoreMotion can go quiet without an error or a disconnect. Measured
+//     2026-10-05 (head-tracking-v3.csv, macOS 27): samples stopped at 23:02:32
+//     while another process started and stopped headphone motion, and did not
+//     come back until the app was relaunched; nothing was logged. The sensor
+//     steps every 20 ms, so a second without one is a stall: the engine is told
+//     the tracker is gone and the stream is restarted, backing off while it
+//     stays quiet (headphones out of the ears deliver nothing either). A sensor
+//     error takes the same way back instead of waiting for a reconnect that a
+//     still-connected headset never sends.
 //
 // Requires NSMotionUsageDescription in the app bundle; without it macOS kills
 // the process the moment updates start.
@@ -49,20 +58,33 @@ public final class HeadTrackingService: ObservableObject {
     // times a second; the engine gets every change (HeadPosePipeline).
     @Published public private(set) var yawDegrees: Double = 0
 
+    // No sample for this long while the stream runs is a stall (normal: 20 ms).
+    static let stallSeconds = 1.0
+    // Waits before each restart of a stream that stays quiet or keeps failing.
+    static let retryDelays: [TimeInterval] = [0, 1, 2, 4, 8]
+    static let watchInterval: TimeInterval = 0.5
+
     private let source: HeadMotionSource
     private let pipeline: HeadPosePipeline
+    private let clock: @Sendable () -> TimeInterval
     // Whether the current output can use tracking (headphones). False pauses the
     // sensor without touching the listener's choice.
     private var allowed = true
+    private var streamStartedAt: TimeInterval = 0
+    private var retryAt: TimeInterval?
+    private var retries = 0
+    private var watchdog: Timer?
     private let events = Logger(subsystem: "com.roomcut.app", category: "HeadTracking")
 
     public convenience init(send: @escaping Sender) {
         self.init(send: send, source: CoreMotionHeadSource())
     }
 
-    init(send: @escaping Sender, source: HeadMotionSource) {
+    init(send: @escaping Sender, source: HeadMotionSource,
+         clock: @escaping @Sendable () -> TimeInterval = { ProcessInfo.processInfo.systemUptime }) {
         self.source = source
-        pipeline = HeadPosePipeline(send: send, log: HeadTrackingLog.openIfEnabled())
+        self.clock = clock
+        pipeline = HeadPosePipeline(send: send, log: HeadTrackingLog.openIfEnabled(), clock: clock)
         pipeline.onAngle = { [weak self] yaw in
             DispatchQueue.main.async {
                 guard let self, self.isDelivering else { return }
@@ -99,6 +121,7 @@ public final class HeadTrackingService: ObservableObject {
         isTracking = false
         source.stopConnectionUpdates()
         suspend(reason: "switched off")
+        stopWatching()
     }
 
     // Whether the output can use tracking right now. Speakers do not move with
@@ -110,8 +133,9 @@ public final class HeadTrackingService: ObservableObject {
         events.notice("output \(allowed ? "allows" : "does not allow", privacy: .public) tracking (switch on: \(self.isTracking, privacy: .public))")
         if allowed {
             beginUpdates()
-        } else if isDelivering {
-            suspend(reason: "output cannot use it")
+        } else {
+            if isDelivering { suspend(reason: "output cannot use it") }
+            stopWatching()
         }
     }
 
@@ -128,6 +152,9 @@ public final class HeadTrackingService: ObservableObject {
         isDelivering = true
         deviceAvailable = true
         yawDegrees = 0
+        retryAt = nil
+        streamStartedAt = clock()
+        startWatching()
         // Queued before the stream starts, so the first sample finds it.
         pipeline.begin()
         events.notice("sensor stream started")
@@ -158,15 +185,65 @@ public final class HeadTrackingService: ObservableObject {
         events.notice("headphones \(connected ? "connected" : "disconnected", privacy: .public)")
         // Back from a dropout: pick up where we left off rather than waiting for
         // the listener to work out that it died.
-        if connected, isTracking, !isDelivering { beginUpdates() }
-        if !connected, isDelivering { suspend(reason: "headphones disconnected") }
+        if connected, isTracking, !isDelivering { retries = 0; beginUpdates() }
+        if !connected {
+            // Gone for real: the reconnect brings it back, so nothing to retry.
+            retryAt = nil
+            if isDelivering { suspend(reason: "headphones disconnected") }
+        }
     }
 
     // A failure is not a decision to stop tracking. Drop the stream, keep the
-    // intent, and let the connection delegate bring it back.
+    // intent, and try again (sooner if the headset reconnects).
     private func streamFailed(code: Int) {
         guard isDelivering else { return }
         suspend(reason: "sensor error \(code)")
+        scheduleRetry()
+    }
+
+    // MARK: Watchdog
+
+    // Called every watchInterval while tracking is on and the output allows it.
+    func checkStream(now: TimeInterval) {
+        guard isTracking, allowed else { stopWatching(); return }
+        if isDelivering {
+            let last = max(pipeline.lastSampleAt, streamStartedAt)
+            if now - last >= Self.stallSeconds {
+                suspend(reason: String(format: "no sample for %.1f s", now - last))
+                scheduleRetry()
+            } else if retries > 0, pipeline.lastSampleAt > streamStartedAt {
+                events.notice("sensor stream resumed after \(self.retries, privacy: .public) restart(s)")
+                retries = 0
+            }
+        } else if let retryAt, now >= retryAt {
+            events.notice("restarting the sensor stream (attempt \(self.retries, privacy: .public))")
+            beginUpdates()
+        }
+    }
+
+    private func scheduleRetry() {
+        retryAt = clock() + Self.retryDelays[min(retries, Self.retryDelays.count - 1)]
+        retries += 1
+        startWatching()
+    }
+
+    private func startWatching() {
+        guard watchdog == nil else { return }
+        let timer = Timer(timeInterval: Self.watchInterval, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated {
+                guard let self else { return }
+                self.checkStream(now: self.clock())
+            }
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        watchdog = timer
+    }
+
+    private func stopWatching() {
+        watchdog?.invalidate()
+        watchdog = nil
+        retryAt = nil
+        retries = 0
     }
 }
 
@@ -235,6 +312,17 @@ final class CoreMotionHeadSource: NSObject, HeadMotionSource, CMHeadphoneMotionM
     func headphoneMotionManagerDidDisconnect(_ manager: CMHeadphoneMotionManager) { onChange?(false) }
 }
 
+// Reports a sensor that exists and never delivers: the stand-in for models built
+// around a fake engine, which must not touch the listener's real headset.
+final class SilentHeadMotionSource: HeadMotionSource, @unchecked Sendable {
+    var isAvailable: Bool { true }
+    var isDenied: Bool { false }
+    func startConnectionUpdates(_ onChange: @escaping @Sendable (Bool) -> Void) {}
+    func stopConnectionUpdates() {}
+    func startUpdates(to queue: OperationQueue, _ handler: @escaping @Sendable (HeadMotionSample?, Error?) -> Void) {}
+    func stopUpdates() {}
+}
+
 // Everything done per sample, on the motion queue: the angle, the decision to
 // send it, the send, and the diagnostics log. All of its state is touched only
 // on `queue`, a serial queue — begin/end/recentre are queued behind whatever
@@ -254,15 +342,26 @@ final class HeadPosePipeline: @unchecked Sendable {
 
     private let send: HeadTrackingService.Sender
     private let log: HeadTrackingLog?
+    private let clock: @Sendable () -> TimeInterval
+    // When the last sample arrived (the clock's time, not the sensor's: a sample
+    // delivered late still proves the stream is alive). Read from the main thread.
+    private let arrival = NSLock()
+    private var lastArrival = -Double.infinity
+    var lastSampleAt: TimeInterval {
+        arrival.lock(); defer { arrival.unlock() }
+        return lastArrival
+    }
     private var tracker = HeadYawTracker()
     private var running = false
     private var lastSentYaw = 0.0
     private var lastSentAt = -Double.infinity
     private var lastPictureYaw = 0.0
 
-    init(send: @escaping HeadTrackingService.Sender, log: HeadTrackingLog?) {
+    init(send: @escaping HeadTrackingService.Sender, log: HeadTrackingLog?,
+         clock: @escaping @Sendable () -> TimeInterval = { ProcessInfo.processInfo.systemUptime }) {
         self.send = send
         self.log = log
+        self.clock = clock
         queue = OperationQueue()
         queue.name = "com.roomcut.app.head-tracking"
         queue.maxConcurrentOperationCount = 1
@@ -298,6 +397,8 @@ final class HeadPosePipeline: @unchecked Sendable {
     // Called on `queue` by the motion handler.
     func accept(_ sample: HeadMotionSample) {
         guard running else { return }
+        let now = clock()
+        arrival.lock(); lastArrival = now; arrival.unlock()
         let yaw = tracker.update(attitude: sample.attitude, at: sample.timestamp)
         if abs(yaw - lastSentYaw) >= Self.minimumChangeDegrees
             || sample.timestamp - lastSentAt >= Self.heartbeatSeconds {

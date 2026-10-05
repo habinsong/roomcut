@@ -13,6 +13,19 @@ extension RoomcutViewModel {
         sendDeviceCommand(.output(uid))
     }
 
+    // The engine runs a picked device before routing to it. One that would not
+    // run stays in the menu, marked, and picking it again checks it again (a
+    // display that was asleep may play now).
+    public func outputDeviceLabel(_ device: OutputDeviceChoice) -> String {
+        if status.checkingOutputUID == device.uid {
+            return device.name + " — " + L("확인 중…", "Checking…", "確認中…", "Vérification…", "Wird geprüft…")
+        }
+        if status.unusableOutputUIDs.contains(device.uid) {
+            return device.name + " — " + L("재생 불가", "Can’t play", "再生できません", "Lecture impossible", "Keine Wiedergabe")
+        }
+        return device.name
+    }
+
     // Available (sampleRate, bitDepth) pairs for the current real device, and the
     // distinct rates / depths the pickers offer.
     public var availableSampleRates: [Double] {

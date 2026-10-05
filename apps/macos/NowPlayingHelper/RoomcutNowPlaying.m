@@ -22,6 +22,7 @@
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #import <CoreFoundation/CoreFoundation.h>
+#import <ImageIO/ImageIO.h>
 #import "MediaRemote.h"
 
 // Now Playing info dictionary keys (literal runtime keys).
@@ -30,6 +31,7 @@ static NSString *const kKeyArtist       = @"kMRMediaRemoteNowPlayingInfoArtist";
 static NSString *const kKeyAlbum        = @"kMRMediaRemoteNowPlayingInfoAlbum";
 static NSString *const kKeyArtworkData  = @"kMRMediaRemoteNowPlayingInfoArtworkData";
 static NSString *const kKeyArtworkMIME  = @"kMRMediaRemoteNowPlayingInfoArtworkMIMEType";
+static NSString *const kKeyArtworkID    = @"kMRMediaRemoteNowPlayingInfoArtworkIdentifier";
 static NSString *const kKeyDuration     = @"kMRMediaRemoteNowPlayingInfoDuration";
 static NSString *const kKeyElapsedTime  = @"kMRMediaRemoteNowPlayingInfoElapsedTime";
 static NSString *const kKeyTimestamp    = @"kMRMediaRemoteNowPlayingInfoTimestamp";
@@ -111,6 +113,90 @@ static NSString *trackKeyForInfo(NSDictionary *info) {
         info[kKeyTitle] ?: @"", info[kKeyArtist] ?: @"", duration.doubleValue];
 }
 
+// Which cover, not only which track: Safari on macOS 27 first publishes a page's
+// artwork at full size and replaces it moments later, and a web player can swap
+// covers within one track. The identifier is absent on older systems; the byte
+// count stands in for it there.
+static NSString *artworkKeyForInfo(NSDictionary *info, NSData *art) {
+    id identifier = info[kKeyArtworkID];
+    NSString *identity = [identifier isKindOfClass:NSString.class]
+        ? identifier
+        : [NSString stringWithFormat:@"%lu", (unsigned long)art.length];
+    return [NSString stringWithFormat:@"%@|%@", trackKeyForInfo(info), identity];
+}
+
+// Covers up to this size go out exactly as received (Music, Spotify, macOS 26).
+static const NSUInteger kArtworkPassThroughBytes = 512 * 1024;
+// The app shows the cover at no more than 320 px; this leaves headroom.
+static const int kArtworkMaxPixel = 640;
+
+// True when no pixel is see-through. WebKit's TIFF carries an alpha channel even
+// for an opaque JPEG cover, so the channel's presence alone says nothing.
+static BOOL imageIsOpaque(CGImageRef image) {
+    CGImageAlphaInfo alpha = CGImageGetAlphaInfo(image);
+    if (alpha == kCGImageAlphaNone || alpha == kCGImageAlphaNoneSkipFirst
+        || alpha == kCGImageAlphaNoneSkipLast) return YES;
+    size_t width = CGImageGetWidth(image), height = CGImageGetHeight(image);
+    NSMutableData *pixels = [NSMutableData dataWithLength:width * height * 4];
+    CGColorSpaceRef space = CGColorSpaceCreateDeviceRGB();
+    CGContextRef context = CGBitmapContextCreate(pixels.mutableBytes, width, height, 8, width * 4,
+                                                 space, (CGBitmapInfo)kCGImageAlphaPremultipliedLast);
+    CGColorSpaceRelease(space);
+    if (!context) return NO;
+    CGContextDrawImage(context, CGRectMake(0, 0, width, height), image);
+    CGContextRelease(context);
+    const uint8_t *bytes = pixels.bytes;
+    for (size_t i = 3; i < pixels.length; i += 4) {
+        if (bytes[i] != 255) return NO;
+    }
+    return YES;
+}
+
+static NSData *encodeImage(CGImageRef image, CFStringRef type, NSDictionary *props) {
+    NSMutableData *out = [NSMutableData data];
+    CGImageDestinationRef destination = CGImageDestinationCreateWithData(
+        (__bridge CFMutableDataRef)out, type, 1, NULL);
+    if (!destination) return nil;
+    CGImageDestinationAddImage(destination, image, (__bridge CFDictionaryRef)props);
+    BOOL ok = CGImageDestinationFinalize(destination);
+    CFRelease(destination);
+    return ok && out.length > 0 ? out : nil;
+}
+
+// Safari on macOS 27 hands MediaRemote the page's artwork as an uncompressed
+// TIFF at its source size: 5.76 MB for a 1200 x 1200 cover, ~7.7 MB once base64
+// encoded. A stream line that large was dropped whole by the app's line reader
+// (1 MiB cap), and because the stream sends a cover only once per track it never
+// came back. Downscale and recompress anything big: JPEG for an opaque cover,
+// PNG when it really is transparent (so its edges don't turn into black bars the
+// app would trim), JPEG anyway if that PNG would still be too large. Returns nil
+// when the bytes cannot be decoded.
+static NSData *compactArtwork(NSData *art, NSString **mime) {
+    CGImageSourceRef source = CGImageSourceCreateWithData((__bridge CFDataRef)art, NULL);
+    if (!source) return nil;
+    NSDictionary *options = @{
+        (__bridge NSString *)kCGImageSourceCreateThumbnailFromImageAlways: @YES,
+        (__bridge NSString *)kCGImageSourceCreateThumbnailWithTransform: @YES,
+        (__bridge NSString *)kCGImageSourceThumbnailMaxPixelSize: @(kArtworkMaxPixel),
+    };
+    CGImageRef image = CGImageSourceCreateThumbnailAtIndex(source, 0, (__bridge CFDictionaryRef)options);
+    CFRelease(source);
+    if (!image) return nil;
+    NSData *out = nil;
+    if (!imageIsOpaque(image)) {
+        out = encodeImage(image, CFSTR("public.png"), @{});
+        if (out.length > kArtworkPassThroughBytes) out = nil;
+        if (out) *mime = @"image/png";
+    }
+    if (!out) {
+        out = encodeImage(image, CFSTR("public.jpeg"),
+            @{(__bridge NSString *)kCGImageDestinationLossyCompressionQuality: @0.9});
+        if (out) *mime = @"image/jpeg";
+    }
+    CGImageRelease(image);
+    return out;
+}
+
 static NSDictionary *buildMetadataPayload(
     NSDictionary *info, BOOL hasPlaying, BOOL isPlaying, int pid
 ) {
@@ -145,9 +231,18 @@ static NSDictionary *buildArtworkPayload(NSDictionary *info) {
     out[@"trackKey"] = trackKeyForInfo(info);
     NSData *art = info[kKeyArtworkData];
     if ([art isKindOfClass:NSData.class] && art.length > 0) {
-        out[@"artworkData"] = [art base64EncodedStringWithOptions:0];
         id mime = info[kKeyArtworkMIME];
-        if ([mime isKindOfClass:NSString.class]) out[@"artworkMimeType"] = mime;
+        if (art.length > kArtworkPassThroughBytes) {
+            NSString *compactMime = nil;
+            art = compactArtwork(art, &compactMime);
+            mime = compactMime;
+        }
+        // An undecodable oversized cover is left out: the metadata on the same
+        // line still has to arrive.
+        if (art) {
+            out[@"artworkData"] = [art base64EncodedStringWithOptions:0];
+            if ([mime isKindOfClass:NSString.class]) out[@"artworkMimeType"] = mime;
+        }
     }
     return out;
 }
@@ -206,11 +301,11 @@ static NSDictionary *fetchOnce(NSTimeInterval timeout, PayloadKind kind) {
     if (kind == PayloadKindStream) {
         NSData *art = info[kKeyArtworkData];
         BOOL hasArt = [art isKindOfClass:NSData.class] && art.length > 0;
-        NSString *tk = trackKeyForInfo(info);
-        // Ship the cover only the first time we see it for this track; otherwise
-        // emit lightweight metadata so position/state updates stay cheap.
-        if (hasArt && ![tk isEqualToString:gStreamLastArtworkKey]) {
-            gStreamLastArtworkKey = [tk copy];
+        NSString *artKey = hasArt ? artworkKeyForInfo(info, art) : nil;
+        // Ship a cover only the first time we see it; otherwise emit lightweight
+        // metadata so position/state updates stay cheap.
+        if (hasArt && ![artKey isEqualToString:gStreamLastArtworkKey]) {
+            gStreamLastArtworkKey = [artKey copy];
             NSMutableDictionary *full = [metadata mutableCopy];
             [full addEntriesFromDictionary:buildArtworkPayload(info)];
             return full;
@@ -433,11 +528,11 @@ void np_stream(void) {
 
         void (^onChange)(NSNotification *) = ^(NSNotification *note) {
             @autoreleasepool {
-                // InfoDidChange → metadata + (diffed) artwork; play-state change →
-                // metadata only. Never re-ships the cover unless the track changed.
-                PayloadKind kind = [note.name isEqualToString:@"kMRMediaRemoteNowPlayingInfoDidChangeNotification"]
-                    ? PayloadKindStream
-                    : PayloadKindMetadata;
+                // Info or artwork change → metadata + (diffed) artwork; play-state
+                // change → metadata only. Never re-ships a cover it already sent.
+                PayloadKind kind = [note.name isEqualToString:@"kMRMediaRemoteNowPlayingApplicationIsPlayingDidChangeNotification"]
+                    ? PayloadKindMetadata
+                    : PayloadKindStream;
                 NSDictionary *payload = fetchOnce(5.0, kind);
                 if (payload) emitJSON(payload);
             }
@@ -446,6 +541,10 @@ void np_stream(void) {
         [nc addObserverForName:@"kMRMediaRemoteNowPlayingInfoDidChangeNotification"
                         object:nil queue:nil usingBlock:onChange];
         [nc addObserverForName:@"kMRMediaRemoteNowPlayingApplicationIsPlayingDidChangeNotification"
+                        object:nil queue:nil usingBlock:onChange];
+        // A cover that lands after the metadata is announced on its own (macOS 27:
+        // Safari fetches the page's artwork after it starts playing).
+        [nc addObserverForName:@"kMRPlaybackQueueContentItemArtworkChangedNotification"
                         object:nil queue:nil usingBlock:onChange];
         // Terminate cleanly if stdout closes (parent went away).
         signal(SIGPIPE, SIG_DFL);

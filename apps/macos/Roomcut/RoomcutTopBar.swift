@@ -41,8 +41,8 @@ struct TopBar: View {
                         model.selectDevice(d.uid)
                     } label: {
                         if d.uid == model.selectedDeviceUID {
-                            Label(d.name, systemImage: "checkmark")
-                        } else { Text(d.name) }
+                            Label(model.outputDeviceLabel(d), systemImage: "checkmark")
+                        } else { Text(model.outputDeviceLabel(d)) }
                     }
                 }
             } label: {

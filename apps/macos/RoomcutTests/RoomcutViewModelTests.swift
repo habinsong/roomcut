@@ -11,6 +11,22 @@ final class RoomcutViewModelTests: XCTestCase {
         }
         XCTFail("device writes did not finish")
     }
+    func testTheDeviceMenuMarksOutputsTheEngineCouldNotRun() {
+        let model = RoomcutViewModel(client: FakeEngineClient())
+        let sink = OutputDeviceChoice(uid: "dp:sink", name: "RTK DisplayPort")
+        let dac = OutputDeviceChoice(uid: "usb:dac", name: "DAC")
+        XCTAssertEqual(model.outputDeviceLabel(sink), "RTK DisplayPort")
+        model.status.checkingOutputUID = "dp:sink"
+        let checking = model.outputDeviceLabel(sink)
+        XCTAssertTrue(checking.hasPrefix("RTK DisplayPort — "), "a pick under check says so")
+        model.status.checkingOutputUID = ""
+        model.status.unusableOutputUIDs = ["dp:sink"]
+        let unusable = model.outputDeviceLabel(sink)
+        XCTAssertTrue(unusable.hasPrefix("RTK DisplayPort — "), "an output that would not run says so")
+        XCTAssertNotEqual(unusable, checking)
+        XCTAssertEqual(model.outputDeviceLabel(dac), "DAC", "other outputs keep their plain name")
+    }
+
     func testAwaitedBypassReportsAcknowledgedWrite() async {
         let client = FakeEngineClient()
         client.states = [.running(presetId: "flat", revision: 0)]

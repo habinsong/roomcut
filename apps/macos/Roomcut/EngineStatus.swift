@@ -44,6 +44,10 @@ public struct EngineStatus {
     public var bedPersonalizedHrtf = false
     public var bedExternalGain: Float = 0   // 0..1 of the bed the system renderer renders now
     public var bedUnitRate: Float = 0
+    // Outputs the engine tried and found would not run, and the pick it is
+    // checking before routing to it ("" when none).
+    public var unusableOutputUIDs: Set<String> = []
+    public var checkingOutputUID = ""
 
     public init() {}
 

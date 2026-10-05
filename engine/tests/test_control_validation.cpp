@@ -191,6 +191,31 @@ static void replyBoundaries() {
     CHECK(preBedState.stateReply.bedRenderer == 0 && preBedState.stateReply.bedExternalGain == 0
           && preBedState.stateReply.bedUnitRate == 0, "and reports no system renderer rather than trailer bytes");
 
+    // Before output checks: nothing is reported unusable or under check.
+    auto preCheck = request(ROOMCUT_MSG_STATE, offsetof(RoomcutStateReply, unusableOutputCount));
+    preCheck.raw.header.msgh_bits = 0;
+    preCheck.raw.header.msgh_remote_port = MACH_PORT_NULL;
+    std::memcpy(reinterpret_cast<char*>(&preCheck) + preCheck.raw.header.msgh_size, &trailer, sizeof(trailer));
+    CHECK(roomcut::normalizeControlReply(preCheck, ROOMCUT_MSG_STATE), "a state reply before output checks remains readable");
+    CHECK(preCheck.stateReply.unusableOutputCount == 0 && preCheck.stateReply.checkingOutputUID[0] == '\0',
+          "and names no unusable or checking output rather than trailer bytes");
+
+    auto checked = request(ROOMCUT_MSG_STATE, sizeof(RoomcutStateReply));
+    checked.raw.header.msgh_bits = 0;
+    checked.raw.header.msgh_remote_port = MACH_PORT_NULL;
+    checked.stateReply.unusableOutputCount = 1;
+    std::snprintf(checked.stateReply.unusableOutputUIDs[0], ROOMCUT_DEVICE_UID_MAX, "dp:sink");
+    CHECK(roomcut::normalizeControlReply(checked, ROOMCUT_MSG_STATE), "a state reply naming an unusable output is accepted");
+    auto overCount = checked;
+    overCount.stateReply.unusableOutputCount = ROOMCUT_UNUSABLE_OUTPUTS_MAX + 1;
+    CHECK(!roomcut::normalizeControlReply(overCount, ROOMCUT_MSG_STATE), "more unusable outputs than the array holds is rejected");
+    auto unterminated = checked;
+    std::memset(unterminated.stateReply.unusableOutputUIDs[0], 'x', ROOMCUT_DEVICE_UID_MAX);
+    CHECK(!roomcut::normalizeControlReply(unterminated, ROOMCUT_MSG_STATE), "an unterminated unusable UID is rejected");
+    unterminated = checked;
+    std::memset(unterminated.stateReply.checkingOutputUID, 'x', ROOMCUT_DEVICE_UID_MAX);
+    CHECK(!roomcut::normalizeControlReply(unterminated, ROOMCUT_MSG_STATE), "an unterminated checking UID is rejected");
+
     auto preBedPair = request(ROOMCUT_MSG_GET_COMPARISON, offsetof(RoomcutComparisonReply, currentBedRenderer));
     preBedPair.raw.header.msgh_bits = 0;
     preBedPair.raw.header.msgh_remote_port = MACH_PORT_NULL;

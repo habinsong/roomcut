@@ -54,6 +54,25 @@ final class HeadTrackingServiceTests: XCTestCase {
         XCTAssertEqual(source.starts, 2, "switched off stays off")
     }
 
+    func testAnOutputChangeWithoutTheSwitchStillPausesAndResumes() async {
+        // Undo, an A/B switch or the engine's own readback can move the output
+        // between Speaker and Headphone without the tap that used to resync it.
+        let source = FakeHeadMotionSource()
+        let model = await trackingModel(source)
+        model.setSpatialOutput(headphone: true)
+        model.setHeadTracking(true)
+        XCTAssertEqual(source.starts, 1)
+
+        model.spatialMode = 0
+        await model.refreshNow()
+        XCTAssertEqual(source.stops, 1, "speakers again: the next poll pauses the sensor")
+
+        model.spatialMode = 1
+        await model.refreshNow()
+        XCTAssertEqual(source.starts, 2, "headphones again: the next poll resumes it")
+        XCTAssertTrue(model.headTrackingActive)
+    }
+
     func testSurroundTapsOnHeadphonesNeverTouchTheStream() async {
         let source = FakeHeadMotionSource()
         let model = await trackingModel(source)
@@ -141,6 +160,99 @@ final class HeadTrackingServiceTests: XCTestCase {
         for _ in 0..<1000 where !service.isDelivering { try await Task.sleep(nanoseconds: 2_000_000) }
         XCTAssertTrue(service.isDelivering)
         XCTAssertEqual(source.starts, 2)
+    }
+}
+
+// The stream going quiet with nothing reported (head-tracking-v3.csv,
+// 2026-10-05): the service has to notice by itself and bring it back.
+@MainActor
+final class HeadTrackingRecoveryTests: XCTestCase {
+    private func running(_ source: FakeHeadMotionSource, _ clock: FakeClock, _ sends: SendLog) -> HeadTrackingService {
+        let service = HeadTrackingService(send: { yaw, active in sends.add(yaw, active) }, source: source,
+                                          clock: { clock.now })
+        service.start()
+        return service
+    }
+
+    private func deliver(_ source: FakeHeadMotionSource, at time: TimeInterval) {
+        guard let queue = source.queue, let handler = source.handler else { return XCTFail("no stream") }
+        let sample = HeadMotionSample(timestamp: time, attitude: .init(w: 1, x: 0, y: 0, z: 0))
+        queue.addOperation { handler(sample, nil) }
+        queue.waitUntilAllOperationsAreFinished()
+    }
+
+    func testAQuietStreamLetsTheStageGoAndIsRestarted() throws {
+        let source = FakeHeadMotionSource(), clock = FakeClock(), sends = SendLog()
+        let service = running(source, clock, sends)
+        deliver(source, at: 0.02)
+        clock.now = 0.5
+        service.checkStream(now: clock.now)
+        XCTAssertTrue(service.isDelivering, "half a second of samples is a running stream")
+
+        clock.now = 1.1   // a second since the last sample: 50 missed
+        service.checkStream(now: clock.now)
+        XCTAssertFalse(service.isDelivering)
+        source.queue?.waitUntilAllOperationsAreFinished()
+        XCTAssertEqual(try XCTUnwrap(sends.entries.last).active, false, "the engine stops following a frozen head")
+        XCTAssertTrue(service.isTracking, "the switch stays on")
+
+        service.checkStream(now: clock.now)
+        XCTAssertEqual(source.starts, 2, "the stream is restarted at once")
+        XCTAssertTrue(service.isDelivering)
+    }
+
+    func testAStreamThatStaysQuietIsRetriedLessOften() {
+        let source = FakeHeadMotionSource(), clock = FakeClock(), sends = SendLog()
+        let service = running(source, clock, sends)
+        var starts: [Int] = []
+        for _ in 0..<40 {   // 20 s without a single sample
+            clock.now += HeadTrackingService.watchInterval
+            service.checkStream(now: clock.now)
+            starts.append(source.starts)
+        }
+        XCTAssertGreaterThan(source.starts, 3, "it keeps trying")
+        XCTAssertLessThan(source.starts, 10, "but backs off rather than restarting every half second")
+
+        deliver(source, at: clock.now)
+        clock.now += HeadTrackingService.watchInterval
+        service.checkStream(now: clock.now)
+        XCTAssertTrue(service.isDelivering, "samples are back and the stream stays up")
+    }
+
+    func testASensorErrorIsRetriedWithoutAReconnect() {
+        let source = FakeHeadMotionSource(), clock = FakeClock(), sends = SendLog()
+        let service = running(source, clock, sends)
+        source.handler?(nil, NSError(domain: "CMErrorDomain", code: 109))
+        let settled = expectation(description: "error handled")
+        Task { @MainActor in settled.fulfill() }
+        wait(for: [settled], timeout: 2)
+        XCTAssertFalse(service.isDelivering)
+        // A headset that never disconnected sends no reconnect.
+        service.checkStream(now: clock.now)
+        XCTAssertEqual(source.starts, 2)
+        XCTAssertTrue(service.isDelivering)
+    }
+
+    func testSwitchingOffEndsTheRetries() {
+        let source = FakeHeadMotionSource(), clock = FakeClock(), sends = SendLog()
+        let service = running(source, clock, sends)
+        clock.now = 2
+        service.checkStream(now: clock.now)   // stalled, restart scheduled
+        service.stop()
+        for _ in 0..<20 {
+            clock.now += 1
+            service.checkStream(now: clock.now)
+        }
+        XCTAssertEqual(source.starts, 1, "nothing restarts a stream the listener switched off")
+    }
+}
+
+final class FakeClock: @unchecked Sendable {
+    private let lock = NSLock()
+    private var value: TimeInterval = 0
+    var now: TimeInterval {
+        get { lock.lock(); defer { lock.unlock() }; return value }
+        set { lock.lock(); value = newValue; lock.unlock() }
     }
 }
 

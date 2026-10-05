@@ -151,6 +151,42 @@ int writeChannelVolumeScalar(AudioDeviceID device, UInt32 channel, double scalar
     return 0;
 }
 
+// What a device says about itself when it reports no name (macOS 27 lists a
+// DisplayPort sink that way): its maker and its connection, so the menu shows
+// something recognisable instead of a blank row. Falls back to the UID.
+std::string transportName(AudioDeviceID dev) {
+    AudioObjectPropertyAddress addr{kAudioDevicePropertyTransportType, kAudioObjectPropertyScopeGlobal,
+                                    kAudioObjectPropertyElementMain};
+    UInt32 transport = 0;
+    UInt32 size = sizeof(transport);
+    if (AudioObjectGetPropertyData(dev, &addr, 0, nullptr, &size, &transport) != noErr) return {};
+    switch (transport) {
+    case kAudioDeviceTransportTypeBuiltIn:     return "Built-in";
+    case kAudioDeviceTransportTypeUSB:         return "USB";
+    case kAudioDeviceTransportTypeBluetooth:
+    case kAudioDeviceTransportTypeBluetoothLE: return "Bluetooth";
+    case kAudioDeviceTransportTypeHDMI:        return "HDMI";
+    case kAudioDeviceTransportTypeDisplayPort: return "DisplayPort";
+    case kAudioDeviceTransportTypeThunderbolt: return "Thunderbolt";
+    case kAudioDeviceTransportTypeAirPlay:     return "AirPlay";
+    case kAudioDeviceTransportTypeFireWire:    return "FireWire";
+    case kAudioDeviceTransportTypePCI:         return "PCI";
+    case kAudioDeviceTransportTypeAVB:         return "AVB";
+    case kAudioDeviceTransportTypeVirtual:     return "Virtual";
+    case kAudioDeviceTransportTypeAggregate:   return "Aggregate";
+    default:                                   return {};
+    }
+}
+
+std::string displayName(AudioDeviceID dev, const std::string& uid) {
+    std::string name = deviceStringProp(dev, kAudioObjectPropertyName);
+    if (!name.empty()) return name;
+    name = deviceStringProp(dev, kAudioObjectPropertyManufacturer);
+    const std::string transport = transportName(dev);
+    if (!transport.empty()) name += (name.empty() ? "" : " ") + transport;
+    return name.empty() ? uid : name;
+}
+
 } // namespace
 
 std::vector<OutputDevice> realOutputs() {
@@ -172,7 +208,7 @@ std::vector<OutputDevice> realOutputs() {
         if (!deviceHasOutputStreams(dev)) continue;
         std::string uid = deviceStringProp(dev, kAudioDevicePropertyDeviceUID);
         if (uid.empty() || uid.rfind(kRoomcutUIDPrefix, 0) == 0) continue; // skip our own device
-        out.push_back({dev, uid, deviceStringProp(dev, kAudioObjectPropertyName)});
+        out.push_back({dev, uid, displayName(dev, uid)});
     }
     return out;
 }

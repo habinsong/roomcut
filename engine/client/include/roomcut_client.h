@@ -32,6 +32,7 @@ enum {
 #define ROOMCUT_CLIENT_EQ_BANDS 10
 #define ROOMCUT_CLIENT_PARAM_BANDS 6
 #define ROOMCUT_CLIENT_DEVICE_UID_MAX 128
+#define ROOMCUT_CLIENT_UNUSABLE_OUTPUTS_MAX 4
 #define ROOMCUT_CLIENT_CAP_SPATIAL_PARAMS 0x00000001u
 #define ROOMCUT_CLIENT_CAP_PARAMETRIC     0x00000002u
 #define ROOMCUT_CLIENT_CAP_ANALYZER       0x00000004u
@@ -85,6 +86,11 @@ typedef struct {
     uint32_t bedPersonalizedHrtf;  /* 1 = the unit reports a personalized HRTF in use */
     float    bedExternalGain;      /* 0..1 of the headphone bed the system renderer renders now */
     float    bedUnitRate;          /* Hz the system renderer's units run at; 0 without one */
+    /* Outputs the engine found would not run, and the pick it is checking now
+     * ("" when none). An older engine reports neither. */
+    uint32_t unusableOutputCount;
+    char     unusableOutputUIDs[ROOMCUT_CLIENT_UNUSABLE_OUTPUTS_MAX][ROOMCUT_CLIENT_DEVICE_UID_MAX];
+    char     checkingOutputUID[ROOMCUT_CLIENT_DEVICE_UID_MAX];
 } RoomcutClientState;
 
 typedef struct {

@@ -3,6 +3,7 @@
 
 #include "roomcut_handshake.h"
 #include <string>
+#include <vector>
 
 namespace roomcut {
 class EngineSoundState;
@@ -22,6 +23,8 @@ struct EngineStatusSnapshot {
     double engineLatencyMs = 0;   // limiter look-ahead + resampler group delay
     bool bedRendererAttached = false, bedPersonalizedHrtf = false;
     float bedExternalGain = 0, bedUnitRate = 0;
+    std::vector<std::string> unusableOutputUIDs;   // outputs that would not start
+    std::string checkingOutputUID;                  // the listener's pick under test
 };
 
 RoomcutEngineState presentedEngineState(RoomcutEngineLifecycle lifecycle, bool manualBypass, bool safeBypass);

@@ -29,10 +29,13 @@
 #include "PublishedRing.hpp"
 #include "RealtimeParams.hpp"
 #include "SpatialMixerBedRenderer.hpp"
+#include "SpatialMixerDiffuseField.hpp"
 #include "OutputDevice.hpp"
 #include "OutputRecovery.hpp"
 #include "DriverFeedWatchdog.hpp"
 #include "OutputRouter.hpp"
+#include "OutputQuarantine.hpp"
+#include "OutputProbe.hpp"
 #include "EngineDiagnostics.hpp"
 #include "ServicePort.hpp"
 #include "RenderProgressWatchdog.hpp"
@@ -52,6 +55,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <filesystem>
 #include <vector>
 #if defined(__x86_64__) || defined(__i386__)
 #include <xmmintrin.h>   // _mm_getcsr / _mm_setcsr for FTZ/DAZ
@@ -95,6 +99,10 @@ struct EngineContext {
     SpatialMixerBedRenderer bedCurrent;
     SpatialMixerBedRenderer bedReference;
     bool                   bedAttached = false;          // control thread
+    // The units' diffuse-field response as measured on this macOS build, kept
+    // beside the engine state (control thread; it measures in the background).
+    SpatialMixerCalibration bedCalibration{
+        std::filesystem::path(EngineStateStore::defaultPath()).parent_path().string()};
     std::atomic<uint32_t>  bedExternalGainBits{0};       // float bits, render → control
     std::atomic<uint32_t>  renderPeakBits{0};   // float bits of the last block's peak
     std::atomic<uint64_t>  framesRendered{0};
@@ -337,10 +345,15 @@ OSStatus openOutputOn(EngineContext& ctx, OutputDevice& output,
             bedCurrent = &ctx.bedCurrent;
             bedReference = &ctx.bedReference;
             ctx.bedAttached = true;
-            std::fprintf(stderr, "[engine] bed renderer: AUSpatialMixer at %.0f Hz, units at %.0f Hz (+%zu frames), personalized HRTF %s\n",
+            const bool personalizedHrtf = ctx.bedCurrent.personalizedHrtfInUse() || ctx.bedReference.personalizedHrtfInUse();
+            const auto diffuse = ctx.bedCalibration.response(ctx.bedCurrent.unitRate(), personalizedHrtf);
+            ctx.bedCurrent.setDiffuseField(diffuse);
+            ctx.bedReference.setDiffuseField(diffuse);
+            std::fprintf(stderr, "[engine] bed renderer: AUSpatialMixer at %.0f Hz, units at %.0f Hz (+%zu frames), personalized HRTF %s, diffuse field %s\n",
                          output.sampleRate(), ctx.bedCurrent.unitRate(),
                          ctx.bedCurrent.blockFrames() + ctx.bedCurrent.latencyFrames(),
-                         ctx.bedCurrent.personalizedHrtfInUse() || ctx.bedReference.personalizedHrtfInUse() ? "in use" : "not in use");
+                         ctx.bedCurrent.personalizedHrtfInUse() || ctx.bedReference.personalizedHrtfInUse() ? "in use" : "not in use",
+                         diffuse.empty() ? "not measured yet for this HRTF (uncorrected until then)" : "corrected as measured on this system");
         } else {
             ctx.bedCurrent.release();
             ctx.bedReference.release();
